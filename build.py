@@ -1,0 +1,484 @@
+"""
+ProtoKit 构建引擎
+用法:
+  python build.py pc --platform=zhirong                    # 内嵌模式（兼容旧用法）
+  python build.py mobile                                   # 内嵌模式
+  python build.py all                                      # 内嵌模式
+  python build.py --project-path=D:/path/to/project        # 引用模式（自动检测模板）
+  python build.py --project-path=D:/path/to/project pc     # 引用模式，指定平台
+"""
+import os, sys, re, glob, json, argparse
+import yaml
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SRC_DIR = os.path.join(BASE_DIR, "src")
+DIST_DIR = os.path.join(BASE_DIR, "dist")
+
+
+def read_file(path):
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read()
+
+
+def parse_component(filepath):
+    """解析组件文件，提取 PAGE_META、doc、page HTML、script"""
+    content = read_file(filepath)
+
+    meta_match = re.search(r'PAGE_META:\s*(\{.*?\})', content, re.DOTALL)
+    meta = {}
+    if meta_match:
+        try:
+            meta = json.loads(meta_match.group(1).strip())
+        except:
+            pass
+    if not meta.get("id"):
+        id_match = re.search(r'id="page-([\w-]+)"', content)
+        if id_match:
+            meta["id"] = id_match.group(1)
+
+    doc_html = ""
+    doc_match = re.search(r'<template\s+class="doc">(.*?)</template>', content, re.DOTALL)
+    if doc_match:
+        doc_html = doc_match.group(1).strip()
+
+    page_html = ""
+    page_start = re.search(r'<div\s+class="(proto-page|page)[^"]*"', content)
+    if page_start:
+        # 找匹配的 </div>（计算嵌套深度）
+        depth = 0
+        i = page_start.end()
+        in_tag = False
+        while i < len(content):
+            c = content[i]
+            if c == '<':
+                in_tag = True
+                tag_start = i
+            elif c == '>' and in_tag:
+                in_tag = False
+                tag = content[tag_start:i+1]
+                if tag.startswith('</div'):
+                    depth -= 1
+                    if depth < 0:
+                        page_html = content[page_start.start():i+1].strip()
+                        break
+                elif tag.startswith('<div'):
+                    depth += 1
+            i += 1
+
+    scripts = []
+    for m in re.finditer(r'<script>(.*?)</script>', content, re.DOTALL):
+        s = m.group(1).strip()
+        if s:
+            scripts.append(s)
+
+    return {
+        "meta": meta,
+        "doc_html": doc_html,
+        "page_html": page_html,
+        "scripts": scripts,
+    }
+
+
+def resolve_shell_path(template_name):
+    """根据 template 名称解析 shell 文件路径"""
+    # 尝试多种命名：shell-{name}.html, shell-pc-{name}.html
+    candidates = [
+        os.path.join(SRC_DIR, "shells", f"shell-{template_name}.html"),
+        os.path.join(SRC_DIR, "shells", f"shell-{template_name.replace('pc-', '')}.html"),
+    ]
+    # 兼容旧命名：template="pc" → shell-pc.html
+    for c in candidates:
+        if os.path.exists(c):
+            return c
+    return candidates[0]  # 返回默认路径，让后续报错信息更清晰
+
+
+def build_pc(project_path=None, platform_key="zhirong", with_annotations=False, scope_filter=None):
+    """PC 端构建"""
+    if project_path:
+        # ---- 引用模式：从外部项目目录读取 ----
+        project_path = os.path.normpath(project_path)
+        config_path = os.path.join(project_path, "prototype", "proto-config.json")
+        pages_dir = os.path.join(project_path, "prototype", "pages")
+        out_dir = os.path.join(project_path, "prototype", "dist")
+
+        if not os.path.exists(config_path):
+            print(f"❌ 项目配置不存在: {config_path}")
+            print(f"   请在项目目录下创建 prototype/proto-config.json")
+            return False
+
+        config = json.loads(read_file(config_path))
+        template_name = config.get("template", "pc")
+        shell_path = resolve_shell_path(template_name)
+
+        if not os.path.exists(shell_path):
+            print(f"❌ shell 模板不存在: {shell_path}")
+            print(f"   template='{template_name}'，可用模板:")
+            for f in glob.glob(os.path.join(SRC_DIR, "shells", "shell-*.html")):
+                print(f"     - {os.path.splitext(os.path.basename(f))[0]}")
+            return False
+    else:
+        # ---- 内嵌模式（兼容旧用法） ----
+        platform_dir = os.path.join(SRC_DIR, "platforms", platform_key)
+        config_path = os.path.join(platform_dir, "config.json")
+        pages_dir = os.path.join(platform_dir, "pages")
+        out_dir = DIST_DIR
+        shell_path = os.path.join(SRC_DIR, "shells", "shell-pc.html")
+        template_name = "pc"
+
+        if not os.path.exists(config_path):
+            print(f"❌ config.json 不存在: {config_path}")
+            return False
+        if not os.path.exists(shell_path):
+            print(f"❌ shell-pc.html 不存在: {shell_path}")
+            return False
+        config = json.loads(read_file(config_path))
+
+    shell = read_file(shell_path)
+
+    # 扫描页面组件
+    components = []
+    for fpath in sorted(glob.glob(os.path.join(pages_dir, "*.html"))):
+        components.append(parse_component(fpath))
+
+    if not components:
+        # 无页面组件，直接输出空壳模板
+        os.makedirs(out_dir, exist_ok=True)
+        if project_path:
+            project_name = config.get("name", os.path.basename(project_path))
+            out_path = os.path.join(out_dir, f"{project_name}-{template_name}-原型.html")
+        else:
+            out_path = os.path.join(out_dir, f"pc-{platform_key}.html")
+        with open(out_path, "w", encoding="utf-8") as f:
+            f.write(shell)
+        print(f"✅ PC端构建完成: {out_path}")
+        print(f"   平台: {config.get('name', platform_key)}, 空模板（无页面组件）")
+        return True
+
+    # ---- 1. 注入页面到 content-area（不改动菜单） ----
+    pages_html_parts = []
+    for i, comp in enumerate(components):
+        pid = comp["meta"].get("id", "")
+        style = "" if i == 0 else ' style="display:none;"'
+        pages_html_parts.append(
+            f'<div class="proto-page" data-page-id="{pid}"{style}>\n'
+            f'{comp["page_html"]}\n</div>'
+        )
+    pages_html = "\n\n".join(pages_html_parts)
+
+    # 替换注入标记
+    shell = shell.replace('<!-- build.py 注入页面 -->', pages_html)
+
+    # ---- 2. 注入页面路由（包装 switchPage） ----
+    title_to_pageid = {}
+    for comp in components:
+        pid = comp["meta"].get("id", "")
+        title = comp["meta"].get("title", "")
+        if pid and title:
+            title_to_pageid[title] = pid
+
+    all_scripts = "\n\n".join(
+        "\n".join(comp["scripts"]) for comp in components if comp["scripts"]
+    )
+
+    wrap_js = f"""
+// ---- ProtoKit 页面路由 ----
+var _protoPages = document.querySelectorAll('.proto-page');
+var _pageTitleToId = {json.dumps(title_to_pageid, ensure_ascii=False)};
+
+function protoShowPage(pageId) {{
+  _protoPages.forEach(function(p) {{
+    p.style.display = p.dataset.pageId === pageId ? 'block' : 'none';
+  }});
+  var fn = 'init_' + pageId.replace(/-/g, '_');
+  if (typeof window[fn] === 'function') window[fn]();
+  // 通知外部（如标注引擎）页面已切换
+  document.dispatchEvent(new CustomEvent('page-changed', {{ detail: {{ pageId: pageId }} }}));
+}}
+
+// 包装原模板的 switchPage
+var _origSwitchPage = switchPage;
+switchPage = function(pageTitle, element) {{
+  _origSwitchPage(pageTitle, element);
+  var pid = _pageTitleToId[pageTitle];
+  if (pid) protoShowPage(pid);
+}};
+"""
+    shell = shell.replace('</script>\n</body>', wrap_js + '\n</script>\n</body>')
+    shell = shell.replace('</script>\n</html>', wrap_js + '\n</script>\n</html>')
+
+    if all_scripts:
+        shell = shell.replace(
+            '</script>\n</body>',
+            '\n// ---- 页面组件脚本 ----\n' + all_scripts + '\n</script>\n</body>'
+        )
+
+    # ---- 3. 更新默认页 ----
+    first_title_match = re.search(r"switchPage\('([^']+)'", shell)
+    if first_title_match:
+        first_title = first_title_match.group(1)
+        first_pid = title_to_pageid.get(first_title, "")
+        if first_pid:
+            shell = re.sub(
+                r'<div class="proto-page" data-page-id="([^"]+)" style="display:none;"',
+                r'<div class="proto-page" data-page-id="\1" style="display:none;"',
+                shell
+            )
+
+    os.makedirs(out_dir, exist_ok=True)
+    if project_path:
+        project_name = config.get("name", os.path.basename(project_path))
+        out_path = os.path.join(out_dir, f"{project_name}-{template_name}-原型.html")
+    else:
+        out_path = os.path.join(out_dir, f"pc-{platform_key}.html")
+
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(shell)
+
+    # ---- 4. 可选：标注版文件（仅引用模式 + --with-annotations） ----
+    if with_annotations and project_path:
+        css_content = read_file(os.path.join(SRC_DIR, "assets", "annotation.css"))
+        js_content = read_file(os.path.join(SRC_DIR, "assets", "annotation.js"))
+        inspector_path = os.path.join(SRC_DIR, "assets", "annotation-inspector.js")
+        inspector_js = read_file(inspector_path) if os.path.exists(inspector_path) else ""
+        anno_yaml_path = os.path.join(project_path, "prototype", "annotations", "annotations.yaml")
+        anno_json_path = os.path.join(project_path, "prototype", "annotations", "annotations.json")
+        if os.path.exists(anno_yaml_path):
+            with open(anno_yaml_path, "r", encoding="utf-8") as f:
+                anno_data = yaml.safe_load(f)
+        elif os.path.exists(anno_json_path):
+            anno_data = json.loads(read_file(anno_json_path))
+        else:
+            anno_data = {"items": {}}
+
+        # ---- V3: scope 过滤 ----
+        if scope_filter:
+            filtered = {}
+            for k, v in anno_data.get("items", {}).items():
+                item_scope = v.get("scope", "v1")
+                item_status = v.get("status", "draft")
+                if item_status == "confirmed" and item_scope == scope_filter:
+                    filtered[k] = v
+                elif item_status != "confirmed":
+                    filtered[k] = v  # 保留未确认的，不干扰
+            anno_data["items"] = filtered
+            print(f"   标注 scope 过滤: {scope_filter}, 保留 {len(filtered)} 条")
+
+        # ---- V3: data-anno 校验 ----
+        import re as _re
+        html_keys = set(_re.findall(r'data-anno="([^"]+)"', shell))
+        anno_keys = set(anno_data.get("items", {}).keys())
+        missing_in_html = anno_keys - html_keys
+        if missing_in_html:
+            print(f"   ⚠️ 以下标注 key 在 HTML 中无对应元素: {missing_in_html}")
+
+        head_inject = f"<style>{css_content}</style>"
+        body_inject = (
+            f'<script>window.ANNO_DATA = {json.dumps(anno_data, ensure_ascii=False)};</script>'
+            f'<script>{js_content}</script>'
+            f'<script>{inspector_js}</script>'
+        )
+
+        anno_shell = shell.replace('</head>', head_inject + '\n</head>')
+        anno_shell = anno_shell.replace('</body>', body_inject + '\n</body>')
+
+        anno_out_path = os.path.join(out_dir, f"{project_name}-{template_name}-标注版.html")
+        with open(anno_out_path, "w", encoding="utf-8") as f:
+            f.write(anno_shell)
+        print(f"✅ 标注版同时生成: {anno_out_path}")
+
+    print(f"✅ PC端构建完成: {out_path}")
+    print(f"   平台: {config.get('name', platform_key)}, 注入页面数: {len(components)}")
+    print(f"   模板: {template_name}, 菜单由 shell 模板提供")
+    return True
+
+
+def build_mobile(project_path=None):
+    """移动端构建"""
+    if project_path:
+        # ---- 引用模式 ----
+        project_path = os.path.normpath(project_path)
+        config_path = os.path.join(project_path, "prototype", "proto-config.json")
+        pages_dir = os.path.join(project_path, "prototype", "pages")
+        out_dir = os.path.join(project_path, "prototype", "dist")
+
+        if not os.path.exists(config_path):
+            print(f"❌ 项目配置不存在: {config_path}")
+            return False
+
+        config = json.loads(read_file(config_path))
+        shell_path = resolve_shell_path("mobile")
+    else:
+        # ---- 内嵌模式 ----
+        config_path = os.path.join(SRC_DIR, "mobile", "config.json")
+        pages_dir = os.path.join(SRC_DIR, "mobile", "pages")
+        out_dir = DIST_DIR
+        shell_path = os.path.join(SRC_DIR, "shells", "shell-mobile.html")
+        config = json.loads(read_file(config_path))
+
+    if not os.path.exists(shell_path):
+        print(f"❌ shell-mobile.html 不存在: {shell_path}")
+        return False
+
+    shell = read_file(shell_path)
+    base_css = read_file(os.path.join(SRC_DIR, "assets", "base.css"))
+    base_js = read_file(os.path.join(SRC_DIR, "assets", "base.js"))
+    mock_data = read_file(os.path.join(SRC_DIR, "assets", "mock-data.js"))
+
+    primary_color = config.get("primaryColor", config.get("theme", {}).get("primaryColor", "#8b6914"))
+    shell = shell.replace("{{PRIMARY_COLOR}}", primary_color)
+
+    components = []
+    for fpath in sorted(glob.glob(os.path.join(pages_dir, "*.html"))):
+        components.append(parse_component(fpath))
+
+    if not components:
+        print("⚠️ mobile 没有页面组件")
+        return False
+
+    tabbar_html = ""
+    for tab in config.get("tabBar", []):
+        tabbar_html += (
+            f'<div class="tab-bar-item" data-page="{tab["pageId"]}" '
+            f'onclick="ProtoRouter.go(\'{tab["pageId"]}\')">'
+            f'<div class="tab-icon">{tab["icon"]}</div>'
+            f'<div>{tab["title"]}</div></div>\n'
+        )
+
+    pagenav_html = ""
+    for comp in components:
+        pid = comp["meta"].get("id", "")
+        title = comp["meta"].get("title", pid)
+        pagenav_html += f'<button class="page-nav-btn" data-page="{pid}" onclick="ProtoRouter.go(\'{pid}\')">{title}</button>\n'
+
+    pages_html = "\n\n".join(comp["page_html"] for comp in components if comp["page_html"])
+    all_scripts = "\n\n".join("\n".join(comp["scripts"]) for comp in components if comp["scripts"])
+
+    doc_cards = ""
+    for comp in components:
+        pid = comp["meta"].get("id", "")
+        title = comp["meta"].get("title", pid)
+        if comp["doc_html"]:
+            doc_cards += f'<div class="doc-card" data-page="{pid}">\n'
+            doc_cards += f'<div class="doc-card-title"><span class="page-tag">{pid}</span> {title}</div>\n'
+            doc_cards += comp["doc_html"] + "\n</div>\n"
+
+    default_page = components[0]["meta"].get("id", "")
+
+    output = shell
+    output = output.replace("/* __BASE_CSS__ placeholder */", base_css)
+    output = output.replace("/* __SCOPED_CSS__ placeholder */", "")
+    output = output.replace("/* __MOCK_DATA__ placeholder */", mock_data)
+    output = output.replace("/* __COMPONENT_SCRIPTS__ placeholder */", all_scripts)
+    output = output.replace("/* __BASE_JS__ placeholder */", base_js)
+    output = output.replace("<!-- build.py 根据 config.json 生成 -->", tabbar_html)
+    output = output.replace("<!-- 组件 page div 注入处 -->", pages_html)
+    output = output.replace("<!-- build.py 生成 -->", pagenav_html)
+    output = output.replace("<!-- 文档联动注入处 -->", doc_cards)
+
+    os.makedirs(out_dir, exist_ok=True)
+    if project_path:
+        project_name = config.get("name", os.path.basename(project_path))
+        out_path = os.path.join(out_dir, f"{project_name}-mobile-原型.html")
+    else:
+        out_path = os.path.join(out_dir, "mobile.html")
+
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(output)
+
+    print(f"✅ 移动端构建完成: {out_path}")
+    print(f"   页面数: {len(components)}")
+    return True
+
+
+
+def review_annotations(project_path):
+    """输出标注审核清单"""
+    if not project_path:
+        print("❌ 需要 --project-path 参数")
+        return
+    anno_yaml_path = os.path.join(project_path, "prototype", "annotations", "annotations.yaml")
+    anno_json_path = os.path.join(project_path, "prototype", "annotations", "annotations.json")
+    if os.path.exists(anno_yaml_path):
+        with open(anno_yaml_path, "r", encoding="utf-8") as f:
+            anno_data = yaml.safe_load(f)
+    elif os.path.exists(anno_json_path):
+        anno_data = json.loads(read_file(anno_json_path))
+    else:
+        print(f"❌ 标注文件不存在: {anno_yaml_path}")
+        return
+
+    import re as _re
+    from collections import Counter
+    items = anno_data.get("items", {})
+
+    # 统计
+    status_counts = Counter(v.get("status", "unknown") for v in items.values())
+    scope_counts = Counter(v.get("scope", "unknown") for v in items.values())
+    type_counts = Counter(v.get("type", "unknown") for v in items.values())
+
+    print("\n📋 标注审核清单")
+    print("=" * 50)
+    print(f"  总计: {len(items)} 条")
+    print(f"  状态: {dict(status_counts)}")
+    print(f"  范围: {dict(scope_counts)}")
+    print(f"  类型: {dict(type_counts)}")
+
+    # 按 status 分组输出
+    for status in ["confirmed", "draft", "todo"]:
+        group = {k: v for k, v in items.items() if v.get("status") == status}
+        if not group:
+            continue
+        emoji = {"confirmed": "✅", "draft": "📋", "todo": "❓"}.get(status, "?")
+        print(f"\n{emoji} {status} ({len(group)}):")
+        for k, v in group.items():
+            done_count = len(v.get("done", []))
+            has_spec = "spec" in v
+            scope = v.get("scope", "?")
+            print(f"  {k}: {v.get('title', '?')} [{scope}] spec={'✓' if has_spec else '✗'} done={done_count}")
+
+    # 校验问题
+    print("\n⚠️ 校验问题:")
+    issues = []
+    for k, v in items.items():
+        if not v.get("type"):
+            issues.append(f"  {k}: 缺少 type 字段")
+        if v.get("type") and "spec" not in v:
+            issues.append(f"  {k}: 有 type 但无 spec")
+        if v.get("status") == "confirmed" and not v.get("done"):
+            issues.append(f"  {k}: confirmed 但无 done 验收标准")
+    if issues:
+        for i in issues:
+            print(i)
+    else:
+        print("  无校验问题")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="ProtoKit 构建引擎")
+    parser.add_argument("target", nargs="?", default="all", choices=["pc", "mobile", "all"],
+                        help="构建目标: pc / mobile / all")
+    parser.add_argument("--platform", default="zhirong", help="PC端平台名 (内嵌模式)")
+    parser.add_argument("--project-path", default=None,
+                        help="外部项目路径（引用模式）: 指向包含 prototype/ 目录的项目根")
+    parser.add_argument("--with-annotations", action="store_true",
+                        help="生成标注版文件（仅 PC 端引用模式）")
+    parser.add_argument("--scope", default=None, choices=["v1", "v2", "future", "never"],
+                        help="标注 scope 过滤（仅配合 --with-annotations 使用）")
+    parser.add_argument("--review", action="store_true",
+                        help="输出标注审核清单（不构建，仅分析 annotations.json）")
+    args = parser.parse_args()
+
+    project_path = args.project_path
+
+    if args.review:
+        review_annotations(project_path)
+    elif args.target == "all":
+        build_pc(project_path=project_path, platform_key=args.platform, with_annotations=args.with_annotations, scope_filter=args.scope)
+        build_mobile(project_path=project_path)
+    elif args.target == "pc":
+        build_pc(project_path=project_path, platform_key=args.platform, with_annotations=args.with_annotations, scope_filter=args.scope)
+    elif args.target == "mobile":
+        build_mobile(project_path=project_path)
+    else:
+        parser.print_help()
