@@ -174,11 +174,26 @@
   saveToFile();renderBadges();updateCount();toast('\u5df2\u6807\u6ce8 '+el.tagName+' > '+key)})};
   updateCount();window.refreshAnnotations=function(){renderBadges();updateCount()}},200)})
 })
+
+// ===== 巡检模式专用 API 暴露 =====
+window.__annoItems = items;
+window.__annoCreate = function(el, key, title) {
+  if (items[key]) return false;
+  el.setAttribute('data-anno', key);
+  items[key] = {type:'button', title: title || '\u65b0\u5efa\u6807\u6ce8', content:'\u5f85\u586b\u5199'};
+  saveToFile();
+  renderBadges();
+  updateCount();
+  return true;
+};
+// ================================
+
 })(); 
 // === Inspector: 全局事件委托 ===
 document.addEventListener('click', function(e) {
   if (e.target && e.target.id === 'anno-pick') {
     e.preventDefault();
-    if (window.__annoInspector) { window.__annoInspector.start(); } else { alert('巡检模块未加载'); }
+    e.stopPropagation();
+    if (window.__annoInspector) { window.__annoInspector.start(); } else { alert('\u5de1\u68c0\u6a21\u5757\u672a\u52a0\u8f7d'); }
   }
-});
+}, true);

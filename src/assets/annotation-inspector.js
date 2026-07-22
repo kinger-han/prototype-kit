@@ -1,10 +1,29 @@
 /**
  * annotation-inspector.js — 巡检模式（全屏遮罩物理拦截）
  * 事件只挂在遮罩上，移除遮罩=彻底清除拦截
+ * 点击元素 → 自动打标建壳 → 退出巡检 → 用户点角标编辑
  */
 (function () {
   var mask = null;
   var hoverTarget = null;
+
+  function autoGenKey() {
+    var items = window.__annoItems || {};
+    var keys = Object.keys(items);
+    var prefix = 'anno-';
+    var maxNum = 0;
+    if (keys.length > 0) {
+      var lastKey = keys[keys.length - 1];
+      var m = lastKey.match(/^(.+?)(\d+)$/);
+      if (m) { prefix = m[1]; }
+    }
+    for (var i = 0; i < keys.length; i++) {
+      var km = keys[i].match(new RegExp('^' + prefix.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '(\\d+)$'));
+      if (km) maxNum = Math.max(maxNum, parseInt(km[1], 10));
+    }
+    var n = maxNum + 1;
+    return prefix + (n < 10 ? '0' + n : '' + n);
+  }
 
   function start() {
     if (mask) return;
@@ -36,9 +55,27 @@
       e.preventDefault();
       e.stopPropagation();
       var el = hoverTarget;
-      stop();
       if (!el) return;
-      alert('你选中了元素：' + el.tagName + (el.id ? '#' + el.id : '') + (el.className ? '.' + el.className.split(' ')[0] : ''));
+      var existing = el.getAttribute('data-anno');
+      if (existing) {
+        stop();
+        alert('\u5df2\u6807\u6ce8: ' + existing + '\uff0c\u8bf7\u70b9\u51fb\u89d2\u6807\u7f16\u8f91');
+        return;
+      }
+      var createFn = window.__annoCreate;
+      if (!createFn) {
+        stop();
+        alert('\u6807\u6ce8\u6a21\u5757\u672a\u52a0\u8f7d');
+        return;
+      }
+      var key = autoGenKey();
+      var ok = createFn(el, key, '\u65b0\u5efa\u6807\u6ce8');
+      stop();
+      if (ok) {
+        alert('\u5df2\u6807\u6ce8 ' + key + '\uff0c\u8bf7\u70b9\u51fb\u89d2\u6807\u7f16\u8f91');
+      } else {
+        alert('\u7f16\u53f7 ' + key + ' \u5df2\u5b58\u5728');
+      }
     });
 
     document.addEventListener('keydown', onEsc);

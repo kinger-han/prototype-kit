@@ -1,0 +1,9 @@
+{
+  "name": "智能导游小程序",
+  "primaryColor": "#8b6914",
+  "tabBar": [
+    {"pageId": "m-home", "icon": "🏠", "title": "首页"},
+    {"pageId": "m-chat", "icon": "💬", "title": "对话"},
+    {"pageId": "m-mine", "icon": "👤", "title": "我的"}
+  ]
+}

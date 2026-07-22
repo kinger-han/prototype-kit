@@ -1,0 +1,57 @@
+<!-- PAGE_META: {"id": "m-chat", "title": "AI对话", "hideTabBar": true} -->
+<template class="doc">
+  <div class="doc-section" data-trigger="page-load">
+    <div class="doc-feature">
+      <div class="doc-feature-name"><span class="doc-feature-tag ui">UI</span>对话气泡布局</div>
+      <div class="doc-feature-desc">左侧灰色气泡为AI回复，右侧蓝色气泡为用户消息。支持文字、图片、语音。</div>
+    </div>
+    <div class="doc-feature">
+      <div class="doc-feature-name"><span class="doc-feature-tag logic">逻辑</span>AI回复流程</div>
+      <div class="doc-feature-desc">用户发送 → 调用 Dify API（携带博物馆 context）→ 流式返回 → 逐字显示。超时5秒显示loading。</div>
+      <div class="doc-api">POST /api/chat { conversation_id, message, museum_id }</div>
+    </div>
+    <div class="doc-feature">
+      <div class="doc-feature-name"><span class="doc-feature-tag logic">逻辑</span>RAG知识库检索</div>
+      <div class="doc-feature-desc">每次请求携带当前博物馆ID，后端从向量数据库检索相关展品/历史知识作为 context。</div>
+    </div>
+    <div class="doc-feature">
+      <div class="doc-feature-name"><span class="doc-feature-tag data">数据</span>消息持久化</div>
+      <div class="doc-feature-desc">消息存储到 conversation_messages 表，关联 conversation_id。支持查看历史、继续对话。</div>
+    </div>
+  </div>
+</template>
+
+<div class="page" id="page-m-chat">
+  <div style="background:#f5f2ed;min-height:100%;display:flex;flex-direction:column;">
+    <div class="m-header" style="position:relative;">
+      AI 导览
+      <div style="position:absolute;right:12px;font-size:14px;color:#8b6914;">···</div>
+    </div>
+    <div style="flex:1;padding:12px;overflow-y:auto;padding-bottom:70px;">
+      <div style="display:flex;gap:8px;margin-bottom:16px;">
+        <div style="width:32px;height:32px;border-radius:50%;background:#8b6914;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🏛️</div>
+        <div style="background:#fff;border-radius:12px;border-top-left-radius:4px;padding:12px;max-width:80%;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+          <div style="font-size:14px;color:#333;line-height:1.6;">您好！欢迎来到XX博物馆 🎉<br><br>我是您的AI智能导游，可以为您：<br>• 讲解展品历史背景<br>• 推荐参观路线<br>• 回答相关问题<br><br>请问您想了解什么？</div>
+          <div style="font-size:11px;color:#bbb;margin-top:6px;">14:30</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:16px;justify-content:flex-end;">
+        <div style="background:#8b6914;border-radius:12px;border-top-right-radius:4px;padding:12px;max-width:80%;">
+          <div style="font-size:14px;color:#fff;line-height:1.6;">请介绍一下青花瓷瓶</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:6px;text-align:right;">14:31</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:16px;">
+        <div style="width:32px;height:32px;border-radius:50%;background:#8b6914;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🏛️</div>
+        <div style="background:#fff;border-radius:12px;border-top-left-radius:4px;padding:12px;max-width:80%;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+          <div style="font-size:14px;color:#333;line-height:1.6;">这件青花瓷瓶是明代万历年间的珍品 🏺<br><br><b>基本信息：</b><br>• 年代：明万历（1573-1620）<br>• 高度：45.2cm<br>• 工艺：釉下青花<br><br>它以缠枝莲纹为主题，色泽浓艳，是万历青花的典型代表。</div>
+          <div style="font-size:11px;color:#bbb;margin-top:6px;">14:31</div>
+        </div>
+      </div>
+    </div>
+    <div style="position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #f0f0f0;padding:8px 12px;display:flex;gap:8px;align-items:center;z-index:100;">
+      <div style="flex:1;height:36px;background:#f5f5f5;border-radius:18px;padding:0 16px;display:flex;align-items:center;font-size:14px;color:#bbb;">输入您的问题...</div>
+      <div style="width:36px;height:36px;border-radius:50%;background:#8b6914;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;">🎤</div>
+    </div>
+  </div>
+</div>

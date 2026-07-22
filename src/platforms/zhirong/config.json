@@ -1,0 +1,20 @@
+{
+  "name": "智融平台",
+  "template": "pc",
+  "logo": "智",
+  "theme": {
+    "primaryColor": "#1890ff",
+    "layout": "side-top"
+  },
+  "menu": [
+    {
+      "group": "智能导游",
+      "icon": "🏛️",
+      "items": [
+        {"id": "login", "title": "登录"},
+        {"id": "user-list", "title": "用户管理"},
+        {"id": "chat-records", "title": "会话记录"}
+      ]
+    }
+  ]
+}
