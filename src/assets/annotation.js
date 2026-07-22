@@ -135,6 +135,8 @@
   window.addEventListener('scroll',function(){document.querySelectorAll('.anno-badge').forEach(function(b){
   var t=document.querySelector('[data-anno="'+b.dataset.annoKey+'"]');if(t)posBadge(b,t)})});
   document.addEventListener('page-changed',function(){setTimeout(function(){renderBadges();updateCount()},100)});
+  document.addEventListener('tab-changed',function(){setTimeout(function(){renderBadges();updateCount()},100)});
+  setTimeout(function(){var ca=document.querySelector('.content-area');if(ca)ca.addEventListener('scroll',function(){document.querySelectorAll('.anno-badge').forEach(function(b){var t=document.querySelector('[data-anno="'+b.dataset.annoKey+'"]');if(t)posBadge(b,t)})})},500);
 
   window.addEventListener('load',function(){
   autoConnect().then(function(){

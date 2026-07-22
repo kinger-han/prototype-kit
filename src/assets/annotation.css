@@ -112,8 +112,7 @@ border-top: 1px dashed #ddd;
 .anno-toolbar {
 position: fixed;
 right: 0;
-top: 50%;
-transform: translateY(-50%);
+bottom: 60px;
 z-index: 10001;
 background: rgba(34,34,34,0.88);
 color: #fff;
