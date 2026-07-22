@@ -140,18 +140,18 @@
   autoConnect().then(function(){
   setTimeout(renderBadges,100);
   setTimeout(function(){
+  if(fileHandle) editing = true;
   var bar=document.createElement('div');bar.className='anno-toolbar';
   bar.innerHTML='<span class="anno-mode-tag '+(fileHandle?'':'readonly')+'">'+(fileHandle?'\u5df2\u8fde\u63a5':'\u672a\u8fde\u63a5')+'</span>'
-  +(fileHandle?'<button id="anno-edit-toggle">\u7f16\u8f91\u6a21\u5f0f</button>':'<button id="anno-connect">\u8fde\u63a5\u76ee\u5f55</button>')
-  +'<button id="anno-pick">\u9009\u62e9\u5143\u7d20</button>'
+  +(fileHandle?'':'<button id="anno-connect">\u8fde\u63a5\u76ee\u5f55</button>')
+  +'<button id="anno-pick">\u65b0\u589e\u6807\u6ce8</button>'
   +'<button id="anno-toggle">\u9690\u85cf\u6807\u6ce8</button>'
-  +'<button id="anno-count">\u6807\u6ce8 (0/0)</button>';
+  +'<button id="anno-count">\u6807\u6ce8 (0/0)</button>'
+  +'<span class="anno-tab-icon">\u{1f4cb}</span>';
   document.documentElement.appendChild(bar);var vis=true;
   document.getElementById('anno-toggle').onclick=function(e){vis=!vis;
   document.querySelectorAll('.anno-badge').forEach(function(b){b.style.display=vis?'flex':'none'});
   if(!vis)closeTip();e.target.textContent=vis?'\u9690\u85cf\u6807\u6ce8':'\u663e\u793a\u6807\u6ce8'};
-  var ebtn=document.getElementById('anno-edit-toggle');
-  if(ebtn)ebtn.onclick=function(){editing=!editing;ebtn.textContent=editing?'\u9000\u51fa\u7f16\u8f91':'\u7f16\u8f91\u6a21\u5f0f'};
   var cbtn=document.getElementById('anno-connect');
   if(cbtn)cbtn.onclick=function(){pickDir().then(function(){location.reload()})};
   var abtn=document.getElementById('anno-add');
