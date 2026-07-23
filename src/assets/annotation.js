@@ -124,8 +124,8 @@
   if(pickCallback)pickCallback(el)}
   function closeTip(){if(openTip){openTip.remove();openTip=null}}
   function updateCount(){var btn=document.getElementById('anno-count');if(!btn)return;
-  var total=Object.keys(items).length,cur=0;
-  document.querySelectorAll('.anno-badge').forEach(function(b){if(b.style.display!=='none')cur++});
+  var total=0,cur=0;
+  document.querySelectorAll('.anno-badge').forEach(function(b){total++;if(b.style.display!=='none')cur++});
   btn.textContent='\u6807\u6ce8 ('+cur+'/'+total+')'}
 
   document.addEventListener('mouseover',function(e){var b=e.target.closest('.anno-badge');if(b)showTip(b.dataset.annoKey)});
@@ -149,11 +149,13 @@
   +'<button id="anno-pick">\u65b0\u589e\u6807\u6ce8</button>'
   +'<button id="anno-toggle">\u9690\u85cf\u6807\u6ce8</button>'
   +'<button id="anno-count">\u6807\u6ce8 (0/0)</button>'
-  +'<span class="anno-tab-icon">\u{1f4cb}</span>';
+  +'<span class="anno-tab-icon">\u25c0</span>';
   document.documentElement.appendChild(bar);var vis=true;
   document.getElementById('anno-toggle').onclick=function(e){vis=!vis;
   document.querySelectorAll('.anno-badge').forEach(function(b){b.style.display=vis?'flex':'none'});
   if(!vis)closeTip();e.target.textContent=vis?'\u9690\u85cf\u6807\u6ce8':'\u663e\u793a\u6807\u6ce8'};
+  var ticon=bar.querySelector('.anno-tab-icon');
+  if(ticon)ticon.onclick=function(){bar.classList.toggle('expanded');ticon.textContent=bar.classList.contains('expanded')?'\u25b6':'\u25c0';};
   var cbtn=document.getElementById('anno-connect');
   if(cbtn)cbtn.onclick=function(){pickDir().then(function(){location.reload()})};
   var abtn=document.getElementById('anno-add');
