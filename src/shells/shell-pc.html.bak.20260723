@@ -671,64 +671,6 @@ table tr { cursor: pointer; }
   font-weight: 600;
   flex-shrink: 0;
 }
-.tooltip-icon::after {
-  content: attr(data-tip);
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: #fff;
-  color: #333;
-  border: 1px solid #e8e8e8;
-  border-radius: 8px;
-  padding: 10px 14px;
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 1.8;
-  white-space: normal !important;
-  width: max-content;
-  min-width: 280px;
-  max-width: 360px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.15s, visibility 0.15s;
-  z-index: 1000;
-  pointer-events: none;
-}
-.tooltip-icon:hover::after {
-  opacity: 1;
-  visibility: visible;
-}
-
-
-/* 更多操作菜单 */
-.more-menu-wrap { position: relative; display: inline-block; }
-.more-menu {
-  display: none;
-  position: absolute;
-  top: 100%;
-  right: 0;
-  min-width: 100px;
-  background: #fff;
-  border: 1px solid #e8e8e8;
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  z-index: 100;
-  padding: 4px 0;
-}
-.more-menu.show { display: block; }
-.more-menu-item {
-  padding: 6px 14px;
-  font-size: 13px;
-  color: #333;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.15s;
-}
-.more-menu-item:hover { background: #f5f5f5; }
-.more-menu-item.danger { color: #f5222d; }
-.more-menu-item.danger:hover { background: #fff1f0; }
 
 /* 场馆管理Tab样式 */
 .venue-tab { padding: 10px 20px; font-size: 14px; color: #666; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
@@ -1169,15 +1111,6 @@ table tr { cursor: pointer; }
           </div>
         </div>
         <div class="form-row">
-          <span class="form-label">知识库：</span>
-          <select class="form-control" id="addVenueKnowledgeBase">
-            <option value="">请选择知识库</option>
-            <option>博物馆FAQ知识库</option>
-            <option>科技馆导览知识库</option>
-            <option>自然百科知识库</option>
-          </select>
-        </div>
-        <div class="form-row">
           <span class="form-label">备注：</span>
           <textarea class="form-control" id="addVenueRemark" placeholder="请输入备注信息（选填）"></textarea>
         </div>
@@ -1256,24 +1189,12 @@ table tr { cursor: pointer; }
             </div>
           </div>
         </div>
-        <div class="form-row">
-          <span class="form-label">知识库：</span>
-          <select class="form-control" id="editVenueKnowledgeBase">
-            <option value="">请选择知识库</option>
-            <option>博物馆FAQ知识库</option>
-            <option>科技馆导览知识库</option>
-            <option>自然百科知识库</option>
-          </select>
-        </div>
         <!-- QR section (read-only) -->
         <div style="margin-top:8px;padding-top:12px;border-top:1px solid #f0f0f0;">
           <div style="font-size:13px;font-weight:600;color:#333;margin-bottom:12px;">二维码信息</div>
           <div class="form-row">
             <span class="form-label">二维码：</span>
-            <div style="display:flex;align-items:center;gap:12px;">
-              <div id="editVenueQrThumb" style="width:60px;height:60px;border:1px solid #e8e8e8;border-radius:4px;background:#f5f5f5;display:inline-flex;align-items:center;justify-content:center;position:relative;overflow:hidden;"></div>
-              <button class="filter-btn" onclick="showToast('二维码已重新生成（演示）', 'success')" style="font-size:12px;">重新生成</button>
-            </div>
+            <div id="editVenueQrThumb" style="width:60px;height:60px;border:1px solid #e8e8e8;border-radius:4px;background:#f5f5f5;display:inline-flex;align-items:center;justify-content:center;position:relative;overflow:hidden;"></div>
           </div>
           <div class="form-row" style="margin-top:8px;">
             <span class="form-label">扫码次数：</span>
@@ -1428,13 +1349,6 @@ table tr { cursor: pointer; }
           <select class="form-control" id="faqFormCustomer"><option value="">请选择客户</option><option>XX博物馆</option><option>科技馆</option><option>自然博物馆</option></select>
         </div>
         <div class="form-row">
-          <span class="form-label">选择知识库：<span class="required">*</span></span>
-          <select class="form-control" id="faqFormKbType" onchange="onFaqKbTypeChange()">
-            <option value="venue">场馆知识库</option>
-            <option value="public">公共知识库</option>
-          </select>
-        </div>
-        <div class="form-row" id="faqFormVenueRow">
           <span class="form-label">所属场馆：<span class="required">*</span></span>
           <select class="form-control" id="faqFormVenue"><option value="">请选择场馆</option><option>东馆</option><option>西馆</option><option>少儿馆</option><option>主馆</option></select>
         </div>
@@ -1490,13 +1404,6 @@ table tr { cursor: pointer; }
           <select class="form-control" id="docUploadCustomer"><option value="">请选择客户</option><option>XX博物馆</option><option>科技馆</option><option>自然博物馆</option></select>
         </div>
         <div class="form-row">
-          <span class="form-label">选择知识库：<span class="required">*</span></span>
-          <select class="form-control" id="docUploadKbType" onchange="onDocKbTypeChange()">
-            <option value="venue">场馆知识库</option>
-            <option value="public">公共知识库</option>
-          </select>
-        </div>
-        <div class="form-row" id="docUploadVenueRow">
           <span class="form-label">所属场馆：<span class="required">*</span></span>
           <select class="form-control" id="docUploadVenue"><option value="">请选择场馆</option><option>东馆</option><option>西馆</option><option>少儿馆</option><option>主馆</option></select>
         </div>

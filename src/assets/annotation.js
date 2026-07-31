@@ -2,6 +2,7 @@
   var data = window.ANNO_DATA || {}; items = data.items || {};
   var openTip = null, fileHandle = null, rootDirHandle = null, editing = false;
   var DB = 'protokit-anno', STORE = 'dh';
+  var ITEMS_KEY = 'items-snapshot';
   var TC = {page:'\u9875\u9762',button:'\u6309\u94ae',input:'\u8f93\u5165\u6846',list:'\u5217\u8868',modal:'\u5f39\u7a97',state:'\u72b6\u6001',linkage:'\u8054\u52a8',computed:'\u8ba1\u7b97'};
 
   function openDB(){return new Promise(function(r){var q=indexedDB.open(DB,1);q.onupgradeneeded=function(){q.result.createObjectStore(STORE)};q.onsuccess=function(){r(q.result)};q.onerror=function(){r(null)}})}
@@ -13,12 +14,12 @@
     if(!('showDirectoryPicker' in window))return;
     var s=await dbGet(getPK());if(!s||!s.dirHandle)return;
     try{var p=await s.dirHandle.queryPermission({mode:'readwrite'});
-    if(p==='granted'){rootDirHandle=s.dirHandle;await loadFromFile();return}
+    if(p==='granted'){rootDirHandle=s.dirHandle;await loadItemsSnapshot();var _a=window.ANNO_DATA&&window.ANNO_DATA.items||{};for(var _k in _a){if(!items[_k])items[_k]=_a[_k]}await loadFromFile();return}
     if(p==='prompt'){rootDirHandle=s.dirHandle;return}}catch(e){}}
 
   async function pickDir(){
     try{var h=await window.showDirectoryPicker({mode:'readwrite'});
-    rootDirHandle=h;await dbSet(getPK(),{dirHandle:h});await loadFromFile()}
+    rootDirHandle=h;await dbSet(getPK(),{dirHandle:h});var _a2=window.ANNO_DATA&&window.ANNO_DATA.items||{};for(var _k2 in _a2){if(!items[_k2])items[_k2]=_a2[_k2]}await loadFromFile()}
     catch(e){if(e.name!=='AbortError')toast('\u9009\u62e9\u76ee\u5f55\u5931\u8d25')}}
 
   async function loadFromFile(){
@@ -40,14 +41,21 @@
     await w.write(ls.join('\n'));await w.close();toast('\u5df2\u4fdd\u5b58')}
     catch(e){toast('\u4fdd\u5b58\u5931\u8d25: '+e.message)}}
 
+  function saveItemsSnapshot(){dbSet(ITEMS_KEY,JSON.parse(JSON.stringify(items)))}
+  function loadItemsSnapshot(){return dbGet(ITEMS_KEY).then(function(d){if(d&&typeof d==='object'&&Object.keys(d).length>0){items=d;return true}return false})}
+
   function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
   function toast(msg){var t=document.createElement('div');t.className='anno-toast';t.textContent=msg;
   document.documentElement.appendChild(t);requestAnimationFrame(function(){t.classList.add('show')});
   setTimeout(function(){t.classList.remove('show');setTimeout(function(){t.remove()},300)},2000)}
   function renderMd(md){var h=esc(md);h=h.replace(/^### (.+)$/gm,'<h3>$1</h3>');
   h=h.replace(/^## (.+)$/gm,'<h2>$1</h2>');h=h.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
-  h=h.replace(/^- (.+)$/gm,'<li>$1</li>');h=h.replace(/(<li>.*<\/li>\n?)+/g,function(m){return'<ul>'+m+'</ul>'});
-  h=h.split('\n\n').map(function(p){return/^<(h2|h3|ul)/.test(p)?p:'<p>'+p+'</p>'}).join('');return h}
+  h=h.replace(/^- (.+)$/gm,'<li>$1</li>');
+  h=h.replace(/(<li>.*<\/li>\n?)+/g,function(m){return'<ul>'+m+'</ul>'});
+  h=h.replace(/\n/g,'<br>');
+  h=h.replace(/(<\/h[23]>)<br>/g,'$1');
+  h=h.replace(/<\/li><br><li>/g,'</li><li>');
+  return h}
 
   function renderBadges(){document.querySelectorAll('.anno-badge').forEach(function(b){b.remove()});
   document.querySelectorAll('[data-anno]').forEach(function(el){
@@ -103,16 +111,16 @@
   items[key].title=tip.querySelector('#ed-title').value;
   items[key].type=tip.querySelector('#ed-type').value;
   items[key].content=tip.querySelector('#ed-content').value;
-  await saveToFile();showTip(key);renderBadges()}}
+  await saveToFile();saveItemsSnapshot();showTip(key);renderBadges()}}
 
   function deleteAnn(key){if(!confirm('\u786e\u8ba4\u5220\u9664 \u6807\u6ce8 "'+key+'" \uff1f'))return;
-  delete items[key];saveToFile();closeTip();renderBadges();updateCount();toast('\u5df2\u5220\u9664 '+key)}
+  delete items[key];saveToFile();saveItemsSnapshot();closeTip();renderBadges();updateCount();toast('\u5df2\u5220\u9664 '+key)}
 
   function addAnn(){var key=prompt('\u6807\u6ce8\u7f16\u53f7\uff08\u5982 venue-new\uff09\uff1a');
   if(!key||items[key]){if(items[key])toast('\u7f16\u53f7\u5df2\u5b58\u5728');return}
   var title=prompt('\u6807\u6ce8\u6807\u9898\uff1a');if(!title)return;
   items[key]={type:'button',title:title,content:'\u5f85\u586b\u5199'};
-  saveToFile();renderBadges();updateCount();toast('\u5df2\u65b0\u589e '+key)}
+  saveToFile();saveItemsSnapshot();renderBadges();updateCount();toast('\u5df2\u65b0\u589e '+key)}
 
   var pickMode=false,pickCallback=null;
   function startPick(cb){pickMode=true;pickCallback=cb;document.body.style.cursor='crosshair';
@@ -164,7 +172,7 @@
   if(!key||items[key]){if(items[key])toast('\u7f16\u53f7\u5df2\u5b58\u5728');return}
   var title=prompt('\u6807\u6ce8\u6807\u9898\uff1a');if(!title)return;
   items[key]={type:'button',title:title,content:'\u5f85\u586b\u5199'};
-  saveToFile();renderBadges();updateCount();toast('\u5df2\u65b0\u589e '+key)};
+  saveToFile();saveItemsSnapshot();renderBadges();updateCount();toast('\u5df2\u65b0\u589e '+key)};
   var pbtn=document.getElementById('anno-pick');
   if(pbtn)pbtn.onclick=function(){
   startPick(function(el){
@@ -175,7 +183,7 @@
   var title=prompt('\u6807\u6ce8\u6807\u9898\uff1a');if(!title)return;
   el.setAttribute('data-anno',key);
   items[key]={type:'button',title:title,content:'\u5f85\u586b\u5199'};
-  saveToFile();renderBadges();updateCount();toast('\u5df2\u6807\u6ce8 '+el.tagName+' > '+key)})};
+  saveToFile();saveItemsSnapshot();renderBadges();updateCount();toast('\u5df2\u6807\u6ce8 '+el.tagName+' > '+key)})};
   updateCount();window.refreshAnnotations=function(){renderBadges();updateCount()}},200)})
 })
 
@@ -186,6 +194,7 @@ window.__annoCreate = function(el, key, title) {
   el.setAttribute('data-anno', key);
   items[key] = {type:'button', title: title || '\u65b0\u5efa\u6807\u6ce8', content:'\u5f85\u586b\u5199'};
   saveToFile();
+  saveItemsSnapshot();
   renderBadges();
   updateCount();
   return true;

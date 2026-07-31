@@ -79,36 +79,6 @@ def parse_component(filepath):
     }
 
 
-def strip_outer_div(html):
-    """去掉最外层 <div class=\"proto-page|page\"> 外壳，返回内部 HTML（供共享组件使用）"""
-    m = re.search(r'<div\s+class="(proto-page|page)[^"]*"', html)
-    if not m:
-        return html.strip()
-    gt = html.find('>', m.end())
-    if gt == -1:
-        return html.strip()
-    depth = 0
-    i = gt + 1
-    in_tag = False
-    tag_start = 0
-    while i < len(html):
-        c = html[i]
-        if c == '<':
-            in_tag = True
-            tag_start = i
-        elif c == '>' and in_tag:
-            in_tag = False
-            tag = html[tag_start:i+1]
-            if tag.startswith('</div'):
-                depth -= 1
-                if depth < 0:
-                    return html[gt+1:tag_start].strip()
-            elif tag.startswith('<div'):
-                depth += 1
-        i += 1
-    return html[gt+1:].strip()
-
-
 def resolve_shell_path(template_name):
     """根据 template 名称解析 shell 文件路径"""
     # 尝试多种命名：shell-{name}.html, shell-pc-{name}.html
@@ -166,17 +136,12 @@ def build_pc(project_path=None, platform_key="zhirong", with_annotations=False, 
 
     shell = read_file(shell_path)
 
-    # 扫描页面组件（_ 开头的文件视为共享组件：不进路由/菜单，内容追加到 #main-content 末尾）
+    # 扫描页面组件
     components = []
-    shared_components = []
     for fpath in sorted(glob.glob(os.path.join(pages_dir, "*.html"))):
-        comp = parse_component(fpath)
-        if os.path.basename(fpath).startswith("_"):
-            shared_components.append(comp)
-        else:
-            components.append(comp)
+        components.append(parse_component(fpath))
 
-    if not components and not shared_components:
+    if not components:
         # 无页面组件，直接输出空壳模板
         os.makedirs(out_dir, exist_ok=True)
         if project_path:
@@ -199,13 +164,6 @@ def build_pc(project_path=None, platform_key="zhirong", with_annotations=False, 
             f'<div class="proto-page" data-page-id="{pid}"{style}>\n'
             f'{comp["page_html"]}\n</div>'
         )
-
-    # 共享组件（_ 开头文件）：提取 proto-page 内部 DOM，追加到 #main-content 末尾（不包可切换容器）
-    for comp in shared_components:
-        inner = strip_outer_div(comp["page_html"])
-        if inner:
-            pages_html_parts.append(inner)
-
     pages_html = "\n\n".join(pages_html_parts)
 
     # 替换注入标记
