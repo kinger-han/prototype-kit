@@ -1,0 +1,536 @@
+<!-- PAGE_META: {"id": "miss-stats", "title": "未命中问题统计"} -->
+
+<!-- ====== 页面：未命中问题统计 ====== -->
+      <div class="page" id="pageMissStats">
+
+        <!-- 视图切换按钮 -->
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+          <button class="filter-btn primary" id="missViewList" onclick="switchMissView('list')">原始列表</button>
+          <button class="filter-btn" id="missViewGroup" onclick="switchMissView('group')">分组视图</button>
+        </div>
+
+        <!-- 筛选栏 -->
+        <div class="miss-filter-bar" data-anno="miss-01">
+          <div class="filter-item">
+            <span class="filter-label">来源客户：</span>
+            <select class="filter-select">
+              <option value="">全部客户</option>
+              <option>XX博物馆</option>
+              <option>科技馆</option>
+              <option>自然博物馆</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <span class="filter-label">来源场馆：</span>
+            <select class="filter-select">
+              <option value="">全部场馆</option>
+              <option>东馆</option>
+              <option>西馆</option>
+              <option>少儿馆</option>
+              <option>主馆</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <span class="filter-label">时间范围：</span>
+            <input type="date" class="filter-input" style="min-width:130px;" value="2026-06-09">
+            <span style="color:#999;">至</span>
+            <input type="date" class="filter-input" style="min-width:130px;" value="2026-07-09">
+          </div>
+          
+              <div class="filter-item">
+              <span class="filter-label">处理状态：</span>
+              <select class="filter-select" style="min-width:100px;">
+              <option value="">全部</option>
+              <option>待处理</option>
+              <option>已处理</option>
+              <option>已忽略</option>
+            </select>
+          </div>
+          <button class="filter-btn primary" onclick="showToast('查询完成', 'success')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            查询
+          </button>
+          <button class="filter-btn" onclick="showToast('已重置筛选条件')">重置</button>
+        </div>
+
+        <!-- ====== 分组视图（默认显示） ====== -->
+        <div id="missGroupView" data-anno="miss-03" style="display:none;">
+          <div class="table-card">
+            <div class="table-toolbar">
+              <span style="font-size:13px;color:#666;">AI自动聚类 · 共 <b>5</b> 组问题 · 待处理 <b style="color:#faad14;">2</b> 组</span>
+              <button class="toolbar-btn" data-anno="miss-export" onclick="openMissExportModal()" style="margin-left:auto;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                导出Excel
+              </button>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:40px;">序号</th>
+                  <th style="width:140px;">问题类别</th>
+                  <th style="width:100px;">来源客户</th>
+                  <th style="width:80px;">来源场馆</th>
+                  <th style="width:110px;">智能体</th>
+                  <th style="width:60px;">数量</th>
+                  <th style="width:130px;">最近触发</th>
+                  <th style="width:130px;">AI分类</th>
+                  <th style="width:80px;">状态</th>
+                  <th style="width:140px;">操作</th>
+                </tr>
+              </thead>
+              <tbody id="missGroupBody">
+                <tr style="cursor:pointer;" onclick="openGroupDetail(0)">
+                  <td>1</td>
+                  <td><div style="font-weight:500;">停车相关</div><div style="font-size:11px;color:#999;margin-top:2px;">停车场、停车位、停车收费...</div></td>
+                  <td>XX博物馆</td>
+                  <td>东馆</td>
+                  <td><span style="font-size:13px;">博物馆导览助手</span></td>
+                  <td><span class="num-highlight">8</span></td>
+                  <td>2026-07-07 14:23</td>
+                                    <td><span class="badge-status" style="background:#fff7e6;color:#d48806;border:1px solid #ffe58f;">待处理</span></td>
+                  <td><button class="action-btn" onclick="event.stopPropagation();openGroupDetail(0)">查看详情</button> <button class="action-btn" onclick="event.stopPropagation();jumpToKbFromGroup(0)">补充知识库</button></td>
+                </tr>
+                <tr style="cursor:pointer;" onclick="openGroupDetail(1)">
+                  <td>2</td>
+                  <td><div style="font-weight:500;">停车相关</div><div style="font-size:11px;color:#999;margin-top:2px;">停车场、停车位、停车收费...</div></td>
+                  <td>科技馆</td>
+                  <td>主馆</td>
+                  <td><span style="font-size:13px;">科技馆讲解员</span></td>
+                  <td><span class="num-highlight">4</span></td>
+                  <td>2026-07-06 15:10</td>
+                                    <td><span class="badge-status" style="background:#fff7e6;color:#d48806;border:1px solid #ffe58f;">待处理</span></td>
+                  <td><button class="action-btn" onclick="event.stopPropagation();openGroupDetail(1)">查看详情</button> <button class="action-btn" onclick="event.stopPropagation();jumpToKbFromGroup(0)">补充知识库</button></td>
+                </tr>
+                <tr style="cursor:pointer;" onclick="openGroupDetail(2)">
+                  <td>3</td>
+                  <td><div style="font-weight:500;">讲解员服务</div><div style="font-size:11px;color:#999;margin-top:2px;">讲解员、讲解服务、人工讲解...</div></td>
+                  <td>XX博物馆</td>
+                  <td>西馆</td>
+                  <td><span style="font-size:13px;">博物馆导览助手</span></td>
+                  <td><span class="num-highlight">8</span></td>
+                  <td>2026-07-04 16:45</td>
+                                    <td><span class="badge-status" style="background:#fff7e6;color:#d48806;border:1px solid #ffe58f;">待处理</span></td>
+                  <td><button class="action-btn" onclick="event.stopPropagation();openGroupDetail(2)">查看详情</button> <button class="action-btn" onclick="event.stopPropagation();jumpToKbFromGroup(0)">补充知识库</button></td>
+                </tr>
+                <tr style="cursor:pointer;" onclick="openGroupDetail(3)">
+                  <td>4</td>
+                  <td><div style="font-weight:500;">餐饮推荐</div><div style="font-size:11px;color:#999;margin-top:2px;">好吃的、餐厅、吃饭...</div></td>
+                  <td>XX博物馆</td>
+                  <td>东馆</td>
+                  <td><span style="font-size:13px;">博物馆导览助手</span></td>
+                  <td><span class="num-highlight">4</span></td>
+                  <td>2026-07-07 14:23</td>
+                                    <td><span class="badge-status active">已忽略</span></td>
+                  <td><button class="action-btn" onclick="event.stopPropagation();openGroupDetail(3)">查看详情</button> <span style="color:#999;font-size:12px;">已忽略</span></td>
+                </tr>
+                <tr style="cursor:pointer;" onclick="openGroupDetail(4)">
+                  <td>5</td>
+                  <td><div style="font-weight:500;">跑题问题</div><div style="font-size:11px;color:#999;margin-top:2px;">外卖、天气、股票...</div></td>
+                  <td>XX博物馆</td>
+                  <td>少儿馆</td>
+                  <td><span style="font-size:13px;">博物馆导览助手</span></td>
+                  <td><span class="num-highlight">10</span></td>
+                  <td>2026-07-03 12:10</td>
+                                    <td><span class="badge-status active">已忽略</span></td>
+                  <td><button class="action-btn" onclick="event.stopPropagation();openGroupDetail(4)">查看详情</button> <span style="color:#999;font-size:12px;">AI自动忽略</span></td>
+                </tr>
+                <tr style="cursor:pointer;" onclick="openGroupDetail(5)">
+                  <td>6</td>
+                  <td><div style="font-weight:500;">跑题问题</div><div style="font-size:11px;color:#999;margin-top:2px;">外卖、天气、股票...</div></td>
+                  <td>科技馆</td>
+                  <td>主馆</td>
+                  <td><span style="font-size:13px;">科技馆讲解员</span></td>
+                  <td><span class="num-highlight">6</span></td>
+                  <td>2026-07-02 18:30</td>
+                                    <td><span class="badge-status active">已忽略</span></td>
+                  <td><button class="action-btn" onclick="event.stopPropagation();openGroupDetail(5)">查看详情</button> <span style="color:#999;font-size:12px;">AI自动忽略</span></td>
+                </tr>
+                <tr style="cursor:pointer;" onclick="openGroupDetail(6)">
+                  <td>7</td>
+                  <td><div style="font-weight:500;">带宠物入园</div><div style="font-size:11px;color:#999;margin-top:2px;">带狗、宠物、带猫...</div></td>
+                  <td>科技馆</td>
+                  <td>主馆</td>
+                  <td><span style="font-size:13px;">科技馆讲解员</span></td>
+                  <td><span class="num-highlight">5</span></td>
+                  <td>2026-07-05 09:30</td>
+                                    <td><span class="badge-status active">已处理</span></td>
+                  <td><button class="action-btn" onclick="event.stopPropagation();openGroupDetail(6)">查看详情</button> <span style="color:#999;font-size:12px;">已更新知识库</span></td>
+                </tr>
+              </tbody>
+            </table>
+            <div style="padding:12px 16px;background:#f6f8fa;font-size:12px;color:#999;line-height:1.8;">
+              <b>分组规则：</b>按「问题类别 × 客户」分组，每个分组对应单一客户（不同客户由不同运营人员负责）<br>
+              <b>处理层级：</b>
+              • <b>L1 自动忽略</b>：AI判断明显无关问题，自动标记已忽略，不进入人工队列<br>
+              • <b>L2 AI聚类+人工决策</b>：语义相近问题自动归类，人工对「组」做决策（补充知识库/忽略）<br>
+              • <b>L3 人工处理</b>：AI无法判断的问题进入待处理台账
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== 原始列表（默认隐藏） ====== -->
+        <div id="missListView" data-anno="miss-04">
+        <div class="table-card">
+          <div class="table-toolbar">
+            <button class="toolbar-btn" data-anno="miss-export" onclick="openMissExportModal()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              导出Excel
+            </button>
+            <div class="toolbar-search">
+              <input type="text" placeholder="搜索问题原文关键词">
+              <div class="search-btn" onclick="showToast('搜索完成', 'success')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <table class="miss-table">
+            <thead>
+              <tr>
+                <th style="width:220px;">问题原文</th>
+                <th style="width:100px;">来源客户</th>
+                <th style="width:80px;">来源场馆</th>
+                <th style="width:110px;">智能体</th>
+                <th style="width:130px;">触发时间</th>
+                <th style="width:120px;">所属用户</th>
+                <th style="width:90px;">处理状态</th>
+                <th style="width:160px;">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>附近有什么好吃的推荐</td>
+                <td>XX博物馆</td>
+                <td>东馆</td>
+                <td><span style="font-size:13px;">博物馆导览助手</span></td>
+                <td>2026-07-07 14:23</td>
+                <td><span class="link-btn" onclick="showToast('跳转用户详情：138****6789')">张三 (138****6789)</span></td>
+                <td><span class="badge-status active">已忽略</span></td>
+                <td><button class="action-btn" onclick="jumpToSessionFromMiss(10)">详情</button> <span style="color:#999;font-size:12px;">已忽略</span></td>
+              </tr>
+              <tr>
+                <td>有没有停车场，怎么收费</td>
+                <td>XX博物馆</td>
+                <td>西馆</td>
+                <td><span style="font-size:13px;">博物馆导览助手</span></td>
+                <td>2026-07-06 10:15</td>
+                <td><span class="link-btn" onclick="showToast('跳转用户详情：156****5678')">王五 (156****5678)</span></td>
+                <td><span class="badge-status" style="background:#fff7e6;color:#d48806;border:1px solid #ffe58f;">待处理</span></td>
+                <td><button class="action-btn" onclick="jumpToSessionFromMiss(1)">详情</button> <button class="action-btn" onclick="joinKnowledgeSingle()" data-anno="miss-join-kb">补充知识库</button> <button class="action-btn" onclick="openMergeModal('有没有停车场，怎么收费','XX博物馆','西馆')" data-anno="miss-merge">合并至已有</button> <button class="action-btn" onclick="markMissHandled(this,'已忽略')" data-anno="miss-ignore" style="color:#999;">忽略</button></td>
+              </tr>
+              <tr>
+                <td>可以带宠物进来吗</td>
+                <td>科技馆</td>
+                <td>主馆</td>
+                <td><span style="font-size:13px;">科技馆讲解员</span></td>
+                <td>2026-07-05 09:30</td>
+                <td><span class="link-btn" onclick="showToast('跳转用户详情：186****9012')">赵六 (186****9012)</span></td>
+                <td><span class="badge-status active">已处理</span></td>
+                <td><button class="action-btn" onclick="jumpToSessionFromMiss(6)">详情</button> <span style="color:#666;font-size:12px;">已补充知识库</span></td>
+              </tr>
+              <tr>
+                <td>有没有讲解员服务</td>
+                <td>XX博物馆</td>
+                <td>少儿馆</td>
+                <td><span style="font-size:13px;">博物馆导览助手</span></td>
+                <td>2026-07-04 16:45</td>
+                <td><span class="link-btn" onclick="showToast('跳转用户详情：138****6789')">张三 (138****6789)</span></td>
+                <td><span class="badge-status" style="background:#fff7e6;color:#d48806;border:1px solid #ffe58f;">待处理</span></td>
+                <td><button class="action-btn" onclick="jumpToSessionFromMiss(3)">详情</button> <button class="action-btn" onclick="joinKnowledgeSingle()">补充知识库</button> <button class="action-btn" onclick="openMergeModal('有没有讲解员服务','XX博物馆','少儿馆')">合并至已有</button> <button class="action-btn" onclick="markMissHandled(this,'已忽略')" style="color:#999;">忽略</button></td>
+              </tr>
+              <tr>
+                <td>能不能帮我叫个外卖</td>
+                <td>自然博物馆</td>
+                <td>主馆</td>
+                <td><span style="font-size:13px;">自然百科向导</span></td>
+                <td>2026-07-03 12:10</td>
+                <td><span class="link-btn" onclick="showToast('跳转用户详情：135****7890')">周八 (135****7890)</span></td>
+                                <td><span class="badge-status active">已忽略</span></td>
+                <td><button class="action-btn" onclick="jumpToSessionFromMiss(8)">详情</button> <span style="color:#999;font-size:12px;">已忽略</span></td>
+              </tr>
+              <tr>
+                <td>这个展品是真品还是仿品</td>
+                <td>XX博物馆</td>
+                <td>东馆</td>
+                <td><span style="font-size:13px;">博物馆导览助手</span></td>
+                <td>2026-07-02 11:05</td>
+                <td><span class="link-btn" onclick="showToast('跳转用户详情：139****1234')">李四 (139****1234)</span></td>
+                <td><span class="badge-status" style="background:#fff7e6;color:#d48806;border:1px solid #ffe58f;">待处理</span></td>
+                <td><button class="action-btn" onclick="jumpToSessionFromMiss(7)">详情</button> <button class="action-btn" onclick="joinKnowledgeSingle()">补充知识库</button> <button class="action-btn" onclick="openMergeModal('这个展品是真品还是仿品','XX博物馆','东馆')">合并至已有</button> <button class="action-btn" onclick="markMissHandled(this,'已忽略')" style="color:#999;">忽略</button></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="pagination">
+            <div class="page-info">
+              共 <b>47</b> 条
+              <select class="page-size-select">
+                <option>10条/页</option><option>20条/页</option><option>50条/页</option>
+              </select>
+            </div>
+            <div style="display:flex;align-items:center;">
+              <div class="page-btns">
+                <div class="page-btn disabled">‹</div>
+                <div class="page-btn active">1</div>
+                <div class="page-btn">2</div><div class="page-btn">3</div><div class="page-btn">4</div>
+                <div class="page-btn">5</div>
+                <div class="page-btn">›</div>
+              </div>
+              <div class="page-jump">前往 <input type="text" value="1"> 页</div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div><!-- /pageMissStats -->
+
+<script>
+function openGroupDetail(idx) {
+    const g = groupDetailData[idx];
+    document.getElementById('groupDetailTitle').textContent = g.category + ' · ' + g.customer;
+    document.getElementById('groupDetailCategory').innerHTML = '<b>类别：</b>' + g.category;
+    document.getElementById('groupDetailCustomer').innerHTML = '<b>客户：</b>' + g.customer;
+    document.getElementById('groupDetailVenue').innerHTML = '<b>场馆：</b>' + g.venue;
+    document.getElementById('groupDetailAIType').innerHTML = '<b>AI分类：</b>' + g.aiType;
+    document.getElementById('groupDetailCount').textContent = '共 ' + g.items.length + ' 条问题';
+    const tbody = document.getElementById('groupDetailBody');
+    tbody.innerHTML = g.items.map(item => {
+      const badge = item.status === '待处理'
+        ? '<span class="badge-status" style="background:#fff7e6;color:#d48806;border:1px solid #ffe58f;">待处理</span>'
+        : item.status === '已处理' ? '<span class="badge-status active">已处理</span>' : '<span class="badge-status active">已忽略</span>';
+      const btns = item.status === '待处理'
+        ? '<button class="action-btn" onclick="markSingleHandled(this,\'已处理\')">标记已处理</button> <button class="action-btn" onclick="markSingleHandled(this,\'已忽略\')" style="color:#999;">忽略</button>'
+        : '<span style="color:#999;font-size:12px;">—</span>';
+      return '<tr><td>' + item.q + '</td><td>' + item.user + '</td><td>' + item.time + '</td><td>' + badge + '</td><td>' + btns + '</td></tr>';
+    }).join('');
+    document.getElementById('groupDetailModal').classList.add('show');
+   }
+
+function closeGroupDetail() { document.getElementById('groupDetailModal').classList.remove('show'); }
+
+function openMissExportModal() { document.getElementById('missExportModal').classList.add('show'); }
+
+function closeMissExportModal() { document.getElementById('missExportModal').classList.remove('show'); }
+
+function doMissExport() {
+  const customer = document.getElementById('missExportCustomer').value;
+  const status = document.getElementById('missExportStatus').value;
+  let desc = '正在导出未命中问题';
+  if (customer) desc += `（${customer}）`;
+  if (status) desc += `（${status}）`;
+  closeMissExportModal();
+  showToast(desc + '...', 'success');
+}
+
+function switchMissView(view) {
+  document.getElementById('missGroupView').style.display = view === 'group' ? '' : 'none';
+  document.getElementById('missListView').style.display = view === 'list' ? '' : 'none';
+  document.getElementById('missViewGroup').className = view === 'group' ? 'filter-btn primary' : 'filter-btn';
+  document.getElementById('missViewList').className = view === 'list' ? 'filter-btn primary' : 'filter-btn';
+  document.dispatchEvent(new CustomEvent('tab-changed', { detail: { tab: view } }));
+  }
+
+function markAllGroupHandled(status) {
+    document.querySelectorAll('#groupDetailBody tr').forEach(tr => {
+      const tds = tr.querySelectorAll('td');
+      if (status === '已处理') {
+        tds[3].innerHTML = '<span class="badge-status active">已处理</span>';
+        tds[4].innerHTML = '<span style="color:#999;font-size:12px;">已更新知识库</span>';
+      } else {
+        tds[3].innerHTML = '<span class="badge-status active">已忽略</span>';
+        tds[4].innerHTML = '<span style="color:#999;font-size:12px;">—</span>';
+      }
+    });
+    showToast('已全部标记为' + status, 'success');
+   }
+
+function markGroupHandled(btn, status) {
+  const tr = btn.closest('tr');
+  const tds = tr.querySelectorAll('td');
+  if (status === '已处理') {
+    tds[6].innerHTML = '<span class="badge-status active">已处理</span>';
+    tds[7].innerHTML = '<span class="link-btn" onclick="showToast(\'跳转知识库管理...\')">已更新知识库</span>';
+    showToast('该组问题已标记为已处理，请前往知识库补充内容', 'success');
+  } else {
+    tds[6].innerHTML = '<span class="badge-status active">已忽略</span>';
+    tds[7].innerHTML = '<span style="color:#999;font-size:12px;">—</span>';
+    showToast('该组问题已忽略', 'success');
+  }
+}
+
+function markSingleHandled(btn, status) {
+    const tr = btn.closest('tr');
+    const tds = tr.querySelectorAll('td');
+    if (status === '已处理') {
+      tds[3].innerHTML = '<span class="badge-status active">已处理</span>';
+      tds[4].innerHTML = '<span style="color:#999;font-size:12px;">已更新知识库</span>';
+    } else {
+      tds[3].innerHTML = '<span class="badge-status active">已忽略</span>';
+      tds[4].innerHTML = '<span style="color:#999;font-size:12px;">—</span>';
+    }
+    showToast('已标记为' + status, 'success');
+   }
+
+function markMissHandled(btn, status) {
+  const tr = btn.closest('tr');
+  const tds = tr.querySelectorAll('td');
+  if (status === '已处理') {
+    tds[6].innerHTML = '<span class="badge-status active">已处理</span>';
+    tds[7].innerHTML = '<span style="color:#999;font-size:12px;">已更新知识库</span>';
+    showToast('已标记为已处理', 'success');
+  } else {
+    tds[6].innerHTML = '<span class="badge-status active">已忽略</span>';
+    tds[7].innerHTML = '<span style="color:#999;font-size:12px;">—</span>';
+    showToast('已标记为已忽略', 'success');
+  }
+}
+
+const groupDetailData = [
+    // linkedFaqId: 处理后回填，关联知识库管理中的FAQ条目ID
+    { category: '停车相关', customer: 'XX博物馆', venue: '东馆', aiType: '知识库缺失（可补充）', items: [
+      { q: '有没有停车场，怎么收费', user: '王五 (156****5678)', time: '2026-07-06 10:15', status: '待处理' },
+      { q: '车停在哪里', user: '张三 (138****6789)', time: '2026-07-05 11:30', status: '待处理' },
+      { q: '停车多少钱一小时', user: '李四 (139****1234)', time: '2026-07-04 09:20', status: '待处理' }
+    ]},
+    { category: '停车相关', customer: '科技馆', venue: '主馆', aiType: '知识库缺失（可补充）', items: [
+      { q: '有停车场吗', user: '赵六 (186****9012)', time: '2026-07-06 15:10', status: '待处理' },
+      { q: '停车怎么收费', user: '张三 (138****6789)', time: '2026-07-05 14:20', status: '待处理' }
+    ]},
+    { category: '讲解员服务', customer: 'XX博物馆', venue: '西馆', aiType: '知识库缺失（可补充）', items: [
+      { q: '有没有讲解员服务', user: '张三 (138****6789)', time: '2026-07-04 16:45', status: '待处理' },
+      { q: '可以请人工讲解吗', user: '王五 (156****5678)', time: '2026-07-03 10:30', status: '待处理' }
+    ]},
+    { category: '餐饮推荐', customer: 'XX博物馆', venue: '东馆', aiType: '超出导游职责（忽略）', items: [
+      { q: '附近有什么好吃的推荐', user: '张三 (138****6789)', time: '2026-07-07 14:23', status: '已忽略' },
+      { q: '附近有餐厅吗', user: '王五 (156****5678)', time: '2026-07-06 12:10', status: '已忽略' }
+    ]},
+    { category: '跑题问题', customer: 'XX博物馆', venue: '少儿馆', aiType: '超出导游职责（忽略）', items: [
+      { q: '帮我叫个外卖', user: '周八 (135****7890)', time: '2026-07-03 12:10', status: '已忽略' },
+      { q: '今天天气怎么样', user: '张三 (138****6789)', time: '2026-07-02 10:30', status: '已忽略' }
+    ]},
+    { category: '跑题问题', customer: '科技馆', venue: '主馆', aiType: '超出导游职责（忽略）', items: [
+      { q: '帮我查下公交', user: '赵六 (186****9012)', time: '2026-07-02 18:30', status: '已忽略' }
+    ]},
+    { category: '带宠物入园', customer: '科技馆', venue: '主馆', aiType: '知识库缺失（可补充）', linkedFaqId: 'kb_1028', items: [
+      { q: '可以带宠物进来吗', user: '赵六 (186****9012)', time: '2026-07-05 09:30', status: '已处理' },
+      { q: '可以带狗进去吗', user: '张三 (138****6789)', time: '2026-07-04 10:15', status: '已处理' }
+    ]}
+   ];
+
+let _currentFaqPrefill = null;
+
+function getGroupIdx(btn) {
+  var tr = btn.closest('tr');
+  var allTrs = document.querySelectorAll('#missGroupBody tr');
+  return Array.from(allTrs).indexOf(tr);
+}
+
+function jumpToKbFromGroup(groupIdx) {
+  var g = groupDetailData[groupIdx];
+  _currentFaqPrefill = {
+    customer: g.customer,
+    venue: g.venue,
+    question: g.category,
+    similarQuestions: g.items.map(function(item) { return item.q; }),
+    groupId: 'group_' + groupIdx
+  };
+  sessionStorage.setItem('pendingGroupToFaq', JSON.stringify(_currentFaqPrefill));
+  showToast('正在跳转知识库管理...', 'success');
+  setTimeout(function() {
+    switchPage('知识库管理', document.getElementById('menuKbMgmt'));
+    setTimeout(function() {
+      if (typeof openFaqFormModal === 'function') {
+        openFaqFormModal();
+        prefillFaqFromSession();
+      }
+    }, 300);
+  }, 500);
+}
+
+function prefillFaqFromSession() {
+  var data = sessionStorage.getItem('pendingGroupToFaq');
+  if (!data) return;
+  try {
+    var pref = JSON.parse(data);
+    var elC = document.getElementById('faqFormCustomer');
+    var elV = document.getElementById('faqFormVenue');
+    var elQ = document.getElementById('faqFormQuestion');
+    var elS = document.getElementById('faqFormSimilar');
+    if (elC) elC.value = pref.customer;
+    if (elV) elV.value = pref.venue;
+    if (elQ) elQ.value = pref.question;
+    if (elS) elS.value = pref.similarQuestions.join('\n');
+  } catch(e) {
+    showToast('预填数据加载失败，请手动填写', 'warn');
+  }
+}
+
+function joinKnowledgeSingle() {
+  showToast('正在跳转知识库管理...', 'success');
+  setTimeout(function() {
+    switchPage('知识库管理', document.getElementById('menuKbMgmt'));
+    setTimeout(function() {
+      if (typeof openFaqFormModal === 'function') openFaqFormModal();
+    }, 300);
+  }, 500);
+}
+
+function closeMissModal() { document.getElementById('missModal').classList.remove('show'); }
+
+function openMergeModal(question, customer, venue) {
+  document.getElementById('mergeQuestion').textContent = question;
+  document.getElementById('mergeScope').textContent = customer + ' - ' + venue;
+  document.getElementById('mergeSearchInput').value = '';
+  document.getElementById('mergeSearchResults').innerHTML = '';
+  document.getElementById('mergeModal').classList.add('show');
+}
+
+function closeMergeModal() { document.getElementById('mergeModal').classList.remove('show'); }
+
+function searchMergeTarget() {
+  var keyword = document.getElementById('mergeSearchInput').value.trim().toLowerCase();
+  var results = document.getElementById('mergeSearchResults');
+  if (!keyword) { results.innerHTML = ''; return; }
+  // Simulate search results from kbData
+  var matches = [
+    { q: '博物馆是否提供停车场', similar: '有没有停车场/停车怎么收费...' },
+    { q: '博物馆开放时间', similar: '几点开门/几点闭馆...' },
+    { q: '博物馆门票多少钱', similar: '门票价格/学生票有优惠吗...' }
+  ].filter(function(m) { return m.q.toLowerCase().indexOf(keyword) >= 0 || m.similar.toLowerCase().indexOf(keyword) >= 0; });
+  results.innerHTML = matches.length === 0
+    ? '<div style="color:#999;font-size:12px;padding:8px 0;">未找到匹配的知识条目</div>'
+    : matches.map(function(m, i) {
+        return '<label style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid #f5f5f5;cursor:pointer;"><input type="radio" name="mergeTarget" value="' + i + '" style="margin-top:3px;"><div><div style="font-weight:500;">' + m.q + '</div><div style="font-size:12px;color:#999;">现有相似问法：' + m.similar + '</div></div></label>';
+      }).join('');
+}
+
+function confirmMerge() {
+  var selected = document.querySelector('input[name="mergeTarget"]:checked');
+  if (!selected) { showToast('请选择目标知识条目', 'warn'); return; }
+  closeMergeModal();
+  showToast('已合并至目标知识条目，正在重新向量化...', 'success');
+}
+
+function viewLinkedKb(faqId) {
+  // Find the kb item by id
+  var idx = kbData.findIndex(function(item) { return item.id === faqId; });
+  if (idx >= 0) {
+    openKbDetailModal(idx);
+    switchPage('知识库管理', document.getElementById('menuKbMgmt'));
+  } else {
+    showToast('关联知识已被删除', 'warn');
+  }
+}
+
+
+function jumpToSessionFromMiss(sessionId) {
+  showToast('正在跳转会话记录...', 'success');
+  setTimeout(function() {
+    switchPage('会话记录', document.getElementById('menuSessionLogs'));
+    setTimeout(function() {
+      if (typeof openSessionDetail === 'function') {
+        openSessionDetail(sessionId);
+      }
+    }, 300);
+  }, 500);
+}
+</script>

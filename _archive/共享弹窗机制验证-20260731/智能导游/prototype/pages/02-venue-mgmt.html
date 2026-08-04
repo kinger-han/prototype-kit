@@ -1,0 +1,255 @@
+<!-- PAGE_META: {"id": "venue-mgmt", "title": "场馆管理"} -->
+
+<!-- ====== 页面：场馆管理 ====== -->
+      <div class="page" id="pageVenueMgmt">
+
+        <!-- Tab切换 -->
+        <div style="display:flex;gap:0;border-bottom:1px solid #e8e8e8;margin-bottom:0;align-items:center;">
+          <div id="tabVenueList" class="venue-tab active" onclick="switchVenueTab('list')">场馆列表</div>
+          <div id="tabPubKb" class="venue-tab" onclick="switchVenueTab('pubkb')">公共知识库配置</div>
+        </div>
+
+        <!-- 场馆列表Tab内容 -->
+        <div id="venueTabList">
+        <!-- 筛选栏 -->
+        <div class="filter-bar" data-anno="venue-02">
+          <div class="filter-item">
+            <span class="filter-label">所属客户：</span>
+            <select class="filter-select" id="venueFilterCustomer" onchange="onVenueFilterCustomerChange()">
+              <option value="">全部客户</option>
+              <option>XX博物馆</option>
+              <option>科技馆</option>
+              <option>自然博物馆</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <span class="filter-label">场馆名称：</span>
+            <select class="filter-select" id="venueFilterVenue" style="min-width:140px;">
+              <option value="">全部场馆</option>
+            </select>
+          </div>
+
+          <div class="filter-item">
+            <span class="filter-label">场馆状态：</span>
+            <select class="filter-select" style="min-width:100px;">
+              <option value="">全部</option>
+              <option>启用</option>
+              <option>停用</option>
+            </select>
+          </div>
+          <button class="filter-btn primary" onclick="showToast('查询完成', 'success')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            查询
+          </button>
+          <button class="filter-btn" onclick="resetVenueFilter()">重置</button>
+        </div>
+
+        <!-- 数据表格 -->
+        <div class="table-card" data-anno="venue-03">
+          <div class="table-toolbar">
+            <button class="toolbar-btn" id="btnAddVenue" data-anno="venue-01" onclick="openAddVenueModal()" style="background:#E6EFFD;color:#0B5DEA;border:1px solid #b3c8f7;" onmouseover="this.style.background='#095CEA';this.style.color='#fff';this.style.borderColor='#095CEA'" onmouseout="this.style.background='#E6EFFD';this.style.color='#0B5DEA';this.style.borderColor='#b3c8f7'">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              新增场馆
+            </button>
+            <div style="flex:1;"></div>
+            <button class="toolbar-btn" data-anno="venue-04" onclick="openVenueExportModal()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              导出
+            </button>
+          </div>
+          <table id="venueTable">
+            <thead>
+              <tr>
+                <th style="width:110px;">所属客户</th>
+                <th style="width:130px;">场馆名称</th>
+                <th style="width:80px;">二维码</th>
+                <th style="width:80px;">扫码次数</th>
+                <th style="width:120px;">智能体</th>
+                <th style="width:100px;">知识库</th>
+                <th style="width:80px;">状态</th>
+                <th style="width:130px;">创建时间</th>
+                <th style="width:180px;" data-anno="venue-05">操作</th>
+              </tr>
+            </thead>
+            <tbody id="venueTableBody">
+            </tbody>
+          </table>
+          <div class="pagination">
+            <div class="page-info">
+              共 <b id="venueTotalCount">0</b> 条
+              <select class="page-size-select">
+                <option>10条/页</option><option>20条/页</option><option>50条/页</option>
+              </select>
+            </div>
+            <div style="display:flex;align-items:center;">
+              <div class="page-btns">
+                <div class="page-btn disabled">‹</div>
+                <div class="page-btn active">1</div>
+                <div class="page-btn">›</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div><!-- /venueTabList -->
+
+        <!-- 公共知识库配置Tab内容 -->
+        <div id="venueTabPubKb" style="display:none;">
+          <div class="table-card" data-anno="venue-06">
+            <div class="table-toolbar">
+              <button class="toolbar-btn" data-anno="venue-07" onclick="openAddPubKbModal()" style="background:#E6EFFD;color:#0B5DEA;border:1px solid #b3c8f7;" onmouseover="this.style.background='#095CEA';this.style.color='#fff';this.style.borderColor='#095CEA'" onmouseout="this.style.background='#E6EFFD';this.style.color='#0B5DEA';this.style.borderColor='#b3c8f7'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                新增配置
+              </button>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:80px;">客户ID</th>
+                  <th style="width:120px;">客户名称</th>
+                  <th style="width:180px;">公共知识库ID</th>
+                  <th style="width:160px;">知识库API Key</th>
+                  <th style="width:140px;">更新时间</th>
+                  <th style="width:180px;">操作</th>
+                </tr>
+              </thead>
+              <tbody id="pubKbTableBody">
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      
+<!-- ====== 公共知识库配置弹窗 ====== -->
+<div class="modal-overlay" id="pubKbFormModal" data-anno="venue-pubkb">
+  <div class="modal" style="width:520px;">
+    <div class="modal-header">
+      <h3 id="pubKbFormTitle">新增公共知识库配置</h3>
+      <button class="modal-close" onclick="closePubKbFormModal()">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="venue-form">
+        <div class="form-row">
+          <span class="form-label">客户ID：<span style="color:#f5222d;">*</span></span>
+          <select class="form-control" id="pubKbFormCustomerId" onchange="onPubKbCustomerChange()">
+            <option value="">请选择客户</option>
+            <option value="C001">C001</option>
+            <option value="C002">C002</option>
+            <option value="C003">C003</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <span class="form-label">客户名称：</span>
+          <input type="text" class="form-control" id="pubKbFormCustomerName" readonly style="background:#f5f5f5;">
+        </div>
+        <div class="form-row">
+          <span class="form-label">公共知识库ID：<span style="color:#f5222d;">*</span></span>
+          <input type="text" class="form-control" id="pubKbFormKbId" placeholder="对应Dify的Dataset ID">
+        </div>
+        <div class="form-row">
+          <span class="form-label">知识库API Key：</span>
+          <input type="text" class="form-control" id="pubKbFormApiKey" placeholder="写入时用的密钥">
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid #f0f0f0;">
+        <button class="confirm-btn" onclick="closePubKbFormModal()">取消</button>
+        <button class="confirm-btn export-btn-confirm" onclick="savePubKb()">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /pageVenueMgmt -->
+
+<script>
+const venueData = [
+  { id: 'V001', customer: 'XX博物馆', name: '东馆', logo: '🏛️', status: 'active', qrStatus: '已生成', scanCount: 1280, agent: '博物馆导览助手', knowledgeBase: '博物馆FAQ知识库', remark: '主入口场馆', createTime: '2026-01-15 10:00' },
+  { id: 'V002', customer: 'XX博物馆', name: '西馆', logo: '🏛️', status: 'active', qrStatus: '已生成', scanCount: 860, agent: '博物馆导览助手', knowledgeBase: '博物馆FAQ知识库', remark: '特展厅', createTime: '2026-01-15 10:05' },
+  { id: 'V003', customer: 'XX博物馆', name: '少儿馆', logo: '🏛️', status: 'active', qrStatus: '已生成', scanCount: 0, agent: '博物馆导览助手', knowledgeBase: '博物馆FAQ知识库', remark: '儿童教育区', createTime: '2026-02-20 14:00' },
+  { id: 'V004', customer: '科技馆', name: '主馆', logo: '🔬', status: 'active', qrStatus: '已生成', scanCount: 2100, agent: '科技馆讲解员', knowledgeBase: '科技馆导览知识库', remark: '科技馆唯一场馆', createTime: '2026-01-20 09:00' },
+  { id: 'V005', customer: '自然博物馆', name: '主馆', logo: '🌿', status: 'active', qrStatus: '已生成', scanCount: 0, agent: '自然百科向导', knowledgeBase: '自然百科知识库', remark: '自然博物馆唯一场馆', createTime: '2026-03-01 11:00' }
+];
+const customerVenues = { 'XX博物馆': ['东馆', '西馆', '少儿馆'], '科技馆': ['主馆'], '自然博物馆': ['主馆'] };
+let deleteVenueIdx = -1, currentEditVenueIdx = -1, _toggleVenueIdx = -1;
+
+function renderVenueTable(data) {
+  const list = data || venueData;
+  const tbody = document.getElementById('venueTableBody');
+  tbody.innerHTML = list.map((v, i) => {
+    const statusBadge = v.status === 'active' ? '<span class="badge-status active">启用</span>' : '<span class="badge-status disabled">停用</span>';
+    const realIdx = venueData.indexOf(v);
+    return '<tr><td>' + v.customer + '</td><td>' + v.name + '</td><td>' + (v.qrStatus === '已生成' ? '<div class="qr-thumb" onclick="previewVenueQr(' + realIdx + ')"><div class="qr-pattern"></div><div class="qr-center" style="font-size:5px;">' + v.logo + '</div></div>' : '<span style="color:#999;font-size:12px;">未生成</span>') + '</td><td><span class="num-highlight">' + v.scanCount + '</span></td><td>' + v.agent + '</td><td>' + (v.knowledgeBase || '<span style="color:#999;">未配置</span>') + '</td><td>' + statusBadge + '</td><td>' + v.createTime + '</td><td><button class="action-btn" onclick="openVenueDetail(' + realIdx + ')">详情</button> <button class="action-btn" onclick="openEditVenueModal(' + realIdx + ')">编辑</button> <button class="action-btn' + (v.status === 'disabled' ? '' : ' danger') + '" onclick="toggleVenueStatus(' + realIdx + ')">' + (v.status === 'disabled' ? '启用' : '停用') + '</button> <button class="action-btn danger" onclick="confirmDeleteVenue(' + realIdx + ')">删除</button></td></tr>';
+  }).join('');
+  document.getElementById('venueTotalCount').textContent = list.length;
+}
+
+function openVenueDetail(idx) {
+  const v = venueData[idx];
+  document.getElementById('venueDetailTitle').textContent = v.customer + ' · ' + v.name;
+  document.getElementById('venueInfoGrid').innerHTML = '<div class="info-item"><div class="info-label">所属客户</div><div class="info-value">' + v.customer + '</div></div><div class="info-item"><div class="info-label">场馆名称</div><div class="info-value">' + v.name + '</div></div><div class="info-item"><div class="info-label">场馆状态</div><div class="info-value"><span class="badge-status ' + (v.status === 'active' ? 'active' : 'disabled') + '>' + (v.status === 'active' ? '启用' : '停用') + '</span></div></div><div class="info-item"><div class="info-label">智能体</div><div class="info-value">' + v.agent + '</div></div><div class="info-item"><div class="info-label">知识库</div><div class="info-value">' + (v.knowledgeBase || '<span style="color:#999;">未配置</span>') + '</div></div><div class="info-item"><div class="info-label">创建时间</div><div class="info-value">' + v.createTime + '</div></div><div class="info-item"><div class="info-label">备注</div><div class="info-value">' + (v.remark || '—') + '</div></div>';
+  document.getElementById('venueDetailQrThumb').innerHTML = '<div class="qr-pattern" style="width:100px;height:100px;"></div><div class="qr-center" style="width:28px;height:28px;font-size:12px;">' + v.logo + '</div>';
+  document.getElementById('venueDetailScanCount').textContent = v.scanCount;
+  document.getElementById('venueDetailLastScan').textContent = v.scanCount > 0 ? '2026-07-08 14:30' : '—';
+  document.getElementById('venueDetailModal').classList.add('show');
+}
+function closeVenueDetail() { document.getElementById('venueDetailModal').classList.remove('show'); }
+function openAddVenueModal() { document.getElementById('addVenueCustomer').value = ''; document.getElementById('addVenueName').value = ''; document.getElementById('addVenueStatus').value = 'active'; document.getElementById('addVenueRemark').value = ''; document.getElementById('addVenueModal').classList.add('show'); }
+function closeAddVenueModal() { document.getElementById('addVenueModal').classList.remove('show'); }
+function saveVenue() {
+  const customer = document.getElementById('addVenueCustomer').value, name = document.getElementById('addVenueName').value.trim(), status = document.getElementById('addVenueStatus').value, remark = document.getElementById('addVenueRemark').value.trim();
+  if (!customer) { showToast('请选择所属客户', 'warn'); return; }
+  if (!name) { showToast('请输入场馆名称', 'warn'); return; }
+  const logoMap = { 'XX博物馆': '🏛️', '科技馆': '🔬', '自然博物馆': '🌿' };
+  venueData.push({ id: 'V' + String(venueData.length + 1).padStart(3, '0'), customer: customer, name: name, logo: logoMap[customer] || '📍', status: status, qrStatus: '已生成', scanCount: 0, agent: '博物馆导览助手', remark: remark, knowledgeBase: '未配置', createTime: new Date().toLocaleString('zh-CN', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(/\\//g, '-') });
+  closeAddVenueModal(); renderVenueTable(); showToast('场馆「' + name + '」创建成功', 'success');
+}
+function openEditVenueModal(idx) { currentEditVenueIdx = idx; const v = venueData[idx]; document.getElementById('editVenueCustomer').value = v.customer; document.getElementById('editVenueName').value = v.name; document.getElementById('editVenueStatus').value = v.status; document.getElementById('editVenueRemark').value = v.remark || ''; document.getElementById('editVenueAgent').value = v.agent || ''; document.getElementById('editVenueKnowledgeBase').value = v.knowledgeBase || ''; document.getElementById('editVenueQrThumb').innerHTML = '<div class="qr-pattern" style="width:60px;height:60px;"></div><div class="qr-center" style="width:18px;height:18px;font-size:8px;">' + v.logo + '</div>'; document.getElementById('editVenueScanCount').textContent = v.scanCount; document.getElementById('editVenueLastScan').textContent = v.scanCount > 0 ? '2026-07-08 14:30' : '—'; document.getElementById('editVenueModal').classList.add('show'); }
+function closeEditVenueModal() { document.getElementById('editVenueModal').classList.remove('show'); }
+function saveEditVenue() { const v = venueData[currentEditVenueIdx]; v.customer = document.getElementById('editVenueCustomer').value; v.name = document.getElementById('editVenueName').value.trim(); v.status = document.getElementById('editVenueStatus').value; v.remark = document.getElementById('editVenueRemark').value.trim(); v.agent = document.getElementById('editVenueAgent').value; v.knowledgeBase = document.getElementById('editVenueKnowledgeBase').value; closeEditVenueModal(); renderVenueTable(); showToast('场馆信息已更新', 'success'); }
+function previewVenueQr(idx) { const v = venueData[idx]; document.getElementById('qrcodePreviewTitle').textContent = v.customer + ' · ' + v.name + ' · 二维码预览'; document.getElementById('qrcodePreviewName').textContent = v.customer + ' · ' + v.name; document.getElementById('qrcodePreviewIcon').textContent = v.logo; document.getElementById('qrcodePreviewModal').classList.add('show'); }
+function closeQrcodePreview() { document.getElementById('qrcodePreviewModal').classList.remove('show'); }
+function doDownloadQrcode() { closeQrcodePreview(); showToast('正在生成二维码...', 'success'); setTimeout(function() { showToast('二维码已下载（演示）', 'success'); }, 1000); }
+function doDeleteVenue() { const v = venueData[deleteVenueIdx]; venueData.splice(deleteVenueIdx, 1); closeDeleteVenueConfirm(); renderVenueTable(); showToast('场馆「' + v.name + '」已删除', 'success'); }
+function closeDeleteVenueConfirm() { document.getElementById('deleteVenueConfirm').classList.remove('show'); }
+function confirmDeleteVenue(idx) { deleteVenueIdx = idx; const v = venueData[idx]; document.getElementById('deleteVenueDesc').innerHTML = '确认删除 <b>' + v.customer + ' · ' + v.name + '</b>？<br><br>删除后该场馆的二维码将立即失效，历史会话数据将保留。此操作不可恢复。'; document.getElementById('deleteVenueConfirm').classList.add('show'); }
+function toggleVenueStatus(idx) { const v = venueData[idx]; if (v.status === 'active') { _toggleVenueIdx = idx; document.getElementById('disableVenueDesc').textContent = '确认停用「' + v.customer + ' / ' + v.name + '」？停用后二维码将无法扫码进入AI导游。'; document.getElementById('disableVenueConfirm').classList.add('show'); } else { v.status = 'active'; showToast(v.customer + ' · ' + v.name + ' 已启用', 'success'); renderVenueTable(); } }
+function resetVenueFilter() { document.getElementById('venueFilterCustomer').value = ''; document.getElementById('venueFilterVenue').innerHTML = '<option value="">全部场馆</option>'; renderVenueTable(); showToast('已重置筛选'); }
+function onVenueFilterCustomerChange() { const customer = document.getElementById('venueFilterCustomer').value; const venueSelect = document.getElementById('venueFilterVenue'); venueSelect.innerHTML = '<option value="">全部场馆</option>'; if (customer && customerVenues[customer]) { customerVenues[customer].forEach(function(name) { venueSelect.innerHTML += '<option>' + name + '</option>'; }); } const filtered = customer ? venueData.filter(v => v.customer === customer) : venueData; renderVenueTable(filtered); }
+function closeDisableVenueConfirm() { document.getElementById('disableVenueConfirm').classList.remove('show'); }
+function confirmEnableVenue(idx) { venueData[idx].status = '启用'; showToast('已启用「' + venueData[idx].name + '」', 'success'); location.reload(); }
+function doDisableVenue() { const v = venueData[_toggleVenueIdx]; v.status = 'disabled'; closeDisableVenueConfirm(); showToast(v.customer + ' · ' + v.name + ' 已停用', 'success'); renderVenueTable(); }
+function openVenueExportModal() { document.getElementById('venueExportModal').classList.add('show'); }
+function closeVenueExportModal() { document.getElementById('venueExportModal').classList.remove('show'); }
+function doVenueExport() { const customer = document.getElementById('venueExportCustomer').value; let desc = '正在导出场馆数据'; if (customer) desc += '（' + customer + '）'; closeVenueExportModal(); showToast(desc + '...', 'success'); }
+
+function init_venue_mgmt() { renderVenueTable(); }
+
+// ---- 场馆管理Tab切换 ----
+const pubKbData = [
+  { id: 'C001', name: 'XX博物馆', kbId: 'dataset_xx_museum_public', apiKey: 'sk-xx...7f', updateTime: '2026-07-10 14:30' },
+  { id: 'C002', name: '科技馆', kbId: 'dataset_tech_museum_public', apiKey: 'sk-xx...9a', updateTime: '2026-07-08 11:00' },
+  { id: 'C003', name: '自然博物馆', kbId: 'dataset_nature_museum_public', apiKey: 'sk-xx...2d', updateTime: '2026-07-05 16:45' }
+];
+function renderPubKbTable() {
+  var tbody = document.getElementById('pubKbTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = pubKbData.map(function(item, i) {
+    return '<tr><td>' + item.id + '</td><td style="font-weight:500;">' + item.name + '</td><td><code style="font-size:12px;background:#f5f5f5;padding:2px 6px;border-radius:3px;">' + item.kbId + '</code></td><td><span style="font-family:monospace;">' + (item.apiKey || '<span style="color:#999;">未配置</span>') + '</span></td><td style="font-size:12px;color:#666;">' + item.updateTime + '</td><td><button class="action-btn" onclick="editPubKb(' + i + ')" data-anno="venue-08">编辑</button> <button class="action-btn" onclick="testPubKbConn(' + i + ')" data-anno="venue-08">测试连接</button> <button class="action-btn danger" onclick="deletePubKb(' + i + ')" data-anno="venue-08">删除</button></td></tr>';
+  }).join('');
+}
+function switchVenueTab(tab) {
+  document.getElementById('venueTabList').style.display = tab === 'list' ? '' : 'none';
+  document.getElementById('venueTabPubKb').style.display = tab === 'pubkb' ? '' : 'none';
+  document.getElementById('tabVenueList').className = 'venue-tab' + (tab === 'list' ? ' active' : '');
+  document.getElementById('tabPubKb').className = 'venue-tab' + (tab === 'pubkb' ? ' active' : '');
+  document.getElementById('btnAddVenue').style.display = tab === 'list' ? '' : 'none';
+  if (tab === 'pubkb') renderPubKbTable();
+  document.dispatchEvent(new CustomEvent('tab-changed', { detail: { tab: tab } }));
+}
+function openAddPubKbModal() { document.getElementById('pubKbFormTitle').textContent = '新增公共知识库配置'; document.getElementById('pubKbFormCustomerId').value = ''; document.getElementById('pubKbFormCustomerName').value = ''; document.getElementById('pubKbFormKbId').value = ''; document.getElementById('pubKbFormApiKey').value = ''; document.getElementById('pubKbFormModal').classList.add('show'); }
+function editPubKb(idx) { var item = pubKbData[idx]; document.getElementById('pubKbFormTitle').textContent = '编辑公共知识库配置'; document.getElementById('pubKbFormCustomerId').value = item.id; document.getElementById('pubKbFormCustomerName').value = item.name; document.getElementById('pubKbFormKbId').value = item.kbId; document.getElementById('pubKbFormApiKey').value = item.apiKey; document.getElementById('pubKbFormModal').classList.add('show'); }
+function closePubKbFormModal() { document.getElementById('pubKbFormModal').classList.remove('show'); }
+function savePubKb() { var kid = document.getElementById('pubKbFormKbId').value.trim(); if (!kid) { showToast('请输入公共知识库ID', 'warn'); return; } closePubKbFormModal(); showToast('保存成功', 'success'); renderPubKbTable(); }
+function onPubKbCustomerChange() { var sel = document.getElementById('pubKbFormCustomerId'); var nameEl = document.getElementById('pubKbFormCustomerName'); var names = {'C001': 'XX博物馆', 'C002': '科技馆', 'C003': '自然博物馆'}; nameEl.value = names[sel.value] || ''; }
+function testPubKbConn(idx) { showToast('测试连接中...', 'success'); setTimeout(function() { showToast('连接成功 ✅', 'success'); }, 1500); }
+function deletePubKb(idx) { if (confirm('确认删除 ' + pubKbData[idx].name + ' 的公共知识库配置？')) { pubKbData.splice(idx, 1); renderPubKbTable(); showToast('已删除', 'success'); } }
+</script>

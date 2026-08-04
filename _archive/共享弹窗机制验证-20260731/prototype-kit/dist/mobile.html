@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>移动端原型 - 评审视图</title>
+  <style>
+/* ============================
+   base.css - 全局公共样式
+   ============================ */
+
+/* Reset */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 14px; color: #333; background: #f0f2f5;
+  line-height: 1.5; -webkit-font-smoothing: antialiased;
+}
+.page { display: none; height: 100%; }
+.page.active { display: block; }
+
+/* ---- PC端布局 ---- */
+.pc-layout { display: flex; height: 100vh; overflow: hidden; }
+.pc-sider {
+  width: 200px; background: #fff; border-right: 1px solid #f0f0f0;
+  flex-shrink: 0; display: flex; flex-direction: column; overflow-y: auto;
+}
+.pc-logo {
+  height: 60px; display: flex; align-items: center; padding: 0 24px;
+  font-size: 18px; font-weight: 700; color: #000;
+  border-bottom: 1px solid #f0f0f0; flex-shrink: 0;
+}
+.pc-logo-icon {
+  width: 28px; height: 28px; background: #1890ff; border-radius: 6px;
+  margin-right: 10px; display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 14px; font-weight: 700;
+}
+.pc-menu { flex: 1; padding: 8px 0; }
+.pc-menu-group { padding: 8px 24px 4px; font-size: 12px; color: #999; }
+.pc-menu-item {
+  display: flex; align-items: center; height: 44px; padding: 0 24px;
+  cursor: pointer; transition: all 0.15s; text-decoration: none;
+  color: #333; font-size: 14px;
+}
+.pc-menu-item:hover { background: #f5f7fa; }
+.pc-menu-item.active { background: #e6f7ff; color: #1890ff; border-right: 3px solid #1890ff; }
+.pc-menu-icon { width: 20px; margin-right: 12px; text-align: center; font-size: 16px; }
+
+.pc-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.pc-header {
+  height: 48px; background: #fff; border-bottom: 1px solid #f0f0f0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; flex-shrink: 0;
+}
+.pc-breadcrumb { font-size: 14px; color: #999; }
+.pc-breadcrumb a { color: #1890ff; text-decoration: none; }
+.pc-breadcrumb .sep { margin: 0 6px; color: #ccc; }
+.pc-breadcrumb .current { color: #333; }
+.pc-header-right { display: flex; align-items: center; gap: 12px; }
+.pc-user-name { font-size: 14px; color: #666; }
+.pc-user-avatar {
+  width: 32px; height: 32px; border-radius: 50%; background: #e6f7ff;
+  display: flex; align-items: center; justify-content: center; font-size: 14px; color: #1890ff;
+}
+.pc-content { flex: 1; padding: 24px; overflow-y: auto; background: #f0f2f5; }
+
+/* ---- 标注角标 ---- */
+.anno-badge {
+  position: absolute; top: -8px; right: -8px;
+  background: #ff4d4f; color: #fff; font-size: 10px;
+  min-width: 18px; height: 18px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 4px; cursor: pointer; z-index: 10;
+  font-weight: 600; line-height: 1;
+}
+.anno-badge:hover { background: #cf1322; }
+[data-anno-id] { position: relative; }
+
+/* ---- 通用组件 ---- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 6px; padding: 0 16px; height: 32px; border-radius: 4px;
+  border: 1px solid #d9d9d9; font-size: 14px; cursor: pointer;
+  transition: all 0.15s; text-decoration: none; white-space: nowrap;
+}
+.btn-primary { background: #1890ff; color: #fff; border-color: #1890ff; }
+.btn-primary:hover { background: #40a9ff; border-color: #40a9ff; }
+.btn-default { background: #fff; color: #333; }
+.btn-default:hover { border-color: #1890ff; color: #1890ff; }
+.btn-link { background: none; border: none; color: #1890ff; padding: 0 4px; height: auto; font-size: 14px; cursor: pointer; }
+.btn-link.danger { color: #f5222d; }
+.btn-link.success { color: #52c41a; }
+.btn-sm { height: 28px; padding: 0 12px; font-size: 13px; }
+
+.table-wrap { background: #fff; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); overflow: hidden; }
+.table { width: 100%; border-collapse: collapse; }
+.table th, .table td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+.table th { background: #fafafa; font-weight: 600; color: #333; }
+.table tbody tr:hover { background: #f5f7fa; }
+
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+.tag-blue   { background: #e6f7ff; color: #1890ff; border: 1px solid #91d5ff; }
+.tag-green  { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
+.tag-red    { background: #fff2f0; color: #f5222d; border: 1px solid #ffa39e; }
+
+.filter-bar {
+  background: #fff; border-radius: 4px; padding: 20px 24px;
+  display: flex; align-items: center; gap: 24px; margin-bottom: 16px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.filter-item { display: flex; align-items: center; gap: 8px; }
+.filter-label { font-size: 14px; color: #666; white-space: nowrap; }
+.filter-select {
+  height: 32px; padding: 0 12px; border: 1px solid #d9d9d9;
+  border-radius: 4px; font-size: 14px; color: #333; background: #fff; min-width: 120px;
+}
+.filter-date { height: 32px; padding: 0 12px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px; width: 150px; }
+
+.toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.toolbar-left, .toolbar-right { display: flex; align-items: center; gap: 12px; }
+.search-box { display: flex; }
+.search-input {
+  height: 32px; padding: 0 12px; border: 1px solid #d9d9d9;
+  border-radius: 4px 0 0 4px; font-size: 14px; width: 250px; outline: none;
+}
+.search-input:focus { border-color: #1890ff; }
+
+.page-header { margin-bottom: 16px; }
+.page-title { font-size: 18px; font-weight: 700; color: #333; }
+.page-desc { font-size: 14px; color: #999; margin-top: 4px; }
+
+.pagination {
+  display: flex; align-items: center; justify-content: flex-end;
+  padding: 16px 0; gap: 8px; font-size: 14px; color: #666;
+}
+.pagination .page-btn {
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  border: 1px solid #d9d9d9; border-radius: 4px; background: #fff; cursor: pointer;
+}
+.pagination .page-btn.active { background: #1890ff; color: #fff; border-color: #1890ff; }
+
+.form-item { margin-bottom: 16px; }
+.form-label { display: block; margin-bottom: 6px; font-size: 14px; color: #333; font-weight: 500; }
+.input {
+  width: 100%; height: 36px; padding: 0 12px; border: 1px solid #d9d9d9;
+  border-radius: 4px; font-size: 14px; outline: none;
+}
+.input:focus { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.1); }
+
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+  display: flex; align-items: center; justify-content: center; z-index: 1000;
+}
+.modal {
+  background: #fff; border-radius: 8px; padding: 24px;
+  min-width: 420px; max-width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+}
+.modal-title { font-size: 16px; font-weight: 600; margin-bottom: 20px; color: #333; }
+.modal-footer {
+  display: flex; justify-content: flex-end; gap: 8px;
+  margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;
+}
+
+.toast {
+  position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
+  background: #333; color: #fff; padding: 8px 20px; border-radius: 6px;
+  font-size: 13px; z-index: 9999; transition: opacity 0.3s;
+}
+
+/* ---- 移动端通用 ---- */
+.m-header {
+  height: 44px; display: flex; align-items: center; justify-content: center;
+  font-size: 17px; font-weight: 600; color: #000;
+  position: sticky; top: 0; z-index: 100; background: #fff;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: #d9d9d9; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #bbb; }
+
+  </style>
+  <style>
+
+  </style>
+  <style>
+    /* 移动端专用样式 */
+    body { background: #f0f1f5; }
+    .review-shell { display: flex; height: 100vh; overflow: hidden; }
+    .review-phone-area {
+      width: 440px; flex-shrink: 0; display: flex;
+      align-items: flex-start; justify-content: center;
+      padding: 24px 20px; overflow-y: auto;
+    }
+    .mobile-shell {
+      width: 375px; min-height: 720px; background: #000;
+      border-radius: 44px; padding: 12px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.18), inset 0 0 0 2px #333;
+      position: relative;
+    }
+    .mobile-screen {
+      background: #fff; border-radius: 32px; overflow: hidden;
+      min-height: 696px; display: flex; flex-direction: column;
+    }
+    .dynamic-island {
+      position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+      width: 100px; height: 28px; background: #000; border-radius: 20px; z-index: 9999;
+    }
+    .status-bar {
+      height: 48px; display: flex; align-items: flex-end;
+      justify-content: space-between; padding: 0 24px 6px;
+      font-size: 14px; font-weight: 600; color: #000; flex-shrink: 0;
+    }
+    .status-bar-left { font-size: 15px; font-weight: 600; z-index: 1; }
+    .status-bar-right {
+      display: flex; align-items: center; gap: 6px; z-index: 1;
+    }
+    .app-root { flex: 1; overflow-y: auto; overflow-x: hidden; }
+    .tab-bar {
+      height: 50px; border-top: 1px solid #f0f0f0; display: flex;
+      background: #fff; flex-shrink: 0;
+    }
+    .tab-bar-item {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; font-size: 10px; color: #999;
+      cursor: pointer; text-decoration: none;
+    }
+    .tab-bar-item.active { color: #8b6914; }
+    .tab-bar-item .tab-icon { font-size: 20px; margin-bottom: 2px; }
+    .safe-bottom { height: 20px; background: #fff; flex-shrink: 0; }
+
+    /* 页码导航 */
+    .page-nav {
+      display: flex; gap: 8px; margin-top: 16px;
+      flex-wrap: wrap; justify-content: center;
+    }
+    .page-nav-btn {
+      padding: 6px 14px; border-radius: 6px; border: 1px solid #d9d9d9;
+      background: #fff; font-size: 12px; cursor: pointer;
+      transition: all 0.15s; color: #666;
+    }
+    .page-nav-btn:hover { border-color: #8b6914; color: #8b6914; }
+    .page-nav-btn.active {
+      background: #8b6914; color: #fff; border-color: #8b6914;
+    }
+
+    /* 右侧文档区 */
+    .review-doc-area {
+      flex: 1; overflow-y: auto; padding: 28px 36px; background: #fff;
+      border-left: 1px solid #eee; display: flex; flex-direction: column;
+    }
+    .doc-toolbar {
+      display: flex; gap: 8px; margin-bottom: 16px;
+      padding-bottom: 12px; border-bottom: 1px solid #f0f0f0;
+    }
+    .doc-title {
+      font-size: 20px; font-weight: 700; color: #1a1a1a;
+      margin-bottom: 6px; display: flex; align-items: center; gap: 10px;
+    }
+    .doc-title-icon {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, #a855f7, #3b82f6, #22c55e);
+      border-radius: 6px; display: flex; align-items: center;
+      justify-content: center; color: #fff; font-size: 14px; font-weight: 700;
+    }
+    .doc-subtitle {
+      font-size: 13px; color: #999; margin-bottom: 20px;
+      padding-bottom: 16px; border-bottom: 1px solid #f0f0f0;
+    }
+    .doc-panel {
+      flex: 1; overflow-y: auto;
+    }
+    .doc-panel:focus { outline: 2px solid #8b6914; outline-offset: 2px; border-radius: 4px; }
+
+    /* 文档卡片 */
+    .doc-card {
+      background: #fafbfc; border: 1px solid #f0f0f0;
+      border-radius: 10px; padding: 20px 24px; margin-bottom: 16px;
+      transition: all 0.25s;
+    }
+    .doc-card.highlight {
+      border-color: #3b82f6; background: #f0f7ff;
+      box-shadow: 0 2px 12px rgba(59,130,246,0.1);
+    }
+    .doc-card-title {
+      font-size: 15px; font-weight: 600; color: #333;
+      margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+    }
+    .page-tag {
+      display: inline-block; padding: 2px 8px; border-radius: 4px;
+      font-size: 11px; font-weight: 500; background: #e6f7ff; color: #1890ff;
+    }
+    .doc-card.highlight .page-tag { background: #1890ff; color: #fff; }
+
+    .doc-steps { list-style: none; padding: 0; margin: 0 0 16px 0; }
+    .doc-steps li {
+      padding: 6px 0; font-size: 14px; color: #555; line-height: 1.6;
+      display: flex; gap: 8px;
+    }
+    .doc-steps li .step-num { color: #3b82f6; font-weight: 600; flex-shrink: 0; }
+
+    .doc-feature { padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+    .doc-feature:last-child { border-bottom: none; }
+    .doc-feature-name { font-size: 14px; font-weight: 500; color: #333; margin-bottom: 4px; }
+    .doc-feature-desc { font-size: 13px; color: #666; line-height: 1.6; }
+    .doc-api {
+      font-size: 12px; color: #999; font-family: monospace;
+      background: #f5f5f5; padding: 2px 8px; border-radius: 3px; margin-top: 4px;
+      display: inline-block;
+    }
+    .doc-feature-tag {
+      display: inline-block; padding: 1px 6px; border-radius: 3px;
+      font-size: 11px; margin-right: 6px;
+    }
+    .doc-feature-tag.logic { background: #fff7e6; color: #d48806; }
+    .doc-feature-tag.ui    { background: #e6f7ff; color: #1890ff; }
+    .doc-feature-tag.data  { background: #f6ffed; color: #52c41a; }
+  </style>
+</head>
+<body>
+  <div class="review-shell">
+    <!-- 左侧：手机原型 -->
+    <div class="review-phone-area">
+      <div>
+        <div class="mobile-shell">
+          <div class="dynamic-island"></div>
+          <div class="status-bar">
+            <span class="status-bar-left">9:41</span>
+            <span class="status-bar-right">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M1 11l3-3 3 3M5 8l3-3 3 3M9 5l3-3 3 3" stroke="currentColor" stroke-width="1.5" fill="none"/>
+              </svg>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 2a6 6 0 016 6h-2a4 4 0 00-4-4V2z"/>
+              </svg>
+              <svg width="22" height="12" viewBox="0 0 22 12" fill="currentColor">
+                <rect x="0" y="1" width="18" height="10" rx="2" stroke="currentColor" stroke-width="1" fill="none"/>
+                <rect x="19" y="4" width="2" height="4" rx="1"/>
+                <rect x="2" y="3" width="12" height="6" rx="1"/>
+              </svg>
+            </span>
+          </div>
+          <div class="app-root" id="app-root">
+            <div class="page" id="page-m-login">
+  <div style="background:#f5f2ed;min-height:100%;display:flex;flex-direction:column;align-items:center;">
+    <div class="m-header" style="width:100%;background:#f5f2ed;">
+      微信授权登录
+      <div style="position:absolute;right:12px;display:flex;gap:8px;">
+        <span style="width:28px;height:28px;border-radius:50%;background:#e5e5e5;display:flex;align-items:center;justify-content:center;font-size:14px;">⋯</span>
+        <span style="width:28px;height:28px;border-radius:50%;background:#e5e5e5;display:flex;align-items:center;justify-content:center;font-size:14px;">✕</span>
+      </div>
+
+<div class="page" id="page-m-home">
+  <div style="background:#f5f2ed;min-height:100%;">
+    <div class="m-header">首页</div>
+
+<div class="page" id="page-m-chat">
+  <div style="background:#f5f2ed;min-height:100%;display:flex;flex-direction:column;">
+    <div class="m-header" style="position:relative;">
+      AI 导览
+      <div style="position:absolute;right:12px;font-size:14px;color:#8b6914;">···</div>
+
+<div class="page" id="page-m-mine">
+  <div style="background:#f5f2ed;min-height:100%;">
+    <div style="background:linear-gradient(135deg,#8b6914,#a67c52);padding:30px 20px 24px;color:#fff;">
+      <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:10px;">👤</div>
+          </div>
+          <nav class="tab-bar" id="tab-bar">
+            <div class="tab-bar-item" data-page="m-home" onclick="ProtoRouter.go('m-home')"><div class="tab-icon">🏠</div><div>首页</div></div>
+<div class="tab-bar-item" data-page="m-chat" onclick="ProtoRouter.go('m-chat')"><div class="tab-icon">💬</div><div>对话</div></div>
+<div class="tab-bar-item" data-page="m-mine" onclick="ProtoRouter.go('m-mine')"><div class="tab-icon">👤</div><div>我的</div></div>
+
+          </nav>
+          <div class="safe-bottom"></div>
+        </div>
+        <!-- 页码导航 -->
+        <div class="page-nav" id="page-nav">
+          <button class="page-nav-btn" data-page="m-login" onclick="ProtoRouter.go('m-login')">登录页</button>
+<button class="page-nav-btn" data-page="m-home" onclick="ProtoRouter.go('m-home')">首页</button>
+<button class="page-nav-btn" data-page="m-chat" onclick="ProtoRouter.go('m-chat')">AI对话</button>
+<button class="page-nav-btn" data-page="m-mine" onclick="ProtoRouter.go('m-mine')">我的</button>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧：文档说明区 -->
+    <div class="review-doc-area">
+      <div class="doc-title">
+        <span class="doc-title-icon">✦</span>
+        功能亮点及操作引导
+      </div>
+      <div class="doc-subtitle">点击左侧页面切换，右侧同步高亮对应说明</div>
+      <div class="doc-toolbar">
+        <button class="btn btn-sm btn-default" onclick="ProtoDoc.save()">💾 保存</button>
+        <button class="btn btn-sm btn-default" onclick="ProtoDoc.reset()">↩️ 重置</button>
+        <button class="btn btn-sm btn-default" onclick="ProtoAnno.toggle()">🏷️ 标注显隐</button>
+      </div>
+      <div class="doc-panel" id="doc-panel" contenteditable="true">
+        <div class="doc-card" data-page="m-login">
+<div class="doc-card-title"><span class="page-tag">m-login</span> 登录页</div>
+<div class="doc-section" data-trigger="page-load">
+    <div class="doc-feature">
+      <div class="doc-feature-name"><span class="doc-feature-tag ui">UI</span>微信授权登录</div>
+      <div class="doc-feature-desc">用户首次进入时展示，显示应用图标、名称、所属博物馆。需勾选协议后按钮才可点击。</div>
+    </div>
+    <div class="doc-feature">
+      <div class="doc-feature-name"><span class="doc-feature-tag logic">逻辑</span>协议勾选校验</div>
+      <div class="doc-feature-desc">未勾选时按钮禁用态（灰色），勾选后激活，点击调用 wx.login 获取 code。</div>
+    </div>
+    <div class="doc-feature">
+      <div class="doc-feature-name"><span class="doc-feature-tag data">数据</span>登录流程</div>
+      <div class="doc-feature-desc">获取 code → 后端换 openid → 查询/创建用户 → 返回 token → 跳转首页。</div>
+      <div class="doc-api">POST /api/auth/wx-login { code }</div>
+    </div>
+  </div>
+</div>
+<div class="doc-card" data-page="m-home">
+<div class="doc-card-title"><span class="page-tag">m-home</span> 首页</div>
+<div class="doc-section" data-trigger="page-load">
+    <div class="doc-feature">
+      <div class="doc-feature-name"><span class="doc-feature-tag ui">UI</span>博物馆信息卡片</div>
+      <div class="doc-feature-desc">顶部展示当前博物馆名称、简介、开放时间。背景使用博物馆实景照片。</div>
+    </div>
+    <div class="doc-feature">
+      <div class="doc-feature-name"><span class="doc-feature-tag ui">UI</span>展品推荐轮播</div>
+      <div class="doc-feature-desc">横向滚动卡片，展示3-5件推荐展品。点击进入展品详情对话。</div>
+    </div>
+    <div class="doc-feature">
+      <div class="doc-feature-name"><span class="doc-feature-tag logic">逻辑</span>开始导览</div>
+      <div class="doc-feature-desc">点击按钮进入AI对话页，自动发送欢迎语和导览主题选择。</div>
+    </div>
+    <div class="doc-feature">
+      <div class="doc-feature-name"><span class="doc-feature-tag data">数据</span>首页数据加载</div>
+      <div class="doc-feature-desc">进入时请求：博物馆信息、推荐展品、用户历史。</div>
+      <div class="doc-api">GET /api/museum/{id} GET /api/museum/{id}/featured</div>
+    </div>
+  </div>
+</div>
+<div class="doc-card" data-page="m-chat">
+<div class="doc-card-title"><span class="page-tag">m-chat</span> AI对话</div>
+<div class="doc-section" data-trigger="page-load">
+    <div class="doc-feature">
+      <div class="doc-feature-name"><span class="doc-feature-tag ui">UI</span>对话气泡布局</div>
+      <div class="doc-feature-desc">左侧灰色气泡为AI回复，右侧蓝色气泡为用户消息。支持文字、图片、语音。</div>
+    </div>
+    <div class="doc-feature">
+      <div class="doc-feature-name"><span class="doc-feature-tag logic">逻辑</span>AI回复流程</div>
+      <div class="doc-feature-desc">用户发送 → 调用 Dify API（携带博物馆 context）→ 流式返回 → 逐字显示。超时5秒显示loading。</div>
+      <div class="doc-api">POST /api/chat { conversation_id, message, museum_id }</div>
+    </div>
+    <div class="doc-feature">
+      <div class="doc-feature-name"><span class="doc-feature-tag logic">逻辑</span>RAG知识库检索</div>
+      <div class="doc-feature-desc">每次请求携带当前博物馆ID，后端从向量数据库检索相关展品/历史知识作为 context。</div>
+    </div>
+    <div class="doc-feature">
+      <div class="doc-feature-name"><span class="doc-feature-tag data">数据</span>消息持久化</div>
+      <div class="doc-feature-desc">消息存储到 conversation_messages 表，关联 conversation_id。支持查看历史、继续对话。</div>
+    </div>
+  </div>
+</div>
+<div class="doc-card" data-page="m-mine">
+<div class="doc-card-title"><span class="page-tag">m-mine</span> 我的</div>
+<div class="doc-section" data-trigger="page-load">
+    <div class="doc-feature">
+      <div class="doc-feature-name"><span class="doc-feature-tag ui">UI</span>用户信息展示</div>
+      <div class="doc-feature-desc">顶部渐变色背景，展示头像、昵称、手机号。点击可编辑个人信息。</div>
+    </div>
+    <div class="doc-feature">
+      <div class="doc-feature-name"><span class="doc-feature-tag ui">UI</span>功能菜单列表</div>
+      <div class="doc-feature-desc">包含：我的对话、参观记录、收藏展品、设置、关于。</div>
+    </div>
+    <div class="doc-feature">
+      <div class="doc-feature-name"><span class="doc-feature-tag logic">逻辑</span>退出登录</div>
+      <div class="doc-feature-desc">清除本地 token，跳转登录页。二次确认弹窗。</div>
+    </div>
+  </div>
+</div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+/* mock-data.js - 演示数据 */
+var MOCK = {
+  user: { name: "管理员", role: "admin", avatar: "👤", department: "产品部" },
+  users: [
+    { phone: "138****1234", name: "张三", customers: ["XX博物馆"], sessions: 23, lastVisit: "2026-07-13", regTime: "2026-03-15", status: "正常", color: "#faad14" },
+    { phone: "139****5678", name: "李四", customers: ["科技馆"], sessions: 8, lastVisit: "2026-07-12", regTime: "2026-04-20", status: "正常", color: "#52c41a" },
+    { phone: "136****9012", name: "王五", customers: ["XX博物馆","科技馆","自然博物馆"], sessions: 45, lastVisit: "2026-07-13", regTime: "2026-02-10", status: "正常", color: "#1890ff" },
+    { phone: "137****3456", name: "赵六", customers: ["XX博物馆"], sessions: 3, lastVisit: "2026-07-10", regTime: "2026-06-01", status: "正常", color: "#722ed1" },
+    { phone: "135****7890", name: "孙七", customers: ["自然博物馆"], sessions: 12, lastVisit: "2026-07-08", regTime: "2026-05-12", status: "已禁用", color: "#f5222d" },
+    { phone: "133****2468", name: "周八", customers: ["科技馆"], sessions: 1, lastVisit: "2026-07-13", regTime: "2026-07-01", status: "正常", color: "#13c2c2" }
+  ],
+  chatRecords: [
+    { id: "C001", user: "张三", customer: "XX博物馆", messages: 12, startTime: "2026-07-13 14:30" },
+    { id: "C002", user: "李四", customer: "科技馆", messages: 5, startTime: "2026-07-13 13:20" },
+    { id: "C003", user: "王五", customer: "XX博物馆", messages: 28, startTime: "2026-07-13 10:15" },
+    { id: "C004", user: "赵六", customer: "XX博物馆", messages: 3, startTime: "2026-07-12 16:45" },
+    { id: "C005", user: "孙七", customer: "自然博物馆", messages: 8, startTime: "2026-07-12 11:00" }
+  ],
+  chatList: [
+    { id: 1, title: "示例对话一", time: "14:30", unread: 0 },
+    { id: 2, title: "示例对话二", time: "昨天", unread: 2 },
+    { id: 3, title: "示例对话三", time: "07-11", unread: 0 }
+  ]
+};
+
+  </script>
+  <script>
+
+  </script>
+  <script>
+/* ============================
+   base.js - ProtoKit 运行时引擎
+   ProtoRouter + ProtoAnno + ProtoDoc
+   ============================ */
+
+// ---- 路由引擎 ----
+var ProtoRouter = {
+  currentPage: null,
+  defaultPage: null,
+
+  init: function(defaultPage) {
+    this.defaultPage = defaultPage || '';
+    window.addEventListener('hashchange', this.render.bind(this));
+    this.render();
+  },
+
+  render: function() {
+    var hash = window.location.hash || '#/' + this.defaultPage;
+    var pageId = hash.replace('#/', '').replace('#', '');
+
+    // 销毁旧页面
+    if (this.currentPage && typeof window['destroy_' + this.currentPage.replace(/-/g, '_')] === 'function') {
+      window['destroy_' + this.currentPage.replace(/-/g, '_')]();
+    }
+
+    // 隐藏所有页面
+    document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+
+    // 显示目标页面
+    var target = document.getElementById('page-' + pageId);
+    if (target) {
+      target.classList.add('active');
+      this.currentPage = pageId;
+
+      // 调用初始化
+      var fnName = 'init_' + pageId.replace(/-/g, '_');
+      if (typeof window[fnName] === 'function') {
+        window[fnName]();
+      }
+
+      // 更新菜单高亮
+      document.querySelectorAll('.pc-menu-item').forEach(function(item) {
+        item.classList.toggle('active', item.getAttribute('data-page') === pageId);
+      });
+
+      // 更新移动端 Tab
+      document.querySelectorAll('.tab-bar-item').forEach(function(tab) {
+        tab.classList.toggle('active', tab.getAttribute('data-page') === pageId);
+      });
+
+      // 更新面包屑
+      var bc = document.getElementById('breadcrumb-current');
+      if (bc) bc.textContent = pageId;
+
+      // 更新页码导航
+      document.querySelectorAll('.page-nav-btn').forEach(function(btn) {
+        btn.classList.toggle('active', btn.getAttribute('data-page') === pageId);
+      });
+
+      // 文档联动
+      ProtoDoc.trigger('page-load', pageId);
+
+      // 渲染标注
+      ProtoAnno.render();
+
+      // 更新 hash
+      if (location.hash !== '#/' + pageId) {
+        history.replaceState(null, '', '#/' + pageId);
+      }
+    }
+  },
+
+  go: function(pageId) {
+    window.location.hash = '#/' + pageId;
+  }
+};
+
+// ---- 标注引擎 ----
+var ProtoAnno = {
+  visible: true,
+
+  render: function() {
+    if (!this.visible) return;
+    document.querySelectorAll('[data-anno-id]').forEach(function(el) {
+      if (el.querySelector('.anno-badge')) return;
+      var id = el.getAttribute('data-anno-id');
+      var badge = document.createElement('span');
+      badge.className = 'anno-badge';
+      badge.textContent = id;
+      badge.onclick = function(e) {
+        e.stopPropagation();
+        if (window.PLATFORM === 'mobile') {
+          ProtoDoc.trigger('anno:' + id, ProtoRouter.currentPage);
+        } else {
+          ProtoAnno.showPopover(el, id);
+        }
+      };
+      el.appendChild(badge);
+    });
+  },
+
+  toggle: function() {
+    this.visible = !this.visible;
+    document.querySelectorAll('.anno-badge').forEach(function(b) {
+      b.style.display = ProtoAnno.visible ? 'flex' : 'none';
+    });
+  },
+
+  showPopover: function(el, id) {
+    var title = el.getAttribute('data-anno-title') || id;
+    var desc = el.getAttribute('data-anno-desc') || '暂无说明';
+    var container = document.getElementById('anno-popover-container');
+    if (!container) return;
+
+    var rect = el.getBoundingClientRect();
+    container.innerHTML =
+      '<div style="position:fixed;top:' + (rect.bottom + 8) + 'px;left:' + rect.left +
+      'px;background:#fff;border-radius:8px;padding:16px;box-shadow:0 4px 16px rgba(0,0,0,0.15);' +
+      'z-index:10001;min-width:240px;max-width:360px;">' +
+      '<div style="font-weight:600;margin-bottom:8px;">' + title + '</div>' +
+      '<div style="font-size:13px;color:#666;line-height:1.6;">' + desc + '</div>' +
+      '<div style="text-align:right;margin-top:12px;">' +
+      '<button class="btn btn-sm btn-default" onclick="document.getElementById(\'anno-popover-container\').innerHTML=\'\'">关闭</button>' +
+      '</div></div>';
+
+    setTimeout(function() {
+      document.addEventListener('click', function handler() {
+        container.innerHTML = '';
+        document.removeEventListener('click', handler);
+      });
+    }, 100);
+  }
+};
+
+// ---- 文档联动引擎 ----
+var ProtoDoc = {
+  storagePrefix: 'proto_doc_',
+
+  trigger: function(eventId, pageId) {
+    var panel = document.getElementById('doc-panel');
+    if (!panel) return;
+
+    // 查找对应 doc-section
+    var sections = document.querySelectorAll('.doc-section[data-trigger]');
+    var matched = null;
+    sections.forEach(function(s) {
+      if (s.getAttribute('data-trigger') === eventId) matched = s;
+    });
+
+    // 移动端：高亮对应 doc-card
+    if (pageId) {
+      document.querySelectorAll('.doc-card').forEach(function(card) {
+        card.classList.toggle('highlight', card.getAttribute('data-page') === pageId);
+      });
+      var docCard = document.querySelector('.doc-card[data-page="' + pageId + '"]');
+      if (docCard) {
+        panel.innerHTML = docCard.innerHTML;
+        return;
+      }
+    }
+
+    if (matched) {
+      var saved = localStorage.getItem(this.storagePrefix + eventId);
+      panel.innerHTML = saved || matched.innerHTML;
+      panel.setAttribute('data-current-trigger', eventId);
+    }
+  },
+
+  save: function() {
+    var panel = document.getElementById('doc-panel');
+    var eventId = panel.getAttribute('data-current-trigger');
+    if (eventId) {
+      localStorage.setItem(this.storagePrefix + eventId, panel.innerHTML);
+      showToast('保存成功');
+    }
+  },
+
+  reset: function() {
+    var panel = document.getElementById('doc-panel');
+    var eventId = panel.getAttribute('data-current-trigger');
+    if (eventId) {
+      localStorage.removeItem(this.storagePrefix + eventId);
+      this.trigger(eventId);
+      showToast('已重置');
+    }
+  }
+};
+
+// ---- 工具函数 ----
+function renderList(containerId, items, renderItem) {
+  var container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = items.map(renderItem).join('');
+}
+
+function renderTable(containerId, columns, rows) {
+  var container = document.getElementById(containerId);
+  if (!container) return;
+  var html = '<table class="table"><thead><tr>';
+  columns.forEach(function(col) { html += '<th>' + col.label + '</th>'; });
+  html += '</tr></thead><tbody>';
+  rows.forEach(function(row) {
+    html += '<tr>';
+    columns.forEach(function(col) { html += '<td>' + (row[col.key] !== undefined ? row[col.key] : '') + '</td>'; });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function showModal(title, bodyHtml, onConfirm) {
+  var overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML =
+    '<div class="modal"><div class="modal-title">' + title + '</div>' +
+    '<div class="modal-body">' + bodyHtml + '</div>' +
+    '<div class="modal-footer"><button class="btn btn-default" onclick="this.closest(\'.modal-overlay\').remove()">取消</button>' +
+    '<button class="btn btn-primary" id="modal-confirm-btn">确定</button></div></div>';
+  document.body.appendChild(overlay);
+  overlay.querySelector('#modal-confirm-btn').onclick = function() {
+    document.body.removeChild(overlay);
+    if (typeof onConfirm === 'function') onConfirm();
+  };
+}
+
+function showToast(msg, duration) {
+  duration = duration || 2000;
+  var toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(function() {
+    toast.style.opacity = '0';
+    setTimeout(function() { document.body.removeChild(toast); }, 300);
+  }, duration);
+}
+
+function mockRequest(data, delay) {
+  delay = delay || 300;
+  return new Promise(function(resolve) { setTimeout(function() { resolve(data); }, delay); });
+}
+
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      window.PLATFORM = 'mobile';
+      ProtoRouter.init('{{DEFAULT_PAGE}}');
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!-- PAGE_META: {"id": "m-home", "title": "首页"} -->
+<template class="doc">
+  <div class="doc-section" data-trigger="page-load">
+    <div class="doc-feature">
+      <div class="doc-feature-name"><span class="doc-feature-tag ui">UI</span>博物馆信息卡片</div>
+      <div class="doc-feature-desc">顶部展示当前博物馆名称、简介、开放时间。背景使用博物馆实景照片。</div>
+    </div>
+    <div class="doc-feature">
+      <div class="doc-feature-name"><span class="doc-feature-tag ui">UI</span>展品推荐轮播</div>
+      <div class="doc-feature-desc">横向滚动卡片，展示3-5件推荐展品。点击进入展品详情对话。</div>
+    </div>
+    <div class="doc-feature">
+      <div class="doc-feature-name"><span class="doc-feature-tag logic">逻辑</span>开始导览</div>
+      <div class="doc-feature-desc">点击按钮进入AI对话页，自动发送欢迎语和导览主题选择。</div>
+    </div>
+    <div class="doc-feature">
+      <div class="doc-feature-name"><span class="doc-feature-tag data">数据</span>首页数据加载</div>
+      <div class="doc-feature-desc">进入时请求：博物馆信息、推荐展品、用户历史。</div>
+      <div class="doc-api">GET /api/museum/{id} GET /api/museum/{id}/featured</div>
+    </div>
+  </div>
+</template>
+
+<div class="page" id="page-m-home">
+  <div style="background:#f5f2ed;min-height:100%;">
+    <div class="m-header">首页</div>
+    <div style="margin:12px;background:#8b6914;border-radius:12px;padding:20px;color:#fff;">
+      <div style="font-size:18px;font-weight:600;">XX博物馆</div>
+      <div style="font-size:12px;opacity:0.8;margin-top:6px;">开放时间：09:00 - 17:00</div>
+      <div style="font-size:13px;opacity:0.9;margin-top:8px;line-height:1.5;">探索五千年文明，开启智能导览之旅</div>
+    </div>
+    <div style="padding:0 12px;">
+      <div style="font-size:15px;font-weight:600;margin-bottom:10px;">推荐展品</div>
+      <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;">
+        <div style="min-width:140px;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+          <div style="height:100px;background:#e8dfd0;display:flex;align-items:center;justify-content:center;font-size:32px;">🏺</div>
+          <div style="padding:10px;"><div style="font-size:14px;font-weight:500;">青花瓷瓶</div><div style="font-size:11px;color:#999;margin-top:3px;">明代 · 万历年间</div></div>
+        </div>
+        <div style="min-width:140px;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+          <div style="height:100px;background:#d4c5a9;display:flex;align-items:center;justify-content:center;font-size:32px;">📜</div>
+          <div style="padding:10px;"><div style="font-size:14px;font-weight:500;">清明上河图</div><div style="font-size:11px;color:#999;margin-top:3px;">北宋 · 张择端</div></div>
+        </div>
+        <div style="min-width:140px;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+          <div style="height:100px;background:#c9b896;display:flex;align-items:center;justify-content:center;font-size:32px;">🗡️</div>
+          <div style="padding:10px;"><div style="font-size:14px;font-weight:500;">越王勾践剑</div><div style="font-size:11px;color:#999;margin-top:3px;">春秋晚期</div></div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:20px 12px;">
+      <div style="height:48px;border-radius:24px;background:#8b6914;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:500;cursor:pointer;" onclick="ProtoRouter.go('m-chat')">🏛️ 开始智能导览</div>
+    </div>
+    <div style="padding:0 12px 80px;">
+      <div style="font-size:15px;font-weight:600;margin-bottom:10px;">最近访问</div>
+      <div style="background:#fff;border-radius:10px;overflow:hidden;">
+        <div style="padding:14px;border-bottom:1px solid #f5f5f5;display:flex;align-items:center;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:8px;background:#e8dfd0;display:flex;align-items:center;justify-content:center;font-size:18px;">🏛️</div>
+          <div style="flex:1;"><div style="font-size:14px;font-weight:500;">XX博物馆</div><div style="font-size:12px;color:#999;">上次访问：今天 14:30</div></div>
+          <div style="color:#ccc;font-size:18px;">›</div>
+        </div>
+        <div style="padding:14px;display:flex;align-items:center;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:8px;background:#d4c5a9;display:flex;align-items:center;justify-content:center;font-size:18px;">🔬</div>
+          <div style="flex:1;"><div style="font-size:14px;font-weight:500;">科技馆</div><div style="font-size:12px;color:#999;">上次访问：昨天</div></div>
+          <div style="color:#ccc;font-size:18px;">›</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

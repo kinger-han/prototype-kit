@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>移动端原型 - 评审视图</title>
+  <style>
+/* __BASE_CSS__ placeholder */
+  </style>
+  <style>
+/* __SCOPED_CSS__ placeholder */
+  </style>
+  <style>
+    /* 移动端专用样式 */
+    body { background: #f0f1f5; }
+    .review-shell { display: flex; height: 100vh; overflow: hidden; }
+    .review-phone-area {
+      width: 440px; flex-shrink: 0; display: flex;
+      align-items: flex-start; justify-content: center;
+      padding: 24px 20px; overflow-y: auto;
+    }
+    .mobile-shell {
+      width: 375px; min-height: 720px; background: #000;
+      border-radius: 44px; padding: 12px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.18), inset 0 0 0 2px #333;
+      position: relative;
+    }
+    .mobile-screen {
+      background: #fff; border-radius: 32px; overflow: hidden;
+      min-height: 696px; display: flex; flex-direction: column;
+    }
+    .dynamic-island {
+      position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+      width: 100px; height: 28px; background: #000; border-radius: 20px; z-index: 9999;
+    }
+    .status-bar {
+      height: 48px; display: flex; align-items: flex-end;
+      justify-content: space-between; padding: 0 24px 6px;
+      font-size: 14px; font-weight: 600; color: #000; flex-shrink: 0;
+    }
+    .status-bar-left { font-size: 15px; font-weight: 600; z-index: 1; }
+    .status-bar-right {
+      display: flex; align-items: center; gap: 6px; z-index: 1;
+    }
+    .app-root { flex: 1; overflow-y: auto; overflow-x: hidden; }
+    .tab-bar {
+      height: 50px; border-top: 1px solid #f0f0f0; display: flex;
+      background: #fff; flex-shrink: 0;
+    }
+    .tab-bar-item {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; font-size: 10px; color: #999;
+      cursor: pointer; text-decoration: none;
+    }
+    .tab-bar-item.active { color: {{PRIMARY_COLOR}}; }
+    .tab-bar-item .tab-icon { font-size: 20px; margin-bottom: 2px; }
+    .safe-bottom { height: 20px; background: #fff; flex-shrink: 0; }
+
+    /* 页码导航 */
+    .page-nav {
+      display: flex; gap: 8px; margin-top: 16px;
+      flex-wrap: wrap; justify-content: center;
+    }
+    .page-nav-btn {
+      padding: 6px 14px; border-radius: 6px; border: 1px solid #d9d9d9;
+      background: #fff; font-size: 12px; cursor: pointer;
+      transition: all 0.15s; color: #666;
+    }
+    .page-nav-btn:hover { border-color: {{PRIMARY_COLOR}}; color: {{PRIMARY_COLOR}}; }
+    .page-nav-btn.active {
+      background: {{PRIMARY_COLOR}}; color: #fff; border-color: {{PRIMARY_COLOR}};
+    }
+
+    /* 右侧文档区 */
+    .review-doc-area {
+      flex: 1; overflow-y: auto; padding: 28px 36px; background: #fff;
+      border-left: 1px solid #eee; display: flex; flex-direction: column;
+    }
+    .doc-toolbar {
+      display: flex; gap: 8px; margin-bottom: 16px;
+      padding-bottom: 12px; border-bottom: 1px solid #f0f0f0;
+    }
+    .doc-title {
+      font-size: 20px; font-weight: 700; color: #1a1a1a;
+      margin-bottom: 6px; display: flex; align-items: center; gap: 10px;
+    }
+    .doc-title-icon {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, #a855f7, #3b82f6, #22c55e);
+      border-radius: 6px; display: flex; align-items: center;
+      justify-content: center; color: #fff; font-size: 14px; font-weight: 700;
+    }
+    .doc-subtitle {
+      font-size: 13px; color: #999; margin-bottom: 20px;
+      padding-bottom: 16px; border-bottom: 1px solid #f0f0f0;
+    }
+    .doc-panel {
+      flex: 1; overflow-y: auto;
+    }
+    .doc-panel:focus { outline: 2px solid {{PRIMARY_COLOR}}; outline-offset: 2px; border-radius: 4px; }
+
+    /* 文档卡片 */
+    .doc-card {
+      background: #fafbfc; border: 1px solid #f0f0f0;
+      border-radius: 10px; padding: 20px 24px; margin-bottom: 16px;
+      transition: all 0.25s;
+    }
+    .doc-card.highlight {
+      border-color: #3b82f6; background: #f0f7ff;
+      box-shadow: 0 2px 12px rgba(59,130,246,0.1);
+    }
+    .doc-card-title {
+      font-size: 15px; font-weight: 600; color: #333;
+      margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+    }
+    .page-tag {
+      display: inline-block; padding: 2px 8px; border-radius: 4px;
+      font-size: 11px; font-weight: 500; background: #e6f7ff; color: #1890ff;
+    }
+    .doc-card.highlight .page-tag { background: #1890ff; color: #fff; }
+
+    .doc-steps { list-style: none; padding: 0; margin: 0 0 16px 0; }
+    .doc-steps li {
+      padding: 6px 0; font-size: 14px; color: #555; line-height: 1.6;
+      display: flex; gap: 8px;
+    }
+    .doc-steps li .step-num { color: #3b82f6; font-weight: 600; flex-shrink: 0; }
+
+    .doc-feature { padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+    .doc-feature:last-child { border-bottom: none; }
+    .doc-feature-name { font-size: 14px; font-weight: 500; color: #333; margin-bottom: 4px; }
+    .doc-feature-desc { font-size: 13px; color: #666; line-height: 1.6; }
+    .doc-api {
+      font-size: 12px; color: #999; font-family: monospace;
+      background: #f5f5f5; padding: 2px 8px; border-radius: 3px; margin-top: 4px;
+      display: inline-block;
+    }
+    .doc-feature-tag {
+      display: inline-block; padding: 1px 6px; border-radius: 3px;
+      font-size: 11px; margin-right: 6px;
+    }
+    .doc-feature-tag.logic { background: #fff7e6; color: #d48806; }
+    .doc-feature-tag.ui    { background: #e6f7ff; color: #1890ff; }
+    .doc-feature-tag.data  { background: #f6ffed; color: #52c41a; }
+  </style>
+</head>
+<body>
+  <div class="review-shell">
+    <!-- 左侧：手机原型 -->
+    <div class="review-phone-area">
+      <div>
+        <div class="mobile-shell">
+          <div class="dynamic-island"></div>
+          <div class="status-bar">
+            <span class="status-bar-left">9:41</span>
+            <span class="status-bar-right">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M1 11l3-3 3 3M5 8l3-3 3 3M9 5l3-3 3 3" stroke="currentColor" stroke-width="1.5" fill="none"/>
+              </svg>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 2a6 6 0 016 6h-2a4 4 0 00-4-4V2z"/>
+              </svg>
+              <svg width="22" height="12" viewBox="0 0 22 12" fill="currentColor">
+                <rect x="0" y="1" width="18" height="10" rx="2" stroke="currentColor" stroke-width="1" fill="none"/>
+                <rect x="19" y="4" width="2" height="4" rx="1"/>
+                <rect x="2" y="3" width="12" height="6" rx="1"/>
+              </svg>
+            </span>
+          </div>
+          <div class="app-root" id="app-root">
+            <!-- 组件 page div 注入处 -->
+          </div>
+          <nav class="tab-bar" id="tab-bar">
+            <!-- build.py 根据 config.json 生成 -->
+          </nav>
+          <div class="safe-bottom"></div>
+        </div>
+        <!-- 页码导航 -->
+        <div class="page-nav" id="page-nav">
+          <!-- build.py 生成 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧：文档说明区 -->
+    <div class="review-doc-area">
+      <div class="doc-title">
+        <span class="doc-title-icon">✦</span>
+        功能亮点及操作引导
+      </div>
+      <div class="doc-subtitle">点击左侧页面切换，右侧同步高亮对应说明</div>
+      <div class="doc-toolbar">
+        <button class="btn btn-sm btn-default" onclick="ProtoDoc.save()">💾 保存</button>
+        <button class="btn btn-sm btn-default" onclick="ProtoDoc.reset()">↩️ 重置</button>
+        <button class="btn btn-sm btn-default" onclick="ProtoAnno.toggle()">🏷️ 标注显隐</button>
+      </div>
+      <div class="doc-panel" id="doc-panel" contenteditable="true">
+        <!-- 文档联动注入处 -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+/* __MOCK_DATA__ placeholder */
+  </script>
+  <script>
+/* __COMPONENT_SCRIPTS__ placeholder */
+  </script>
+  <script>
+/* __BASE_JS__ placeholder */
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      window.PLATFORM = 'mobile';
+      ProtoRouter.init('{{DEFAULT_PAGE}}');
+    });
+  </script>
+</body>
+</html>

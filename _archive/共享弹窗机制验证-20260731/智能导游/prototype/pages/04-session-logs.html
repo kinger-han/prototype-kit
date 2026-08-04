@@ -1,0 +1,353 @@
+<!-- PAGE_META: {"id": "session-logs", "title": "会话记录"} -->
+
+<!-- ====== 页面：会话记录 ====== -->
+      <div class="page" id="pageSessionLogs">
+
+        <!-- 筛选栏 -->
+        <div class="filter-bar" data-anno="log-01">
+          <div class="filter-item">
+            <span class="filter-label">来源客户：</span>
+            <select class="filter-select" id="logFilterCustomer" onchange="onLogFilterCustomerChange()">
+              <option value="">全部客户</option>
+              <option>XX博物馆</option>
+              <option>科技馆</option>
+              <option>自然博物馆</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <span class="filter-label">来源场馆：</span>
+            <select class="filter-select" id="logFilterVenue" style="min-width:120px;">
+              <option value="">全部场馆</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <span class="filter-label">用户：</span>
+            <input type="text" class="filter-input" id="logFilterUser" placeholder="手机号 / 昵称" style="min-width:140px;">
+          </div>
+          <div class="filter-item">
+            <span class="filter-label">时间范围：</span>
+            <input type="date" class="filter-input" id="logFilterStart" value="2026-04-17" style="min-width:130px;">
+            <span style="color:#999;">至</span>
+            <input type="date" class="filter-input" id="logFilterEnd" value="2026-07-09" style="min-width:130px;">
+          </div>
+          <div class="filter-item">
+            <span class="filter-label">会话质量：</span>
+            <select class="filter-select" id="logFilterQuality" style="min-width:110px;">
+              <option value="">全部</option>
+              <option value="good">优质</option>
+              <option value="warn">一般</option>
+              <option value="bad">需关注</option>
+            </select>
+          </div>
+          <button class="filter-btn primary" onclick="filterSessionLogs()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            查询
+          </button>
+          <button class="filter-btn" onclick="resetLogFilter()">重置</button>
+        </div>
+
+        <!-- 数据表格 -->
+        <div class="table-card" data-anno="log-02">
+          <div class="table-toolbar">
+            <button class="toolbar-btn" data-anno="log-export" onclick="openSessionExportModal()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              导出
+            </button>
+            <div class="toolbar-search">
+              <input type="text" placeholder="搜索会话内容关键词">
+              <div class="search-btn" onclick="showToast('搜索完成', 'success')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <table class="session-log-table">
+            <thead>
+              <tr>
+                <th style="width:60px;">会话ID</th>
+                <th style="width:120px;">用户</th>
+                <th style="width:100px;">来源客户</th>
+                <th style="width:80px;">来源场馆</th>
+                <th style="width:110px;">智能体</th>
+                <th style="width:130px;">开始时间</th>
+                <th style="width:70px;">消息轮次</th>
+                <th style="width:70px;">兜底次数</th>
+                <th style="width:80px;">会话质量 <span class="tooltip-icon" data-tip="计算规则：优质：（消息轮次 ≥ 3 且 兜底次数 = 0）或（消息轮次 ≥ 6 且兜底率 < 10%）；需关注：兜底率 ≥ 30% 且 兜底次数 ≥ 2；一般：其他情况">?</span></th>
+                <th style="width:70px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="sessionLogBody">
+            </tbody>
+          </table>
+
+          <div class="pagination">
+            <div class="page-info">
+              共 <b id="logTotalCount">0</b> 条
+              <select class="page-size-select">
+                <option>10条/页</option><option>20条/页</option><option>50条/页</option>
+              </select>
+            </div>
+            <div style="display:flex;align-items:center;">
+              <div class="page-btns">
+                <div class="page-btn disabled">‹</div>
+                <div class="page-btn active">1</div>
+                <div class="page-btn">2</div><div class="page-btn">3</div>
+                <div class="page-btn">›</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /pageSessionLogs -->
+
+    </div><!-- /content-area -->
+  </div><!-- /main-area -->
+</div><!-- /layout -->
+
+<script>
+const allSessionLogs = [
+  { id: 1, agent: '博物馆导览助手', user: '张三 (138****6789)', phone: '13812346789', customer: 'XX博物馆', venue: '东馆', time: '2026-07-08 10:32', rounds: 8, fallback: 1, quality: 'good',
+    messages: [
+      { role: 'user', text: '推荐参观路线', time: '10:32' },
+      { role: 'ai', text: '为你推荐以下参观路线 🗺️\n\n【经典2小时路线】\n1F 序厅 → 1F 古代文明展厅 → 2F 近现代历史展 → 2F 非遗文化展 → 1F 文创商店', time: '10:32' },
+      { role: 'user', text: '这个展厅有哪些重点展品', time: '10:34' },
+      { role: 'ai', text: '古代文明展厅的重点展品包括：\n• 青铜器「后母戊鼎」复制品\n• 汉代金缕玉衣\n• 唐三彩骆驼俑\n建议预留30分钟细品。', time: '10:34' },
+      { role: 'user', text: '洗手间在哪', time: '10:38' },
+      { role: 'ai', text: '最近的洗手间在1F序厅东侧，步行约1分钟 🚻', time: '10:38' },
+      { role: 'user', text: '附近有吃的吗', time: '10:40' },
+      { role: 'ai', text: '1F文创咖啡厅提供咖啡和轻食，B1有中式简餐 🍽️', time: '10:40' }
+    ]
+  },
+  { id: 2, agent: '博物馆导览助手', user: '张三 (138****6789)', phone: '13812346789', customer: 'XX博物馆', venue: '西馆', time: '2026-07-06 14:15', rounds: 5, fallback: 0, quality: 'good',
+    messages: [
+      { role: 'user', text: '今天开馆时间', time: '14:15' },
+      { role: 'ai', text: '周二至周日 9:00-17:00（16:30停止入馆），周一闭馆 ⏰', time: '14:15' },
+      { role: 'user', text: '门票多少钱', time: '14:16' },
+      { role: 'ai', text: '常设展览免费（需预约），特展成人¥40/学生¥20 🎫', time: '14:16' },
+      { role: 'user', text: '怎么预约', time: '14:17' },
+      { role: 'ai', text: '关注"XX博物馆"微信公众号，点击菜单"参观预约"即可在线预约 📱', time: '14:17' }
+    ]
+  },
+  { id: 3, agent: '科技馆讲解员', user: '张三 (138****6789)', phone: '13812346789', customer: '科技馆', venue: '主馆', time: '2026-06-30 09:45', rounds: 6, fallback: 2, quality: 'warn',
+    messages: [
+      { role: 'user', text: '科技馆有什么好玩的', time: '09:45' },
+      { role: 'ai', text: '科技馆主要展区：\n1F 儿童科学乐园\n2F 声光电展厅\n3F 机器人展区\n建议从3F开始倒序游览。', time: '09:45' },
+      { role: 'user', text: '有停车场吗', time: '09:48' },
+      { role: 'ai', text: '很抱歉，暂未在知识库中找到相关信息。你可以联系现场工作人员获取帮助。', time: '09:48' },
+      { role: 'user', text: '附近有地铁站吗', time: '09:50' },
+      { role: 'ai', text: '很抱歉，暂未在知识库中找到相关信息。你可以联系现场工作人员获取帮助。', time: '09:50' },
+      { role: 'user', text: '儿童科学乐园多大孩子可以去', time: '09:52' },
+      { role: 'ai', text: '儿童科学乐园适合3-12岁儿童，需家长陪同 🧒', time: '09:52' }
+    ]
+  },
+  { id: 4, agent: '博物馆导览助手', user: '李四 (139****1234)', phone: '13912341234', customer: 'XX博物馆', venue: '西馆', time: '2026-07-06 11:20', rounds: 4, fallback: 0, quality: 'good',
+    messages: [
+      { role: 'user', text: '近期有什么展览', time: '11:20' },
+      { role: 'ai', text: '「丝路遗珍」特展，展期2026.06.15-09.30，3F临时展厅，汇集60余件珍贵文物 🏺', time: '11:20' },
+      { role: 'user', text: '特展门票多少钱', time: '11:22' },
+      { role: 'ai', text: '特展门票：成人¥40/学生¥20/60岁以上老人免费 🎫', time: '11:22' }
+    ]
+  },
+  { id: 5, agent: '博物馆导览助手', user: '李四 (139****1234)', phone: '13912341234', customer: 'XX博物馆', venue: '东馆', time: '2026-07-01 15:40', rounds: 7, fallback: 1, quality: 'good',
+    messages: [
+      { role: 'user', text: '推荐参观路线', time: '15:40' },
+      { role: 'ai', text: '推荐经典2小时路线 🗺️', time: '15:40' },
+      { role: 'user', text: '有没有讲解服务', time: '15:43' },
+      { role: 'ai', text: '有语音导览服务，各楼层服务台可租借设备 🎧', time: '15:43' },
+      { role: 'user', text: '拍照要申请吗', time: '15:45' },
+      { role: 'ai', text: '常设展厅可拍照（禁闪光灯），部分特展需提前申请 📸', time: '15:45' }
+    ]
+  },
+  { id: 6, agent: '博物馆导览助手', user: '李四 (139****1234)', phone: '13912341234', customer: 'XX博物馆', venue: '少儿馆', time: '2026-06-20 10:05', rounds: 5, fallback: 3, quality: 'bad',
+    messages: [
+      { role: 'user', text: '可以带狗进去吗', time: '10:05' },
+      { role: 'ai', text: '很抱歉，暂未在知识库中找到相关信息。', time: '10:05' },
+      { role: 'user', text: '有寄存柜吗', time: '10:07' },
+      { role: 'ai', text: '很抱歉，暂未在知识库中找到相关信息。', time: '10:07' },
+      { role: 'user', text: '里面可以吃东西吗', time: '10:08' },
+      { role: 'ai', text: '展厅内禁止饮食，可在休息区或咖啡厅用餐 🍽️', time: '10:08' }
+    ]
+  },
+  { id: 7, agent: '博物馆导览助手', user: '王五 (156****5678)', phone: '15612345678', customer: 'XX博物馆', venue: '东馆', time: '2026-07-07 13:50', rounds: 6, fallback: 0, quality: 'good',
+    messages: [
+      { role: 'user', text: '镇馆之宝是什么', time: '13:50' },
+      { role: 'ai', text: '本馆镇馆之宝为《江南烟雨图》长卷，创作于清代中期，长逾6米 🖼️', time: '13:50' },
+      { role: 'user', text: '在几楼', time: '13:52' },
+      { role: 'ai', text: '陈列于3F书画长卷厅中央独立展柜内 📍', time: '13:52' }
+    ]
+  },
+  { id: 8, agent: '自然百科向导', user: '王五 (156****5678)', phone: '15612345678', customer: '自然博物馆', venue: '主馆', time: '2026-06-28 10:15', rounds: 3, fallback: 0, quality: 'good',
+    messages: [
+      { role: 'user', text: '自然博物馆有什么', time: '10:15' },
+      { role: 'ai', text: '主要展区：恐龙馆、海洋生物馆、昆虫馆、地质矿石馆 🦕', time: '10:15' },
+      { role: 'user', text: '恐龙馆大吗', time: '10:17' },
+      { role: 'ai', text: '恐龙馆约800㎡，有完整的骨架化石复原，建议预留40分钟 🦖', time: '10:17' }
+    ]
+  },
+  { id: 9, agent: '科技馆讲解员', user: '赵六 (186****9012)', phone: '18612349012', customer: '科技馆', venue: '主馆', time: '2026-06-20 14:00', rounds: 4, fallback: 0, quality: 'good',
+    messages: [
+      { role: 'user', text: '科技馆几点关门', time: '14:00' },
+      { role: 'ai', text: '科技馆开放时间：周二至周日 9:00-17:00 ⏰', time: '14:00' },
+      { role: 'user', text: '有咖啡厅吗', time: '14:02' },
+      { role: 'ai', text: '2F中庭有咖啡厅，提供咖啡和简餐 ☕', time: '14:02' }
+    ]
+  },
+  { id: 10, agent: '自然百科向导', user: '周八 (135****7890)', phone: '13512347890', customer: '自然博物馆', venue: '主馆', time: '2026-07-01 16:45', rounds: 2, fallback: 1, quality: 'good',
+    messages: [
+      { role: 'user', text: '自然博物馆在哪', time: '16:45' },
+      { role: 'ai', text: '自然博物馆位于朝阳区望京南路，地铁14号线望京南站A口步行500米 📍', time: '16:45' },
+      { role: 'user', text: '有停车场吗', time: '16:47' },
+      { role: 'ai', text: '很抱歉，暂未在知识库中找到相关信息。你可以联系现场工作人员。', time: '16:47' }
+    ]
+  }
+];
+
+function renderSessionLogs(filteredData) {
+  const data = filteredData || allSessionLogs;
+  const tbody = document.getElementById('sessionLogBody');
+  tbody.innerHTML = data.map(s => {
+    const tagClass = s.quality;
+    const tagText = s.quality === 'good' ? '优质' : s.quality === 'warn' ? '一般' : '需关注';
+    return `<tr>
+      <td><span style="color:#0B5DEA;font-weight:500;">${s.id}</span></td>
+      <td>${s.user}</td>
+      <td>${s.customer}</td>
+      <td>${s.venue}</td>
+      <td><span style="font-size:13px;">${s.agent}</span></td>
+      <td>${s.time}</td>
+      <td>${s.rounds} 轮</td>
+      <td style="color:${s.fallback > 0 ? '#faad14' : '#52c41a'};">${s.fallback} 次</td>
+      <td><span class="session-tag ${tagClass}">${tagText}</span></td>
+      <td><button class="action-btn" onclick="openSessionDetail(${s.id})" data-anno="log-03">详情</button></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('logTotalCount').textContent = data.length;
+}
+
+function filterSessionLogs() {
+  const customer = document.getElementById('logFilterCustomer').value;
+  const venue = document.getElementById('logFilterVenue').value;
+  const userQ = document.getElementById('logFilterUser').value.trim().toLowerCase();
+  const start = document.getElementById('logFilterStart').value;
+  const end = document.getElementById('logFilterEnd').value;
+  const quality = document.getElementById('logFilterQuality').value;
+
+  let filtered = allSessionLogs.filter(s => {
+    if (customer && s.customer !== customer) return false;
+    if (venue && s.venue !== venue) return false;
+    if (userQ && !s.user.toLowerCase().includes(userQ) && !s.phone.includes(userQ)) return false;
+    if (start && s.time < start) return false;
+    if (end && s.time > end + ' 23:59') return false;
+    if (quality && s.quality !== quality) return false;
+    return true;
+  });
+  renderSessionLogs(filtered);
+  showToast('筛选完成，共 ' + filtered.length + ' 条', 'success');
+}
+
+function resetLogFilter() {
+  document.getElementById('logFilterCustomer').value = '';
+  document.getElementById('logFilterVenue').value = '';
+  document.getElementById('logFilterUser').value = '';
+  document.getElementById('logFilterStart').value = '2026-04-17';
+  document.getElementById('logFilterEnd').value = '2026-07-09';
+  document.getElementById('logFilterQuality').value = '';
+  renderSessionLogs();
+  showToast('已重置筛选');
+}
+
+function openSessionDetail(sessionId) {
+  const s = allSessionLogs.find(x => x.id === sessionId);
+  if (!s) return;
+
+  document.getElementById('sessionDetailTitle').textContent = '会话详情';
+  document.getElementById('sessionMetaRow').innerHTML = `
+    <div class="session-meta-row" style="border:none;padding:0;">
+      <div><span class="label">用户：</span><span class="value">${s.user}</span></div>
+      <div><span class="label">来源客户：</span><span class="value">${s.customer}</span></div>
+      <div><span class="label">来源场馆：</span><span class="value">${s.venue}</span></div>
+      <div><span class="label">开始时间：</span><span class="value">${s.time}</span></div>
+      <div><span class="label">消息轮次：</span><span class="value">${s.rounds} 轮</span></div>
+      <div><span class="label">兜底次数：</span><span class="value" style="color:${s.fallback > 0 ? '#faad14' : '#52c41a'};">${s.fallback} 次</span></div>
+    </div>
+  `;
+
+  const chatWrap = document.getElementById('sessionChatWrap');
+  chatWrap.innerHTML = '';
+  let lastTime = '';
+  s.messages.forEach(m => {
+    const timeStr = m.time;
+    if (timeStr !== lastTime) {
+      const timeDiv = document.createElement('div');
+      timeDiv.className = 'session-chat-time';
+      timeDiv.textContent = s.time.split(' ')[0] + ' ' + timeStr;
+      chatWrap.appendChild(timeDiv);
+      lastTime = timeStr;
+    }
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'session-chat-msg ' + (m.role === 'user' ? 'user' : 'ai');
+    const avatarClass = m.role === 'user' ? 'user' : 'ai';
+    const avatarText = m.role === 'user' ? '👤' : 'AI';
+    msgDiv.innerHTML = `
+      <div class="session-chat-avatar ${avatarClass}">${avatarText}</div>
+      <div class="session-chat-bubble ${m.role}">${m.text.replace(/\n/g, '<br>')}</div>
+    `;
+    chatWrap.appendChild(msgDiv);
+  });
+
+  document.getElementById('sessionDetailModal').classList.add('show');
+}
+
+function closeSessionDetail() { document.getElementById('sessionDetailModal').classList.remove('show'); }
+
+function jumpToSessionByTime(time, customer) {
+  const match = allSessionLogs.find(s => s.time.startsWith(time.split(' ')[0]) && s.time.includes(time.split(' ')[1]) && s.customer === customer);
+  if (match) {
+    jumpToSessionLog(match.id);
+  } else {
+    closeUserDetail();
+    switchPage('sessionLogs');
+    showToast('未找到精确匹配的会话，已打开会话记录页');
+  }
+}
+
+function jumpToSessionLog(sessionId) {
+  closeUserDetail();
+  switchPage('sessionLogs');
+  setTimeout(() => openSessionDetail(sessionId), 300);
+}
+
+function openSessionExportModal() { document.getElementById('sessionExportModal').classList.add('show'); }
+
+function closeSessionExportModal() { document.getElementById('sessionExportModal').classList.remove('show'); }
+
+function doSessionExport() {
+  const customer = document.getElementById('sessionExportCustomer').value;
+  const quality = document.getElementById('sessionExportQuality').value;
+  let desc = '正在导出会话记录';
+  if (customer) desc += `（${customer}）`;
+  if (quality) desc += `（${quality === 'good' ? '优质' : quality === 'warn' ? '一般' : '需关注'}）`;
+  closeSessionExportModal();
+  showToast(desc + '...', 'success');
+}
+
+const customerVenuesMap = {
+  'XX博物馆': ['东馆', '西馆', '少儿馆'],
+  '科技馆': ['主馆'],
+  '自然博物馆': ['主馆']
+};
+
+function onLogFilterCustomerChange() {
+  var customer = document.getElementById('logFilterCustomer').value;
+  var venueSelect = document.getElementById('logFilterVenue');
+  venueSelect.innerHTML = '<option value="">全部场馆</option>';
+  if (customer && customerVenuesMap[customer]) {
+    customerVenuesMap[customer].forEach(function(name) {
+      venueSelect.innerHTML += '<option>' + name + '</option>';
+    });
+  }
+}
+
+function init_session_logs() {
+  renderSessionLogs();
+}
+</script>

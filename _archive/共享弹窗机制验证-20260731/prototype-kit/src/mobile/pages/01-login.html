@@ -1,0 +1,46 @@
+<!-- PAGE_META: {"id": "m-login", "title": "登录页", "hideTabBar": true} -->
+<template class="doc">
+  <div class="doc-section" data-trigger="page-load">
+    <div class="doc-feature">
+      <div class="doc-feature-name"><span class="doc-feature-tag ui">UI</span>微信授权登录</div>
+      <div class="doc-feature-desc">用户首次进入时展示，显示应用图标、名称、所属博物馆。需勾选协议后按钮才可点击。</div>
+    </div>
+    <div class="doc-feature">
+      <div class="doc-feature-name"><span class="doc-feature-tag logic">逻辑</span>协议勾选校验</div>
+      <div class="doc-feature-desc">未勾选时按钮禁用态（灰色），勾选后激活，点击调用 wx.login 获取 code。</div>
+    </div>
+    <div class="doc-feature">
+      <div class="doc-feature-name"><span class="doc-feature-tag data">数据</span>登录流程</div>
+      <div class="doc-feature-desc">获取 code → 后端换 openid → 查询/创建用户 → 返回 token → 跳转首页。</div>
+      <div class="doc-api">POST /api/auth/wx-login { code }</div>
+    </div>
+  </div>
+</template>
+
+<div class="page" id="page-m-login">
+  <div style="background:#f5f2ed;min-height:100%;display:flex;flex-direction:column;align-items:center;">
+    <div class="m-header" style="width:100%;background:#f5f2ed;">
+      微信授权登录
+      <div style="position:absolute;right:12px;display:flex;gap:8px;">
+        <span style="width:28px;height:28px;border-radius:50%;background:#e5e5e5;display:flex;align-items:center;justify-content:center;font-size:14px;">⋯</span>
+        <span style="width:28px;height:28px;border-radius:50%;background:#e5e5e5;display:flex;align-items:center;justify-content:center;font-size:14px;">✕</span>
+      </div>
+    </div>
+    <div style="margin-top:80px;width:72px;height:72px;border-radius:16px;background:#8b6914;display:flex;align-items:center;justify-content:center;">
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><path d="M5 30h30M10 30V15l10-8 10 8v15" stroke="#fff" stroke-width="2" fill="none"/><rect x="16" y="22" width="8" height="8" rx="1" stroke="#fff" stroke-width="1.5" fill="none"/></svg>
+    </div>
+    <div style="margin-top:16px;font-size:20px;font-weight:700;color:#000;">智能导游</div>
+    <div style="margin-top:6px;font-size:14px;color:#999;">XX博物馆</div>
+    <div style="margin-top:24px;text-align:center;color:#a67c52;font-size:14px;line-height:1.8;">
+      登录后即可开始智能导览<br>手机号仅用于身份识别
+    </div>
+    <div style="margin-top:24px;display:flex;align-items:flex-start;gap:8px;width:80%;">
+      <div style="width:16px;height:16px;border:1px solid #ccc;border-radius:2px;flex-shrink:0;margin-top:2px;"></div>
+      <div style="font-size:13px;color:#555;line-height:1.4;">我已阅读并同意《用户服务协议》和《隐私保护政策》</div>
+    </div>
+    <div style="margin-top:24px;width:80%;">
+      <div style="height:48px;border-radius:12px;background:#e8dfd0;display:flex;align-items:center;justify-content:center;font-size:16px;color:#b0a898;cursor:not-allowed;">微信授权登录</div>
+    </div>
+    <div style="margin-top:auto;padding-bottom:40px;font-size:12px;color:#999;">由数熙科技提供技术支持</div>
+  </div>
+</div>

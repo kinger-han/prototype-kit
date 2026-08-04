@@ -1,0 +1,81 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-07-17T14:00:00+08:00",
+  "pages": {
+    "kb-management": [
+      {
+        "id": "note-001",
+        "module": "筛选",
+        "type": "interaction_logic",
+        "content": "筛选为实时生效，不需要点击查询按钮触发；查询按钮暂不使用",
+        "recordedAt": "2026-07-17T14:00:00+08:00",
+        "source": "conversation"
+      },
+      {
+        "id": "note-002",
+        "module": "筛选",
+        "type": "dependency",
+        "content": "必须先选择客户，才能选择该客户名下的场馆（从属关系）",
+        "recordedAt": "2026-07-17T14:00:00+08:00",
+        "source": "conversation"
+      },
+      {
+        "id": "note-003",
+        "module": "筛选",
+        "type": "interaction_logic",
+        "content": "多个筛选条件之间为 AND 关系",
+        "recordedAt": "2026-07-17T14:00:00+08:00",
+        "source": "conversation"
+      },
+      {
+        "id": "note-004",
+        "module": "来源字段",
+        "type": "business_rule",
+        "content": "来源字段支持双向穿透：未命中问题转入时可点击跳转回原始记录",
+        "recordedAt": "2026-07-17T14:00:00+08:00",
+        "source": "conversation"
+      },
+      {
+        "id": "note-005",
+        "module": "操作列",
+        "type": "business_rule",
+        "content": "删除按钮遵循全局规则：需二次确认（见 crossPageRules）",
+        "recordedAt": "2026-07-17T14:00:00+08:00",
+        "source": "conversation"
+      },
+      {
+        "id": "note-006",
+        "module": "关联问题",
+        "type": "business_rule",
+        "content": "该问答由未命中问题自动转入，问题原文已作为相似问法预填",
+        "recordedAt": "2026-07-17T14:00:00+08:00",
+        "source": "conversation"
+      },
+      {
+        "id": "note-007",
+        "module": "导出按钮",
+        "type": "roadmap",
+        "content": "导出功能规划为二期实现，当前版本仅作按钮占位，无实际导出逻辑",
+        "recordedAt": "2026-07-17T14:00:00+08:00",
+        "source": "conversation"
+      }
+    ]
+  },
+  "crossPageRules": [
+    {
+      "id": "rule-001",
+      "content": "客户与场馆为从属关系：必须先选择客户，才能选择该客户名下的场馆",
+      "relatedPages": ["kb-management", "venue-mgmt", "session-logs", "miss-stats"],
+      "recordedAt": "2026-07-17T14:00:00+08:00",
+      "source": "conversation"
+    },
+    {
+      "id": "rule-002",
+      "content": "全局产品设计原则：所有删除类操作（不限于某个模块），点击后必须弹出二次确认，不允许一键直接删除",
+      "relatedPages": ["all"],
+      "recordedAt": "2026-07-17T14:00:00+08:00",
+      "source": "conversation"
+    }
+  ],
+  "projectConventions": []
+}

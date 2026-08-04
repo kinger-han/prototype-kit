@@ -1,0 +1,780 @@
+<!-- PAGE_META: {"id": "_shared", "shared": true} -->
+<div class="proto-page" id="page-shared-modals" style="display:none;">
+  <!-- ====== 共享弹窗容器（所有弹窗为兄弟节点，不嵌套） ====== -->
+  <!-- JS 函数均保留在各页面文件中（openUserDetail/previewVenueQr/openFaqFormModal 等），构建时合并为全局函数 -->
+
+  <!-- 1. 停用确认弹窗（第一轮试点，保留） -->
+  <!-- open/close/do 函数在 pages/02-venue-mgmt.html -->
+  <div class="confirm-overlay" id="disableVenueConfirm">
+    <div class="delete-confirm-box">
+      <div class="delete-confirm-icon">⚠️</div>
+      <div class="delete-confirm-title">确认停用场馆？</div>
+      <div class="delete-confirm-desc" id="disableVenueDesc">停用后该场馆的二维码将无法扫码进入AI导游。</div>
+      <div class="confirm-actions">
+        <button class="confirm-btn" onclick="closeDisableVenueConfirm()">取消</button>
+        <button class="confirm-btn danger" onclick="doDisableVenue()">确认停用</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. 用户详情弹窗（跨页面共用测试：被 01-user-mgmt 原生调用，测试中由其他页面手动调用） -->
+  <!-- openUserDetail(idx)/closeUserDetail()/switchTab() 在 pages/01-user-mgmt.html -->
+  <div class="modal-overlay" id="userDetailModal">
+    <div class="modal user-detail-modal">
+      <div class="modal-header">
+        <h3 id="detailTitle">用户详情</h3>
+        <button class="modal-close" onclick="closeUserDetail()">✕</button>
+      </div>
+      <div class="detail-tabs" id="detailTabs">
+        <div class="detail-tab active" onclick="switchTab(0, this)">基本信息</div>
+        <div class="detail-tab" onclick="switchTab(1, this)">访问记录</div>
+        <div class="detail-tab" onclick="switchTab(2, this)">会话记录</div>
+      </div>
+      <div class="detail-content active" id="tab0"><div class="info-grid" id="userInfoGrid"></div></div>
+      <div class="detail-content" id="tab1"><div class="venue-list" id="venueList"></div></div>
+      <div class="detail-content" id="tab2"><div class="session-timeline" id="sessionTimeline"></div></div>
+    </div>
+  </div>
+
+  <!-- 3. 二维码预览弹窗（补充简单弹窗，凑多兄弟节点场景） -->
+  <!-- previewVenueQr(idx)/closeQrcodePreview()/doDownloadQrcode() 在 pages/02-venue-mgmt.html -->
+  <div class="modal-overlay" id="qrcodePreviewModal">
+    <div class="modal qrcode-preview-modal">
+      <div class="modal-header">
+        <h3 id="qrcodePreviewTitle">二维码预览</h3>
+        <button class="modal-close" onclick="closeQrcodePreview()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="qrcode-preview-wrap">
+          <div class="qrcode-preview-img">
+            <div class="qr-pattern" style="width:140px;height:140px;"></div>
+            <div class="qr-center" id="qrcodePreviewIcon" style="width:40px;height:40px;font-size:18px;">🏛️</div>
+          </div>
+          <div class="qrcode-preview-name" id="qrcodePreviewName">XX博物馆</div>
+          <div class="qrcode-preview-hint">扫码开启AI智能导游</div>
+        </div>
+      </div>
+      <div style="display:flex;border-top:1px solid #f0f0f0;">
+        <button style="flex:1;height:46px;border:none;background:#fff;font-size:14px;color:#666;cursor:pointer;" onclick="closeQrcodePreview()">关闭</button>
+        <button style="flex:1;height:46px;border:none;background:#fff;font-size:14px;color:#0B5DEA;font-weight:600;cursor:pointer;border-left:1px solid #f0f0f0;" onclick="doDownloadQrcode()">下载PNG</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. 新增/编辑问答弹窗（复杂表单：select联动+校验） -->
+  <!-- openFaqFormModal(idx)/closeFaqFormModal()/onFaqKbTypeChange()/submitFaqForm() 在 pages/04-kb-management.html -->
+  <div class="modal-overlay" id="faqFormModal">
+    <div class="modal" style="width:600px;max-height:80vh;">
+      <div class="modal-header">
+        <h3 id="faqFormTitle">新增问答</h3>
+        <button class="modal-close" onclick="closeFaqFormModal()">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <div class="faq-form">
+          <div class="form-row">
+            <span class="form-label">所属客户：<span class="required">*</span></span>
+            <select class="form-control" id="faqFormCustomer"><option value="">请选择客户</option><option>XX博物馆</option><option>科技馆</option><option>自然博物馆</option></select>
+          </div>
+          <div class="form-row">
+            <span class="form-label">选择知识库：<span class="required">*</span></span>
+            <select class="form-control" id="faqFormKbType" onchange="onFaqKbTypeChange()">
+              <option value="venue">场馆知识库</option>
+              <option value="public">公共知识库</option>
+            </select>
+          </div>
+          <div class="form-row" id="faqFormVenueRow">
+            <span class="form-label">所属场馆：<span class="required">*</span></span>
+            <select class="form-control" id="faqFormVenue"><option value="">请选择场馆</option><option>东馆</option><option>西馆</option><option>少儿馆</option><option>主馆</option></select>
+          </div>
+          <div class="form-row">
+            <span class="form-label">标准问题：<span class="required">*</span></span>
+            <input type="text" class="form-control" id="faqFormQuestion" placeholder="请输入标准问题">
+          </div>
+          <div class="form-row">
+            <span class="form-label">相似问法：</span>
+            <div style="flex:1;">
+              <textarea class="form-control" id="faqFormSimilar" placeholder="每行一条相似问法，可留空"></textarea>
+              <div class="form-hint">每行一条，用户以任意一种问法提问都会匹配此答案</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <span class="form-label">答案内容：<span class="required">*</span></span>
+            <textarea class="form-control" id="faqFormAnswer" placeholder="请输入答案内容"></textarea>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid #f0f0f0;">
+          <button class="confirm-btn" onclick="closeFaqFormModal()">取消</button>
+          <button class="confirm-btn export-btn-confirm" onclick="submitFaqForm()">提交</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. 通用确认弹窗（禁用用户确认，批次A） -->
+  <!-- open/close/do 函数在 pages/01-user-mgmt.html -->
+  <div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box">
+      <div class="confirm-icon">⚠️</div>
+      <div class="confirm-title" id="confirmTitle">确认禁用用户？</div>
+      <div class="confirm-desc" id="confirmDesc">禁用后该用户将无法使用智能导游服务，扫码进入时会提示"账号已被禁用"。</div>
+      <div class="confirm-actions">
+        <button class="confirm-btn" onclick="closeConfirm()">取消</button>
+        <button class="confirm-btn danger" onclick="doDisable()">确认禁用</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. 删除场馆确认弹窗（批次A） -->
+  <!-- open/close/do 函数在 pages/02-venue-mgmt.html -->
+  <div class="confirm-overlay" id="deleteVenueConfirm">
+    <div class="delete-confirm-box">
+      <div class="delete-confirm-icon">⚠️</div>
+      <div class="delete-confirm-title">确认删除场馆？</div>
+      <div class="delete-confirm-desc" id="deleteVenueDesc">删除后该场馆的二维码将立即失效，历史会话数据将保留。此操作不可恢复。</div>
+      <div class="confirm-actions">
+        <button class="confirm-btn" onclick="closeDeleteVenueConfirm()">取消</button>
+        <button class="confirm-btn danger" onclick="doDeleteVenue()">确认删除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. 删除知识确认弹窗（批次A） -->
+  <!-- open/close/do 函数在 pages/04-kb-management.html -->
+  <div class="confirm-overlay" id="deleteKbConfirm">
+    <div class="delete-confirm-box">
+      <div class="delete-confirm-icon">&#9888;&#65039;</div>
+      <div class="delete-confirm-title">确认删除？</div>
+      <div class="delete-confirm-desc">删除后将同步删除 Dify 知识库中的对应数据，此操作不可恢复。</div>
+      <div class="confirm-actions">
+        <button class="confirm-btn" onclick="closeDeleteKbConfirm()">取消</button>
+        <button class="confirm-btn danger" onclick="doDeleteKb()">确认删除</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 8. missModal（批次B） -->
+  <div class="modal-overlay" id="missModal">
+    <div class="modal" style="width:720px;">
+      <div class="modal-header">
+        <h3>未命中问题统计</h3>
+        <button class="modal-close" onclick="closeMissModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div style="font-size:13px;color:#999;">统计周期：近30天 ｜ 客户：<b style="color:#333;">全部</b></div>
+          <button class="toolbar-btn" onclick="showToast('导出Excel...', 'success')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            导出Excel
+          </button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="border:1px solid #f0f0f0;border-radius:6px;padding:12px 14px;display:flex;align-items:center;gap:12px;">
+            <div style="width:24px;height:24px;background:#fff1f0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#f5222d;flex-shrink:0;">1</div>
+            <div style="flex:1;"><div style="font-size:14px;color:#333;margin-bottom:4px;">附近有什么好吃的推荐</div><div style="font-size:12px;color:#999;">客户：XX博物馆 ｜ 最近：2026-07-07</div></div>
+            <div style="font-size:13px;font-weight:600;color:#f5222d;">18次</div>
+          </div>
+          <div style="border:1px solid #f0f0f0;border-radius:6px;padding:12px 14px;display:flex;align-items:center;gap:12px;">
+            <div style="width:24px;height:24px;background:#fff1f0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#f5222d;flex-shrink:0;">2</div>
+            <div style="flex:1;"><div style="font-size:14px;color:#333;margin-bottom:4px;">有没有停车场，怎么收费</div><div style="font-size:12px;color:#999;">客户：XX博物馆 ｜ 最近：2026-07-06</div></div>
+            <div style="font-size:13px;font-weight:600;color:#f5222d;">12次</div>
+          </div>
+          <div style="border:1px solid #f0f0f0;border-radius:6px;padding:12px 14px;display:flex;align-items:center;gap:12px;">
+            <div style="width:24px;height:24px;background:#fff1f0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#f5222d;flex-shrink:0;">3</div>
+            <div style="flex:1;"><div style="font-size:14px;color:#333;margin-bottom:4px;">可以带宠物进来吗</div><div style="font-size:12px;color:#999;">客户：科技馆 ｜ 最近：2026-07-05</div></div>
+            <div style="font-size:13px;font-weight:600;color:#f5222d;">9次</div>
+          </div>
+          <div style="border:1px solid #f0f0f0;border-radius:6px;padding:12px 14px;display:flex;align-items:center;gap:12px;">
+            <div style="width:24px;height:24px;background:#f0f0f0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#666;flex-shrink:0;">4</div>
+            <div style="flex:1;"><div style="font-size:14px;color:#333;margin-bottom:4px;">有没有讲解员服务</div><div style="font-size:12px;color:#999;">客户：XX博物馆 ｜ 最近：2026-07-04</div></div>
+            <div style="font-size:13px;font-weight:600;color:#f5222d;">7次</div>
+          </div>
+          <div style="border:1px solid #f0f0f0;border-radius:6px;padding:12px 14px;display:flex;align-items:center;gap:12px;">
+            <div style="width:24px;height:24px;background:#f0f0f0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#666;flex-shrink:0;">5</div>
+            <div style="flex:1;"><div style="font-size:14px;color:#333;margin-bottom:4px;">文创商店在哪里</div><div style="font-size:12px;color:#999;">客户：自然博物馆 ｜ 最近：2026-07-03</div></div>
+            <div style="font-size:13px;font-weight:600;color:#f5222d;">5次</div>
+          </div>
+        </div>
+        <div style="text-align:center;padding:16px 0;font-size:13px;color:#999;">以上问题建议补充到对应客户的 Dify 知识库中</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. sessionDetailModal（批次B） -->
+  <div class="modal-overlay" id="sessionDetailModal">
+    <div class="modal session-detail-modal">
+      <div class="modal-header">
+        <h3 id="sessionDetailTitle">会话详情</h3>
+        <button class="modal-close" onclick="closeSessionDetail()">✕</button>
+      </div>
+      <div class="modal-body" style="padding:16px 24px;">
+        <div class="session-meta-row" id="sessionMetaRow"></div>
+        <div style="font-size:13px;font-weight:600;color:#333;margin:12px 0 8px;">对话记录</div>
+        <div class="session-chat-wrap" id="sessionChatWrap"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. groupDetailModal（批次B） -->
+  <div class="modal-overlay" id="groupDetailModal">
+    <div class="modal" style="width:720px;max-height:80vh;">
+      <div class="modal-header">
+        <h3 id="groupDetailTitle">分组详情</h3>
+        <button class="modal-close" onclick="closeGroupDetail()">✕</button>
+      </div>
+      <div class="modal-body" style="padding:16px 24px;">
+        <div style="display:flex;gap:20px;margin-bottom:16px;font-size:13px;">
+          <span id="groupDetailCategory"></span>
+          <span id="groupDetailCustomer"></span>
+          <span id="groupDetailVenue"></span>
+          <span id="groupDetailAIType"></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <span style="font-size:13px;color:#666;" id="groupDetailCount"></span>
+          <div style="display:flex;gap:8px;">
+            <button class="filter-btn primary" onclick="markAllGroupHandled('已处理')">全部加入知识库</button>
+            <button class="filter-btn" onclick="markAllGroupHandled('已忽略')">全部忽略</button>
+          </div>
+        </div>
+        <div class="table-card">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:220px;">问题原文</th>
+                <th style="width:130px;">所属用户</th>
+                <th style="width:130px;">触发时间</th>
+                <th style="width:90px;">状态</th>
+                <th style="width:100px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="groupDetailBody">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 11. venueDetailModal（批次B） -->
+  <div class="modal-overlay" id="venueDetailModal">
+    <div class="modal venue-detail-modal">
+      <div class="modal-header">
+        <h3 id="venueDetailTitle">场馆详情</h3>
+        <button class="modal-close" onclick="closeVenueDetail()">✕</button>
+      </div>
+      <div class="detail-content active" style="display:block;">
+        <div style="padding:20px 24px;">
+          <div style="font-size:14px;font-weight:600;color:#333;margin-bottom:16px;">基本信息</div>
+          <div class="info-grid" id="venueInfoGrid"></div>
+        </div>
+        <div style="padding:0 24px 20px;border-top:1px solid #f0f0f0;">
+          <div style="font-size:14px;font-weight:600;color:#333;margin:16px 0 12px;">二维码</div>
+          <div style="display:flex;align-items:flex-start;gap:24px;">
+            <div id="venueDetailQrThumb" style="width:120px;height:120px;background:#f5f5f5;border:1px solid #e8e8e8;border-radius:8px;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0;"></div>
+            <div style="flex:1;">
+              <div class="info-item" style="margin-bottom:12px;"><div class="info-label">扫码次数</div><div class="info-value" id="venueDetailScanCount">0</div></div>
+              <div class="info-item"><div class="info-label">最近扫码时间</div><div class="info-value" id="venueDetailLastScan">—</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 12. kbDetailModal（批次B） -->
+  <div class="modal-overlay" id="kbDetailModal">
+    <div class="modal" style="width:640px;max-height:80vh;">
+      <div class="modal-header">
+        <h3>知识详情</h3>
+        <button class="modal-close" onclick="closeKbDetailModal()">&#10005;</button>
+      </div>
+      <div class="modal-body" id="kbDetailBody" style="overflow-y:auto;max-height:calc(80vh - 120px);">
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid #f0f0f0;" id="kbDetailFooter">
+      </div>
+    </div>
+  </div>
+
+  <!-- 13. relatedMissModal（批次B） -->
+  <div class="modal-overlay" id="relatedMissModal">
+    <div class="modal" style="width:680px;max-height:70vh;">
+      <div class="modal-header">
+        <h3>关联未命中问题</h3>
+        <button class="modal-close" onclick="closeRelatedMissModal()">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <div style="font-size:13px;color:#666;margin-bottom:12px;">该问答由以下未命中问题自动转入，问题原文已作为相似问法预填：</div>
+        <table class="session-detail-table">
+          <thead><tr><th>问题原文</th><th>所属用户</th><th>触发时间</th></tr></thead>
+          <tbody>
+            <tr><td>有没有停车场，怎么收费</td><td>王五 (156****5678)</td><td>2026-07-06 10:15</td></tr>
+            <tr><td>车停在哪里</td><td>张三 (138****6789)</td><td>2026-07-05 11:30</td></tr>
+            <tr><td>停车多少钱一小时</td><td>李四 (139****1234)</td><td>2026-07-04 09:20</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 14. hitDetailModal（批次B） -->
+  <div class="modal-overlay" id="hitDetailModal">
+    <div class="modal" style="width:680px;max-height:70vh;">
+      <div class="modal-header">
+        <h3>命中详情 — 近30天</h3>
+        <button class="modal-close" onclick="closeHitDetailModal()">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <div style="font-size:13px;color:#666;margin-bottom:12px;">以下对话中检索并命中了该知识条目：</div>
+        <table class="session-detail-table">
+          <thead><tr><th>时间</th><th>用户</th><th>客户</th><th>问法</th></tr></thead>
+          <tbody>
+            <tr><td>2026-07-08 10:32</td><td>张三</td><td>XX博物馆</td><td>附近有停车场吗</td></tr>
+            <tr><td>2026-07-07 14:15</td><td>王五</td><td>XX博物馆</td><td>开车来能停哪</td></tr>
+            <tr><td>2026-07-06 09:40</td><td>李四</td><td>XX博物馆</td><td>停车收费吗</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 15. mergeModal（批次B） -->
+  <div class="modal-overlay" id="mergeModal">
+    <div class="modal" style="width:560px;">
+      <div class="modal-header">
+        <h3>合并至已有知识</h3>
+        <button class="modal-close" onclick="closeMergeModal()">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <div style="margin-bottom:12px;">
+          <div style="font-size:13px;color:#666;margin-bottom:4px;">问题原文</div>
+          <div id="mergeQuestion" style="background:#f5f5f5;padding:8px 12px;border-radius:4px;font-size:13px;"></div>
+        </div>
+        <div style="margin-bottom:12px;">
+          <div style="font-size:13px;color:#666;margin-bottom:4px;">所属范围</div>
+          <div id="mergeScope" style="font-size:13px;"></div>
+        </div>
+        <div style="margin-bottom:12px;">
+          <div style="font-size:13px;color:#666;margin-bottom:4px;">搜索已有知识</div>
+          <input type="text" id="mergeSearchInput" class="form-control" placeholder="输入关键词搜索" oninput="searchMergeKb()">
+        </div>
+        <div id="mergeSearchResults" style="max-height:200px;overflow-y:auto;"></div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid #f0f0f0;">
+        <button class="confirm-btn" onclick="closeMergeModal()">取消</button>
+        <button class="confirm-btn export-btn-confirm" onclick="confirmMerge()">确认合并</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 16. exportModal（批次C） -->
+  <div class="modal-overlay" id="exportModal">
+    <div class="modal export-modal">
+      <div class="modal-header">
+        <h3>导出用户数据</h3>
+        <button class="modal-close" onclick="closeExportModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="export-form">
+          <div class="export-row">
+            <label>最近访问客户：</label>
+            <select id="exportCustomer">
+              <option value="">全部客户</option>
+              <option>XX博物馆</option>
+              <option>科技馆</option>
+              <option>自然博物馆</option>
+            </select>
+          </div>
+          <div class="export-row">
+            <label>账号状态：</label>
+            <select id="exportStatus">
+              <option value="">全部</option>
+              <option>正常</option>
+              <option>已禁用</option>
+            </select>
+          </div>
+          <div class="export-row">
+            <label>注册时间：</label>
+            <input type="date" id="exportStart" value="2026-01-01">
+            <span style="color:#999;">至</span>
+            <input type="date" id="exportEnd" value="2026-07-08">
+          </div>
+          <div class="export-note">
+            <b>导出说明：</b><br>
+            • 选择「相关客户」后，仅导出该客户下的用户数据<br>
+            • 不选择客户则导出全部数据<br>
+            • 导出字段：手机号、昵称、相关客户、总会话数、累计兜底次数、最近访问时间、注册时间、状态
+          </div>
+          <div class="export-actions">
+            <button class="confirm-btn" onclick="closeExportModal()">取消</button>
+            <button class="confirm-btn export-btn-confirm" onclick="doExport()">确认导出</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 17. sessionExportModal（批次C） -->
+  <div class="modal-overlay" id="sessionExportModal" data-anno="log-export">
+    <div class="modal export-modal">
+      <div class="modal-header">
+        <h3>导出会话记录</h3>
+        <button class="modal-close" onclick="closeSessionExportModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="export-form">
+          <div class="export-row">
+            <label>来源客户：</label>
+            <select id="sessionExportCustomer">
+              <option value="">全部客户</option>
+              <option>XX博物馆</option>
+              <option>科技馆</option>
+              <option>自然博物馆</option>
+            </select>
+          </div>
+          <div class="export-row">
+            <label>会话质量：</label>
+            <select id="sessionExportQuality">
+              <option value="">全部</option>
+              <option value="good">顺利</option>
+              <option value="warn">有兜底</option>
+              <option value="bad">较多兜底</option>
+            </select>
+          </div>
+          <div class="export-row">
+            <label>时间范围：</label>
+            <input type="date" id="sessionExportStart" value="2026-01-01">
+            <span style="color:#999;">至</span>
+            <input type="date" id="sessionExportEnd" value="2026-07-09">
+          </div>
+          <div class="export-note">
+            <b>导出说明：</b><br>
+            • 选择「来源客户」后，仅导出该客户下的会话数据<br>
+            • 选择「会话质量」后，仅导出对应质量的会话<br>
+            • 导出字段：会话ID、用户、来源客户、来源场馆、智能体、开始时间、消息轮次、兜底次数、会话质量
+          </div>
+          <div class="export-actions">
+            <button class="confirm-btn" onclick="closeSessionExportModal()">取消</button>
+            <button class="confirm-btn export-btn-confirm" onclick="doSessionExport()">确认导出</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 18. missExportModal（批次C） -->
+  <div class="modal-overlay" id="missExportModal">
+    <div class="modal export-modal">
+      <div class="modal-header">
+        <h3>导出未命中问题</h3>
+        <button class="modal-close" onclick="closeMissExportModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="export-form">
+          <div class="export-row">
+            <label>来源客户：</label>
+            <select id="missExportCustomer">
+              <option value="">全部客户</option>
+              <option>XX博物馆</option>
+              <option>科技馆</option>
+              <option>自然博物馆</option>
+            </select>
+          </div>
+          <div class="export-row">
+            <label>类型：</label>
+            <select id="missExportType">
+              <option value="">全部类型</option>
+              <option>知识库缺失（可补充）</option>
+              <option>超出导游职责（忽略）</option>
+              <option>用户表述不清</option>
+              <option>其他</option>
+            </select>
+          </div>
+          <div class="export-row">
+            <label>处理状态：</label>
+            <select id="missExportStatus">
+              <option value="">全部</option>
+              <option>待处理</option>
+              <option>已处理</option>
+              <option>已忽略</option>
+            </select>
+          </div>
+          <div class="export-row">
+            <label>时间范围：</label>
+            <input type="date" id="missExportStart" value="2026-06-09">
+            <span style="color:#999;">至</span>
+            <input type="date" id="missExportEnd" value="2026-07-09">
+          </div>
+          <div class="export-note">
+            <b>导出说明：</b><br>
+            • 支持按客户、类型、处理状态、时间范围筛选<br>
+            • 导出字段：问题原文、来源客户、来源场馆、智能体、触发时间、所属用户、类型、处理状态
+          </div>
+          <div class="export-actions">
+            <button class="confirm-btn" onclick="closeMissExportModal()">取消</button>
+            <button class="confirm-btn export-btn-confirm" onclick="doMissExport()">确认导出</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 19. addVenueModal（批次C） -->
+  <div class="modal-overlay" id="addVenueModal">
+    <div class="modal" style="width:520px;">
+      <div class="modal-header">
+        <h3>新增场馆</h3>
+        <button class="modal-close" onclick="closeAddVenueModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="venue-form">
+          <div class="form-row">
+            <span class="form-label">所属客户：<span style="color:#f5222d;">*</span></span>
+            <select class="form-control" id="addVenueCustomer">
+              <option value="">请选择客户</option>
+              <option>XX博物馆</option>
+              <option>科技馆</option>
+              <option>自然博物馆</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <span class="form-label">场馆名称：<span style="color:#f5222d;">*</span></span>
+            <input type="text" class="form-control" id="addVenueName" placeholder="请输入场馆名称">
+          </div>
+          <div class="form-row">
+            <span class="form-label">场馆Logo：</span>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div id="addVenueLogoPreview" style="width:60px;height:60px;border:1px dashed #d9d9d9;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">Logo</div>
+              <button class="filter-btn" onclick="showToast('Logo上传功能（演示）')">上传</button>
+            </div>
+            <div style="font-size:12px;color:#999;margin-left:80px;">logo图片格式限制为：PNG、JPG</div>
+          </div>
+          <div class="form-row">
+            <span class="form-label">状态：<span style="color:#f5222d;">*</span></span>
+            <select class="form-control" id="addVenueStatus">
+              <option value="active">启用</option>
+              <option value="disabled">停用</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <span class="form-label">智能体：</span>
+            <div style="flex:1;position:relative;">
+              <input type="text" class="form-control" id="addVenueAgent" placeholder="搜索智能体..." style="width:100%;" onfocus="this.nextElementSibling.style.display='block'" onblur="setTimeout(()=>this.nextElementSibling.style.display='none',200)">
+              <div style="display:none;position:absolute;top:32px;left:0;right:0;background:#fff;border:1px solid #d9d9d9;border-radius:4px;z-index:10;max-height:150px;overflow-y:auto;">
+                <div style="padding:8px 10px;cursor:pointer;font-size:13px;" onmousedown="document.getElementById('addVenueAgent').value='博物馆导览助手'">博物馆导览助手</div>
+                <div style="padding:8px 10px;cursor:pointer;font-size:13px;" onmousedown="document.getElementById('addVenueAgent').value='科技馆讲解员'">科技馆讲解员</div>
+                <div style="padding:8px 10px;cursor:pointer;font-size:13px;" onmousedown="document.getElementById('addVenueAgent').value='自然百科向导'">自然百科向导</div>
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <span class="form-label">知识库：</span>
+            <select class="form-control" id="addVenueKnowledgeBase">
+              <option value="">请选择知识库</option>
+              <option>博物馆FAQ知识库</option>
+              <option>科技馆导览知识库</option>
+              <option>自然百科知识库</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <span class="form-label">备注：</span>
+            <textarea class="form-control" id="addVenueRemark" placeholder="请输入备注信息（选填）"></textarea>
+          </div>
+  
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid #f0f0f0;">
+          <button class="confirm-btn" onclick="closeAddVenueModal()">取消</button>
+          <button class="confirm-btn export-btn-confirm" onclick="saveVenue()">确认创建</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 20. editVenueModal（批次C） -->
+  <div class="modal-overlay" id="editVenueModal">
+    <div class="modal" style="width:520px;">
+      <div class="modal-header">
+        <h3>编辑场馆</h3>
+        <button class="modal-close" onclick="closeEditVenueModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="venue-form">
+          <div class="form-row">
+            <span class="form-label">所属客户：<span style="color:#f5222d;">*</span></span>
+            <select class="form-control" id="editVenueCustomer">
+              <option value="">请选择客户</option>
+              <option>XX博物馆</option>
+              <option>科技馆</option>
+              <option>自然博物馆</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <span class="form-label">场馆名称：<span style="color:#f5222d;">*</span></span>
+            <input type="text" class="form-control" id="editVenueName" placeholder="请输入场馆名称">
+          </div>
+          <div class="form-row">
+            <span class="form-label">场馆Logo：</span>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div id="editVenueLogoPreview" style="width:60px;height:60px;border:1px dashed #d9d9d9;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">Logo</div>
+              <button class="filter-btn" onclick="showToast('Logo上传功能（演示）')">上传</button>
+            </div>
+            <div style="font-size:12px;color:#999;margin-left:80px;">logo图片格式限制为：PNG、JPG</div>
+          </div>
+          <div class="form-row">
+            <span class="form-label">状态：</span>
+            <select class="form-control" id="editVenueStatus">
+              <option value="active">启用</option>
+              <option value="disabled">停用</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <span class="form-label">备注：</span>
+            <textarea class="form-control" id="editVenueRemark" placeholder="请输入备注信息（选填）"></textarea>
+          </div>
+          <div class="form-row">
+            <span class="form-label">智能体：</span>
+            <div style="flex:1;position:relative;">
+              <input type="text" class="form-control" id="editVenueAgent" placeholder="搜索智能体..." style="width:100%;" onfocus="this.nextElementSibling.style.display='block'" onblur="setTimeout(()=>this.nextElementSibling.style.display='none',200)">
+              <div style="display:none;position:absolute;top:32px;left:0;right:0;background:#fff;border:1px solid #d9d9d9;border-radius:4px;z-index:10;max-height:150px;overflow-y:auto;">
+                <div style="padding:8px 10px;cursor:pointer;font-size:13px;" onmousedown="document.getElementById('editVenueAgent').value='博物馆导览助手'">博物馆导览助手</div>
+                <div style="padding:8px 10px;cursor:pointer;font-size:13px;" onmousedown="document.getElementById('editVenueAgent').value='科技馆讲解员'">科技馆讲解员</div>
+                <div style="padding:8px 10px;cursor:pointer;font-size:13px;" onmousedown="document.getElementById('editVenueAgent').value='自然百科向导'">自然百科向导</div>
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <span class="form-label">知识库：</span>
+            <select class="form-control" id="editVenueKnowledgeBase">
+              <option value="">请选择知识库</option>
+              <option>博物馆FAQ知识库</option>
+              <option>科技馆导览知识库</option>
+              <option>自然百科知识库</option>
+            </select>
+          </div>
+          <!-- QR section (read-only) -->
+          <div style="margin-top:8px;padding-top:12px;border-top:1px solid #f0f0f0;">
+            <div style="font-size:13px;font-weight:600;color:#333;margin-bottom:12px;">二维码信息</div>
+            <div class="form-row">
+              <span class="form-label">二维码：</span>
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div id="editVenueQrThumb" style="width:60px;height:60px;border:1px solid #e8e8e8;border-radius:4px;background:#f5f5f5;display:inline-flex;align-items:center;justify-content:center;position:relative;overflow:hidden;"></div>
+                <button class="filter-btn" onclick="showToast('二维码已重新生成（演示）', 'success')" style="font-size:12px;">重新生成</button>
+              </div>
+            </div>
+            <div class="form-row" style="margin-top:8px;">
+              <span class="form-label">扫码次数：</span>
+              <span class="info-value" id="editVenueScanCount">0</span>
+            </div>
+            <div class="form-row" style="margin-top:8px;">
+              <span class="form-label">最近扫码时间：</span>
+              <span class="info-value" id="editVenueLastScan">—</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid #f0f0f0;">
+          <button class="confirm-btn" onclick="closeEditVenueModal()">取消</button>
+          <button class="confirm-btn export-btn-confirm" onclick="saveEditVenue()">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 21. venueExportModal（批次C） -->
+  <div class="modal-overlay" id="venueExportModal">
+    <div class="modal export-modal">
+      <div class="modal-header">
+        <h3>导出场馆数据</h3>
+        <button class="modal-close" onclick="closeVenueExportModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="export-form">
+          <div class="export-row">
+            <label>所属客户：</label>
+            <select id="venueExportCustomer">
+              <option value="">全部客户</option>
+              <option>XX博物馆</option>
+              <option>科技馆</option>
+              <option>自然博物馆</option>
+            </select>
+          </div>
+          <div class="export-row">
+            <label>场馆状态：</label>
+            <select>
+              <option value="">全部</option>
+              <option>启用</option>
+              <option>停用</option>
+            </select>
+          </div>
+          <div class="export-note">
+            <b>导出说明：</b><br>
+            • 选择「所属客户」后，仅导出该客户下的场馆数据<br>
+            • 不选择客户则导出全部数据<br>
+            • 导出字段：所属客户、场馆名称、二维码、扫码次数、智能体、状态、创建时间
+          </div>
+          <div class="export-actions">
+            <button class="confirm-btn" onclick="closeVenueExportModal()">取消</button>
+            <button class="confirm-btn export-btn-confirm" onclick="doVenueExport()">确认导出</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 22. docUploadModal（批次C） -->
+  <div class="modal-overlay" id="docUploadModal">
+    <div class="modal" style="width:520px;">
+      <div class="modal-header">
+        <h3>上传文档</h3>
+        <button class="modal-close" onclick="closeDocUploadModal()">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <div class="faq-form">
+          <div class="form-row">
+            <span class="form-label">所属客户：<span class="required">*</span></span>
+            <select class="form-control" id="docUploadCustomer"><option value="">请选择客户</option><option>XX博物馆</option><option>科技馆</option><option>自然博物馆</option></select>
+          </div>
+          <div class="form-row">
+            <span class="form-label">选择知识库：<span class="required">*</span></span>
+            <select class="form-control" id="docUploadKbType" onchange="onDocKbTypeChange()">
+              <option value="venue">场馆知识库</option>
+              <option value="public">公共知识库</option>
+            </select>
+          </div>
+          <div class="form-row" id="docUploadVenueRow">
+            <span class="form-label">所属场馆：<span class="required">*</span></span>
+            <select class="form-control" id="docUploadVenue"><option value="">请选择场馆</option><option>东馆</option><option>西馆</option><option>少儿馆</option><option>主馆</option></select>
+          </div>
+          <div class="form-row">
+            <span class="form-label">上传文件：</span>
+            <div style="flex:1;"><div style="border:2px dashed #d9d9d9;border-radius:8px;padding:30px;text-align:center;cursor:pointer;" onclick="showToast(&apos;文件选择器（演示）&apos;)"><div style="color:#999;font-size:13px;">点击或拖拽文件到此处上传</div><div style="color:#bbb;font-size:11px;margin-top:4px;">支持 PDF/DOCX/TXT/MD，单文件不超过20MB，最多10个</div></div></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid #f0f0f0;">
+          <button class="confirm-btn" onclick="closeDocUploadModal()">取消</button>
+          <button class="confirm-btn export-btn-confirm" onclick="submitDocUpload()">提交</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 23. kbExportModal（批次C） -->
+  <div class="modal-overlay" id="kbExportModal">
+    <div class="modal export-modal">
+      <div class="modal-header">
+        <h3>导出知识库数据</h3>
+        <button class="modal-close" onclick="closeKbExportModal()">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <div class="export-form">
+          <div class="export-row"><label>所属客户：</label><select><option value="">全部客户</option><option>XX博物馆</option><option>科技馆</option><option>自然博物馆</option></select></div>
+          <div class="export-row"><label>内容类型：</label><select><option value="">全部</option><option>问答（FAQ）</option><option>文档</option></select></div>
+          <div class="export-row"><label>状态：</label><select><option value="">全部</option><option>解析中</option><option>已生效</option><option>解析失败</option></select></div>
+          <div class="export-note"><b>导出说明：</b><br>支持按客户、类型、状态筛选<br>导出字段：内容类型、标题/问题、答案/摘要、相似问法、所属客户、所属场馆、分类标签、来源、状态、命中次数</div>
+          <div class="export-actions">
+            <button class="confirm-btn" onclick="closeKbExportModal()">取消</button>
+            <button class="confirm-btn export-btn-confirm" onclick="doKbExport()">确认导出</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

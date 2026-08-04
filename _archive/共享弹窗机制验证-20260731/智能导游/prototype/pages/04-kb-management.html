@@ -1,0 +1,458 @@
+<!-- PAGE_META: {"id": "kb-management", "title": "知识库管理"} -->
+
+<!-- ====== 页面：知识库管理 ====== -->
+      <div class="page" id="pageKbMgmt">
+
+        <!-- 筛选栏 -->
+        <div class="filter-bar" data-anno="kb-04">
+          <div class="filter-item">
+            <span class="filter-label">来源客户：</span>
+            <select class="filter-select" id="kbFilterCustomer">
+              <option value="">全部客户</option>
+              <option>XX博物馆</option>
+              <option>科技馆</option>
+              <option>自然博物馆</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <span class="filter-label">来源场馆：</span>
+            <select class="filter-select" id="kbFilterVenue" style="min-width:120px;">
+              <option value="">全部场馆</option>
+              <option>东馆</option>
+              <option>西馆</option>
+              <option>少儿馆</option>
+              <option>主馆</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <span class="filter-label">内容类型：</span>
+            <select class="filter-select" style="min-width:110px;">
+              <option value="">全部</option>
+              <option>问答（FAQ）</option>
+              <option>文档</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <span class="filter-label">来源：</span>
+            <select class="filter-select" style="min-width:130px;">
+              <option value="">全部</option>
+              <option>未命中问题转入</option>
+              <option>人工新增</option>
+              <option>资料导入</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <span class="filter-label">状态：</span>
+            <select class="filter-select" style="min-width:100px;">
+              <option value="">全部</option>
+              <option>解析中</option>
+              <option>已生效</option>
+              <option>解析失败</option>
+            </select>
+          </div>
+          <button class="filter-btn primary" onclick="showToast('查询完成', 'success')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            查询
+          </button>
+          <button class="filter-btn" onclick="showToast('已重置筛选条件')">重置</button>
+        </div>
+
+        <!-- 数据表格 -->
+        <div class="table-card">
+          <div class="table-toolbar">
+            <div class="toolbar-search">
+              <input type="text" placeholder="搜索标准问题 / 答案 / 文档名">
+            </div>
+            <div style="flex:1;"></div>
+            <button class="toolbar-btn" data-anno="kb-01" onclick="openFaqFormModal()" style="background:#E6EFFD;color:#0B5DEA;border:1px solid #b3c8f7;" onmouseover="this.style.background='#095CEA';this.style.color='#fff';this.style.borderColor='#095CEA'" onmouseout="this.style.background='#E6EFFD';this.style.color='#0B5DEA';this.style.borderColor='#b3c8f7'">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              新增问答
+            </button>
+            <button class="toolbar-btn" data-anno="kb-02" onclick="openDocUploadModal()" style="background:#E6EFFD;color:#0B5DEA;border:1px solid #b3c8f7;" onmouseover="this.style.background='#095CEA';this.style.color='#fff';this.style.borderColor='#095CEA'" onmouseout="this.style.background='#E6EFFD';this.style.color='#0B5DEA';this.style.borderColor='#b3c8f7'">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              上传文档
+            </button>
+            <button class="toolbar-btn" data-anno="kb-03" onclick="showToast('批量导入模板下载中...', 'success')">批量导入问答</button>
+            <button class="toolbar-btn" data-anno="kb-05" onclick="openKbExportModal()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              导出
+            </button>
+          </div>
+
+          <table id="kbTable" data-anno="kb-06">
+            <thead>
+              <tr>
+                <th style="width:70px;">内容类型</th>
+                <th style="width:200px;">标题 / 问题</th>
+                <th style="width:160px;">内容摘要</th>
+                <th style="width:80px;">相似问法</th>
+                <th style="width:100px;">所属客户</th>
+                <th style="width:80px;">所属场馆</th>
+                <th style="width:110px;">来源</th>
+                <th style="width:90px;">状态</th>
+                <th style="width:90px;">近30天命中</th>
+                <th style="width:130px;">创建人/时间</th>
+                <th style="width:140px;" data-anno="kb-07">操作</th>
+              </tr>
+            </thead>
+            <tbody id="kbTableBody">
+            </tbody>
+          </table>
+          <div class="pagination">
+            <div class="page-info">
+              共 <b id="kbTotalCount">0</b> 条
+              <select class="page-size-select">
+                <option>10条/页</option><option>20条/页</option><option>50条/页</option>
+              </select>
+            </div>
+            <div style="display:flex;align-items:center;">
+              <div class="page-btns">
+                <div class="page-btn disabled">‹</div>
+                <div class="page-btn active">1</div>
+                <div class="page-btn">2</div><div class="page-btn">›</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /pageKbMgmt -->
+
+<script>
+const kbData = [
+  {
+    id: 'kb_1024', type: 'faq',
+    standardQuestion: '博物馆是否提供停车场',
+    similarQuestions: ['有没有停车场', '停车怎么收费', '开车来能停哪'],
+    answer: '本馆提供地下停车场，收费标准为工作日10元/次，节假日15元/次，入口在东馆北侧...',
+    customer: 'XX博物馆', venue: '东馆', tags: ['停车相关'],
+    source: '未命中问题转入', sourceGroupId: 'group_88',
+    status: '已生效', difySyncError: null,
+    hitCount30d: 12, creator: '张运营', createTime: '2026-07-06 10:20',
+    updater: '张运营', updateTime: '2026-07-06 10:20'
+  },
+  {
+    id: 'kb_1025', type: 'faq',
+    standardQuestion: '是否有讲解员服务',
+    similarQuestions: ['有没有讲解员', '可以请人工讲解吗', '讲解服务怎么约'],
+    answer: '本馆提供中英文讲解服务，可通过微信公众号预约，费用为...',
+    customer: 'XX博物馆', venue: '西馆', tags: ['讲解服务'],
+    source: '未命中问题转入', sourceGroupId: 'group_89',
+    status: '已生效', difySyncError: null,
+    hitCount30d: 8, creator: '张运营', createTime: '2026-07-05 14:00',
+    updater: '张运营', updateTime: '2026-07-05 14:00'
+  },
+  {
+    id: 'kb_1026', type: 'faq',
+    standardQuestion: '科技馆停车场在哪里',
+    similarQuestions: ['科技馆有停车场吗', '停车费多少'],
+    answer: '科技馆地面停车场位于主馆南门，共200个车位，收费...',
+    customer: '科技馆', venue: '主馆', tags: ['停车相关'],
+    source: '未命中问题转入', sourceGroupId: 'group_90',
+    status: '已生效', difySyncError: null,
+    hitCount30d: 15, creator: '李运营', createTime: '2026-07-04 09:30',
+    updater: '李运营', updateTime: '2026-07-04 09:30'
+  },
+  {
+    id: 'kb_1027', type: 'faq',
+    standardQuestion: '博物馆门票多少钱',
+    similarQuestions: ['门票价格', '学生票有优惠吗', '老人免费吗'],
+    answer: '常设展览免费（需预约），特展成人¥40/学生¥20/60岁以上老人免费...',
+    customer: 'XX博物馆', venue: '东馆', tags: ['门票'],
+    source: '人工新增', sourceGroupId: null,
+    status: '解析中', difySyncError: null,
+    hitCount30d: 0, creator: '张运营', createTime: '2026-07-10 16:00',
+    updater: '张运营', updateTime: '2026-07-10 16:00'
+  },
+  {
+    id: 'kb_1028', type: 'faq',
+    standardQuestion: '宠物可以带进去吗',
+    similarQuestions: ['能带狗吗', '猫可以带吗'],
+    answer: '',
+    customer: '科技馆', venue: '主馆', tags: ['设施'],
+    source: '未命中问题转入', sourceGroupId: 'group_91',
+    status: '解析失败', difySyncError: 'API timeout: embedding service unavailable',
+    hitCount30d: 0, creator: '李运营', createTime: '2026-07-08 11:20',
+    updater: '李运营', updateTime: '2026-07-08 11:20'
+  },
+  {
+    id: 'kb_1029', type: 'faq',
+    standardQuestion: '自然博物馆有什么展品',
+    similarQuestions: ['自然博物馆有什么', '主要看什么'],
+    answer: '主要展区：恐龙馆、海洋生物馆、昆虫馆、地质矿石馆...',
+    customer: '自然博物馆', venue: '主馆', tags: ['综合导览'],
+    source: '人工新增', sourceGroupId: null,
+    status: '已生效', difySyncError: null,
+    hitCount30d: 22, creator: '王运营', createTime: '2026-06-20 09:00',
+    updater: '王运营', updateTime: '2026-06-20 09:00'
+  },
+  {
+    id: 'kb_1030', type: 'document',
+    documentName: 'XX博物馆导览手册.pdf',
+    fileSize: '2.4MB', chunkCount: 36,
+    answer: null, customer: 'XX博物馆', venue: '东馆',
+    tags: ['综合导览'], source: '资料导入', sourceGroupId: null,
+    status: '已生效', difySyncError: null,
+    hitCount30d: 45, creator: '李产研', createTime: '2026-07-01 09:00',
+    updater: '李产研', updateTime: '2026-07-01 09:00'
+  },
+  {
+    id: 'kb_1031', type: 'document',
+    documentName: '科技馆展品清单2026.xlsx',
+    fileSize: '856KB', chunkCount: 18,
+    answer: null, customer: '科技馆', venue: '主馆',
+    tags: ['展品信息'], source: '资料导入', sourceGroupId: null,
+    status: '已生效', difySyncError: null,
+    hitCount30d: 31, creator: '李产研', createTime: '2026-06-28 14:30',
+    updater: '李产研', updateTime: '2026-06-28 14:30'
+  }
+];
+
+function renderKbTable(data) {
+  const list = data || kbData;
+  const tbody = document.getElementById('kbTableBody');
+  tbody.innerHTML = list.map((item, i) => {
+    const realIdx = kbData.indexOf(item);
+    const isFaq = item.type === 'faq';
+    const typeBadge = isFaq
+      ? '<span class="badge-status" style="background:#e6f7ff;color:#0B5DEA;border:1px solid #91d5ff;">问答</span>'
+      : '<span class="badge-status" style="background:#f9f0ff;color:#722ed1;border:1px solid #d3adf7;">文档</span>';
+    const title = isFaq ? item.standardQuestion : item.documentName;
+    const summary = isFaq ? (item.answer ? item.answer.substring(0, 30) + '...' : '—') : (item.fileSize + ' · ' + item.chunkCount + '段');
+    const similarCount = isFaq ? '<span style="color:#0B5DEA;cursor:pointer;font-weight:500;">+' + item.similarQuestions.length + '</span>' : '<span style="color:#999;">—</span>';
+    const statusMap = {
+      '解析中': '<span class="badge-status" style="background:#f5f5f5;color:#999;border:1px solid #e8e8e8;">解析中</span>',
+      '已生效': '<span class="badge-status active">已生效</span>',
+      '解析失败': '<span class="badge-status disabled">解析失败</span>'
+    };
+    const hitCount = item.hitCount30d > 0
+      ? '<span class="num-highlight" style="cursor:pointer;" onclick="openHitDetailModal(' + realIdx + ')">' + item.hitCount30d + '</span>'
+      : '<span style="color:#999;">0</span>';
+    const actions = isFaq ? getFaqActions(item, realIdx) : getDocActions(item, realIdx);
+    return '<tr>' +
+      '<td>' + typeBadge + '</td>' +
+      '<td><div style="font-weight:500;">' + title + '</div></td>' +
+      '<td style="font-size:12px;color:#666;">' + summary + '</td>' +
+      '<td>' + similarCount + '</td>' +
+      '<td>' + item.customer + '</td>' +
+      '<td>' + item.venue + '</td>' +
+      '<td style="font-size:12px;">' + (item.source === '未命中问题转入' ? item.source : item.source) + '</td>' +
+      '<td>' + statusMap[item.status] + '</td>' +
+      '<td>' + hitCount + '</td>' +
+      '<td style="font-size:12px;color:#666;">' + item.creator + '<br>' + item.createTime + '</td>' +
+      '<td>' + actions + '</td>' +
+      '</tr>';
+  }).join('');
+  document.getElementById('kbTotalCount').textContent = list.length;
+}
+
+function getFaqActions(item, idx) {
+  var moreItems = '<div class="more-menu-item" onclick="openFaqFormModal(' + idx + ')">编辑</div>';
+  if (item.status === '解析失败') moreItems += '<div class="more-menu-item" onclick="retryParse(' + idx + ')">重新解析</div>';
+  moreItems += '<div class="more-menu-item danger" onclick="confirmDeleteKb(' + idx + ')">删除</div>';
+  return '<button class="action-btn" data-anno="test-02" onclick="openKbDetailModal(' + idx + ')">详情</button> <span class="more-menu-wrap"><button class="action-btn" onclick="toggleMoreMenu(event,' + idx + ')" data-anno="kb-more-menu">更多 ▾</button><div class="more-menu" id="moreMenu' + idx + '">' + moreItems + '</div></span>';
+}
+
+function getDocActions(item, idx) {
+  var moreItems = '<div class="more-menu-item" onclick="showToast(\'文档下载中...\')">下载</div>';
+  if (item.status === '解析失败') moreItems += '<div class="more-menu-item" onclick="retryParse(' + idx + ')">重新解析</div>';
+  moreItems += '<div class="more-menu-item danger" onclick="confirmDeleteKb(' + idx + ')">删除</div>';
+  return '<button class="action-btn" onclick="openKbDetailModal(' + idx + ')">详情</button> <span class="more-menu-wrap"><button class="action-btn" onclick="toggleMoreMenu(event,' + idx + ')">更多 ▾</button><div class="more-menu" id="moreMenu' + idx + '">' + moreItems + '</div></span>';
+}
+
+let currentEditKbIdx = -1;
+
+function openFaqFormModal(idx) {
+  currentEditKbIdx = idx !== undefined ? idx : -1;
+  const isEdit = idx !== undefined;
+  document.getElementById('faqFormTitle').textContent = isEdit ? '编辑问答' : '新增问答';
+  if (isEdit) {
+    const item = kbData[idx];
+    document.getElementById('faqFormCustomer').value = item.customer;
+    document.getElementById('faqFormVenue').value = item.venue;
+    document.getElementById('faqFormQuestion').value = item.standardQuestion;
+    document.getElementById('faqFormSimilar').value = item.similarQuestions.join('\n');
+    document.getElementById('faqFormAnswer').value = item.answer || '';
+    document.getElementById('faqFormKbType').value = item.kbType || 'venue';
+  } else {
+    document.getElementById('faqFormCustomer').value = '';
+    document.getElementById('faqFormVenue').value = '';
+    document.getElementById('faqFormQuestion').value = '';
+    document.getElementById('faqFormSimilar').value = '';
+    document.getElementById('faqFormAnswer').value = '';
+    document.getElementById('faqFormKbType').value = 'venue';
+  }
+  onFaqKbTypeChange();
+  document.getElementById('faqFormModal').classList.add('show');
+}
+
+function closeFaqFormModal() { document.getElementById('faqFormModal').classList.remove('show'); }
+
+function onFaqKbTypeChange() {
+  var kbType = document.getElementById('faqFormKbType').value;
+  var venueRow = document.getElementById('faqFormVenueRow');
+  venueRow.style.display = kbType === 'public' ? 'none' : '';
+}
+function onDocKbTypeChange() {
+  var kbType = document.getElementById('docUploadKbType').value;
+  var venueRow = document.getElementById('docUploadVenueRow');
+  venueRow.style.display = kbType === 'public' ? 'none' : '';
+}
+function submitFaqForm() {
+  const customer = document.getElementById('faqFormCustomer').value;
+  const question = document.getElementById('faqFormQuestion').value.trim();
+  const answer = document.getElementById('faqFormAnswer').value.trim();
+  const kbType = document.getElementById('faqFormKbType').value;
+  if (!customer) { showToast('请选择所属客户', 'warn'); return; }
+  if (kbType === 'venue' && !document.getElementById('faqFormVenue').value) { showToast('请选择所属场馆', 'warn'); return; }
+  if (!question) { showToast('请输入标准问题', 'warn'); return; }
+  if (!answer) { showToast('请输入答案内容', 'warn'); return; }
+  closeFaqFormModal();
+  if (currentEditKbIdx >= 0) {
+    kbData[currentEditKbIdx].status = '解析中';
+    kbData[currentEditKbIdx].standardQuestion = question;
+    kbData[currentEditKbIdx].answer = answer;
+    kbData[currentEditKbIdx].kbType = kbType;
+    kbData[currentEditKbIdx].updateTime = new Date().toLocaleString('zh-CN', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(/\\//g, '-');
+  } else {
+    kbData.push({
+      id: 'kb_' + (1032 + kbData.length), type: 'faq',
+      standardQuestion: question,
+      similarQuestions: document.getElementById('faqFormSimilar').value.split('\n').filter(x => x.trim()),
+      answer: answer,
+      customer: customer,
+      venue: kbType === 'public' ? '公共知识库' : document.getElementById('faqFormVenue').value,
+      kbType: kbType,
+      tags: [],
+      source: '人工新增', sourceGroupId: null,
+      status: '解析中', difySyncError: null,
+      hitCount30d: 0, creator: '当前用户',
+      createTime: new Date().toLocaleString('zh-CN', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(/\//g, '-'),
+      updater: '当前用户',
+      updateTime: new Date().toLocaleString('zh-CN', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(/\//g, '-')
+    });
+  }
+  renderKbTable();
+  showToast(currentEditKbIdx >= 0 ? '问答已更新，正在重新同步Dify' : '提交成功，知识正在同步至Dify', 'success');
+}
+
+function openDocUploadModal() { document.getElementById('docUploadModal').classList.add('show'); }
+function closeDocUploadModal() { document.getElementById('docUploadModal').classList.remove('show'); }
+function submitDocUpload() {
+  const customer = document.getElementById('docUploadCustomer').value;
+  const kbType = document.getElementById('docUploadKbType').value;
+  if (!customer) { showToast('请选择所属客户', 'warn'); return; }
+  if (kbType === 'venue' && !document.getElementById('docUploadVenue').value) { showToast('请选择所属场馆', 'warn'); return; }
+  closeDocUploadModal();
+  showToast('文档上传成功，正在解析...', 'success');
+}
+
+function openRelatedMissModal(idx) { document.getElementById('relatedMissModal').classList.add('show'); }
+function closeRelatedMissModal() { document.getElementById('relatedMissModal').classList.remove('show'); }
+
+function openHitDetailModal(idx) { document.getElementById('hitDetailModal').classList.add('show'); }
+function closeHitDetailModal() { document.getElementById('hitDetailModal').classList.remove('show'); }
+
+function retryParse(idx) {
+  kbData[idx].status = '解析中';
+  kbData[idx].difySyncError = null;
+  renderKbTable();
+  showToast('正在重新解析...', 'success');
+}
+
+let deleteKbIdx = -1;
+function confirmDeleteKb(idx) {
+  deleteKbIdx = idx;
+  document.getElementById('deleteKbConfirm').classList.add('show');
+}
+function closeDeleteKbConfirm() { document.getElementById('deleteKbConfirm').classList.remove('show'); }
+function doDeleteKb() {
+  const item = kbData[deleteKbIdx];
+  kbData.splice(deleteKbIdx, 1);
+  closeDeleteKbConfirm();
+  renderKbTable();
+  showToast('「' + (item.standardQuestion || item.documentName) + '」已删除', 'success');
+}
+
+function openKbExportModal() { document.getElementById('kbExportModal').classList.add('show'); }
+function closeKbExportModal() { document.getElementById('kbExportModal').classList.remove('show'); }
+function doKbExport() {
+  closeKbExportModal();
+  showToast('正在导出知识库数据...', 'success');
+}
+
+
+function toggleMoreMenu(e, idx) {
+  e.stopPropagation();
+  document.querySelectorAll('.more-menu.show').forEach(function(m) { m.classList.remove('show'); });
+  var menu = document.getElementById('moreMenu' + idx);
+  if (menu) menu.classList.toggle('show');
+}
+
+function closeMoreMenus() {
+  document.querySelectorAll('.more-menu.show').forEach(function(m) { m.classList.remove('show'); });
+}
+document.addEventListener('click', closeMoreMenus);
+
+function openKbDetailModal(idx) {
+  var item = kbData[idx];
+  var isFaq = item.type === 'faq';
+  var html = '';
+  var typeTag = isFaq
+    ? '<span class="badge-status" style="background:#e6f7ff;color:#0B5DEA;border:1px solid #91d5ff;">问答</span>'
+    : '<span class="badge-status" style="background:#f9f0ff;color:#722ed1;border:1px solid #d3adf7;">文档</span>';
+  var title = isFaq ? item.standardQuestion : item.documentName;
+  var statusBadge = {'解析中':'<span class="badge-status" style="background:#f5f5f5;color:#999;border:1px solid #e8e8e8;">解析中</span>','已生效':'<span class="badge-status active">已生效</span>','解析失败':'<span class="badge-status disabled">解析失败</span>'}[item.status];
+  html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">' + typeTag + '<span style="font-weight:600;font-size:15px;">' + title + '</span> ' + statusBadge + '</div>';
+  html += '<div class="info-grid" style="margin-bottom:12px;">';
+  html += '<div class="info-item"><span class="info-label">所属客户：</span><span class="info-value">' + item.customer + '</span></div>';
+  html += '<div class="info-item"><span class="info-label">所属场馆：</span><span class="info-value">' + item.venue + '</span></div>';
+  if (isFaq) {
+    html += '<div class="info-item"><span class="info-label">创建人：</span><span class="info-value">' + item.creator + '  ' + item.createTime + '</span></div>';
+    html += '<div class="info-item"><span class="info-label">最近编辑：</span><span class="info-value">' + item.updater + '  ' + item.updateTime + '</span></div>';
+  } else {
+    html += '<div class="info-item"><span class="info-label">上传人：</span><span class="info-value">' + item.creator + '  ' + item.createTime + '</span></div>';
+    html += '<div class="info-item"><span class="info-label">文件格式：</span><span class="info-value">' + (item.documentName || '').split('.').pop().toUpperCase() + '</span></div>';
+    html += '<div class="info-item"><span class="info-label">文件大小：</span><span class="info-value">' + item.fileSize + '</span></div>';
+  }
+  html += '<div class="info-item"><span class="info-label">近30天命中：</span><span class="info-value">' + item.hitCount30d + '次</span></div>';
+  html += '</div>';
+  if (isFaq) {
+    html += '<div style="border-top:1px solid #f0f0f0;padding-top:12px;">';
+    html += '<div style="font-weight:500;color:#333;margin-bottom:6px;">标准问题</div>';
+    html += '<div style="color:#666;margin-bottom:12px;">' + item.standardQuestion + '</div>';
+    html += '<div style="font-weight:500;color:#333;margin-bottom:6px;">相似问法（' + item.similarQuestions.length + '）</div>';
+    html += '<div style="color:#666;margin-bottom:12px;">' + item.similarQuestions.map(function(q){return '· ' + q}).join('<br>') + '</div>';
+    html += '<div style="font-weight:500;color:#333;margin-bottom:6px;">答案内容</div>';
+    html += '<div style="color:#666;">' + (item.answer || '—') + '</div>';
+    html += '</div>';
+    if (item.source === '未命中问题转入') {
+      html += '<div style="border-top:1px solid #f0f0f0;padding-top:12px;margin-top:12px;">';
+      html += '<div style="font-weight:500;color:#333;cursor:pointer;" onclick="var el=this.nextElementSibling;el.style.display=el.style.display===\'none\'?\'\':\'none\';this.querySelector(\'span\').textContent=el.style.display===\'none\'?\'展开 ▾\':\'收起 ▴\'">知识来源（3条未命中问题沉淀而来） <span style="color:#0B5DEA;font-size:12px;">展开 ▾</span></div>';
+      html += '<div style="display:none;margin-top:8px;background:#fafafa;border-radius:6px;padding:10px;font-size:12px;color:#666;line-height:2;">';
+      html += '· 有没有停车场，怎么收费 王五 07-06 转入<br>';
+      html += '· 车停在哪里 张三 07-05 转入<br>';
+      html += '· 停车多少钱一小时 李四 07-04 合并';
+      html += '</div></div>';
+    }
+  } else {
+    html += '<div style="border-top:1px solid #f0f0f0;padding-top:12px;color:#666;font-size:13px;">此知识条目为文档类型，可下载原文件查看内容。</div>';
+  }
+  if (item.status === '解析失败' && item.difySyncError) {
+    html += '<div style="background:#fff2f0;border:1px solid #ffccc7;border-radius:6px;padding:8px 12px;margin-top:12px;color:#ff4d4f;font-size:12px;">' + item.difySyncError + '</div>';
+  }
+  document.getElementById('kbDetailBody').innerHTML = html;
+  var btnHtml = '';
+  if (isFaq) {
+    btnHtml = '<button class="confirm-btn" onclick="closeKbDetailModal()">关闭</button> <button class="confirm-btn export-btn-confirm" onclick="closeKbDetailModal();openFaqFormModal(' + idx + ')">编辑</button>';
+  } else {
+    btnHtml = '<button class="confirm-btn" onclick="showToast(\'文档下载中...\')">下载原文件</button> <button class="confirm-btn" onclick="retryParse(' + idx + ');closeKbDetailModal()">重新解析</button> <button class="confirm-btn" onclick="closeKbDetailModal()">关闭</button>';
+  }
+  document.getElementById('kbDetailFooter').innerHTML = btnHtml;
+  document.getElementById('kbDetailModal').classList.add('show');
+}
+
+function closeKbDetailModal() { document.getElementById('kbDetailModal').classList.remove('show'); }
+
+function init_kb_management() {
+  renderKbTable();
+}
+</script>

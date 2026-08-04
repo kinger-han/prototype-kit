@@ -1,0 +1,22 @@
+{
+  "_comment": "全局默认行为。标注的 spec 中，符合以下默认的行为无需重复书写，只写偏离项。",
+  "button": {
+    "loading": true,
+    "preventRepeat": true,
+    "successToast": true,
+    "errorToast": true
+  },
+  "list": {
+    "pageSize": 20,
+    "scrollLoad": false,
+    "emptyState": true
+  },
+  "modal": {
+    "escClose": true,
+    "maskClose": true
+  },
+  "input": {
+    "trim": true,
+    "blurValidate": true
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "智能导游",
+  "template": "pc",
+  "logo": "导",
+  "theme": {
+    "primaryColor": "#1890ff",
+    "layout": "side-top"
+  },
+  "menu": [
+    {
+      "group": "智能导游",
+      "icon": "🏛️",
+      "items": [
+        {"id": "user-mgmt", "title": "用户管理"},
+        {"id": "venue-mgmt", "title": "场馆管理"},
+        {"id": "kb-management", "title": "知识库管理"},
+        {"id": "miss-stats", "title": "未命中问题统计"},
+        {"id": "session-logs", "title": "会话记录"}
+      ]
+    }
+  ]
+}
