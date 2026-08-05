@@ -109,18 +109,45 @@ def strip_outer_div(html):
     return html[gt+1:].strip()
 
 
-def resolve_shell_path(template_name):
-    """根据 template 名称解析 shell 文件路径"""
-    # 尝试多种命名：shell-{name}.html, shell-pc-{name}.html
+def resolve_shell_path(template_name, project_path=None):
+    """根据 template 名称解析 shell 文件路径
+
+    项目级 shell 优先：<project>/prototype/shell-{template}.html
+    - 项目有 shell 副本 → 用项目的（项目可自改菜单/标题，不影响其他项目）
+    - 项目无副本 → 从模板复制一份到项目（首次），本次即用项目副本
+    - 复制失败或非项目模式 → 用模板目录的 shell
+    """
+    # 模板级候选（原有逻辑）
     candidates = [
         os.path.join(SRC_DIR, "shells", f"shell-{template_name}.html"),
         os.path.join(SRC_DIR, "shells", f"shell-{template_name.replace('pc-', '')}.html"),
     ]
-    # 兼容旧命名：template="pc" → shell-pc.html
+    template_shell = None
     for c in candidates:
         if os.path.exists(c):
-            return c
-    return candidates[0]  # 返回默认路径，让后续报错信息更清晰
+            template_shell = c
+            break
+
+    # 项目级优先：<project>/prototype/shell-{template}.html
+    if project_path:
+        proj_shell = os.path.join(project_path, "prototype", f"shell-{template_name}.html")
+        if os.path.exists(proj_shell):
+            return proj_shell
+        # 首次构建：把模板复制到项目，之后项目自改菜单/标题，互不影响
+        if template_shell:
+            try:
+                os.makedirs(os.path.dirname(proj_shell), exist_ok=True)
+                with open(template_shell, "r", encoding="utf-8") as fsrc:
+                    with open(proj_shell, "w", encoding="utf-8", newline="") as fdst:
+                        fdst.write(fsrc.read())
+                print(f"📋 首次构建：已复制模板 shell 到项目 → {proj_shell}")
+                print(f"   （此后改菜单/标题只改项目副本，不影响其他项目）")
+                return proj_shell
+            except Exception as e:
+                print(f"⚠️ 复制模板 shell 到项目失败，回退模板: {e}")
+
+    # 非项目模式或复制失败 → 用模板
+    return template_shell or candidates[0]  # 返回默认路径，让后续报错信息更清晰
 
 
 def build_pc(project_path=None, platform_key="zhirong", with_annotations=False, scope_filter=None):
@@ -139,7 +166,7 @@ def build_pc(project_path=None, platform_key="zhirong", with_annotations=False, 
 
         config = json.loads(read_file(config_path))
         template_name = config.get("template", "pc")
-        shell_path = resolve_shell_path(template_name)
+        shell_path = resolve_shell_path(template_name, project_path)
 
         if not os.path.exists(shell_path):
             print(f"❌ shell 模板不存在: {shell_path}")
