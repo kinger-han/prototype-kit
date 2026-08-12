@@ -1,0 +1,30 @@
+{
+  "id": "pc",
+  "name": "PC Desktop (Enterprise)",
+  "viewport": {
+    "min_width": 1280,
+    "max_width": null,
+    "breakpoints": [1100, 1280, 1440, 1920],
+    "density_hint": "comfortable"
+  },
+  "shell": {
+    "structure": "sidebar + content + inspector",
+    "header_height": "var(--layout-header-height)",
+    "sider_width": "var(--layout-sider-width)"
+  },
+  "layout_policy": {
+    "default_split": "split-64",
+    "responsive_breakpoint": 1100,
+    "stretch": false
+  },
+  "interaction_model": {
+    "primary_nav": "sidebar",
+    "detail_navigation": "in-page route",
+    "touch_target_min": null
+  },
+  "shares": {
+    "content_model": "yes",
+    "components": "yes",
+    "theme": "yes"
+  }
+}

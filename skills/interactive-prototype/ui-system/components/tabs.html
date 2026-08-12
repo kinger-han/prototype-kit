@@ -1,0 +1,61 @@
+<!--
+  id: tabs
+  type: component
+  description: 页签切换（顶部 Tab 栏 + 内容面板）
+  use_when: 同一页面多个视图/维度切换、详情页分类内容
+  variants: line（下划线，默认）/ card（卡片式，低频）
+-->
+<style>
+/* ===== ui-tabs ===== */
+.ui-tabs { background: var(--color-bg-container); }
+.ui-tabs-bar {
+  display: flex; align-items: center; border-bottom: 1px solid var(--color-border-secondary);
+  padding: 0 var(--spacing-xl);
+}
+.ui-tab {
+  padding: var(--spacing-md) var(--spacing-lg); font-size: var(--font-size-md);
+  color: var(--color-text-secondary); cursor: pointer; white-space: nowrap;
+  border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s;
+  display: flex; align-items: center; gap: 6px;
+}
+.ui-tab:hover { color: var(--color-primary); }
+.ui-tab.active { color: var(--color-primary); border-bottom-color: var(--color-primary); font-weight: var(--font-weight-medium); }
+.ui-tab .ui-tab-count {
+  min-width: 18px; height: 18px; padding: 0 5px; border-radius: var(--radius-round);
+  background: var(--color-bg-fill); color: var(--color-text-secondary);
+  font-size: var(--font-size-xs); display: inline-flex; align-items: center; justify-content: center;
+}
+.ui-tab.active .ui-tab-count { background: var(--color-primary-bg); color: var(--color-primary); }
+.ui-tabs-pane { display: none; padding: var(--spacing-xl); }
+.ui-tabs-pane.active { display: block; }
+</style>
+
+<!-- HTML 模板：Tabs（JS 见下方，需拷贝到页面 script） -->
+<div class="ui-tabs">
+  <div class="ui-tabs-bar" id="{tabsId}-bar">
+    <div class="ui-tab active" data-pane="{pane1Id}">全部<span class="ui-tab-count">12</span></div>
+    <div class="ui-tab" data-pane="{pane2Id}">待审核</div>
+    <div class="ui-tab" data-pane="{pane3Id}">已通过</div>
+  </div>
+  <div class="ui-tabs-pane active" id="{pane1Id}">{面板1内容}</div>
+  <div class="ui-tabs-pane" id="{pane2Id}">{面板2内容}</div>
+  <div class="ui-tabs-pane" id="{pane3Id}">{面板3内容}</div>
+</div>
+
+<script>
+/* Tabs 切换逻辑（id 按页面实际值替换；复制到业务 script 中） */
+function initUiTabs(barId) {
+  var bar = document.getElementById(barId);
+  if (!bar) return;
+  bar.querySelectorAll('.ui-tab').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      bar.querySelectorAll('.ui-tab').forEach(function (t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      var pane = document.getElementById(tab.dataset.pane);
+      bar.parentElement.querySelectorAll('.ui-tabs-pane').forEach(function (p) { p.classList.remove('active'); });
+      if (pane) pane.classList.add('active');
+    });
+  });
+}
+/* 页面加载后调用：initUiTabs('{tabsId}-bar'); */
+</script>

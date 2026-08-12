@@ -1,0 +1,258 @@
+{
+  "_meta": {
+    "purpose": "UI System 资产注册表：按业务语义选择 Pattern / Component",
+    "usage": "生成页面时先查这里，按 use_when 匹配，再读取对应 source 文件",
+    "rules": [
+      "能复用已有资产就不要新造",
+      "优先 Pattern，其次 Component，再次组合，最后才生成缺失结构",
+      "新结构仍必须使用 tokens.css + icons/registry.json + charts/recipes"
+    ]
+  },
+  "patterns": [
+    {
+      "id": "list-page",
+      "type": "pattern",
+      "description": "列表页：筛选 + 表格 + 分页",
+      "use_when": ["用户管理", "订单列表", "资源列表", "记录列表", "日志", "台账", "审核列表"],
+      "source": "patterns/list-page.md"
+    },
+    {
+      "id": "detail-page",
+      "type": "pattern",
+      "description": "详情页：摘要 + 基本信息 + 关联记录",
+      "use_when": ["订单详情", "用户详情", "商品详情", "单据详情", "对象查看"],
+      "source": "patterns/detail-page.md"
+    },
+    {
+      "id": "form-page",
+      "type": "pattern",
+      "description": "表单页：新建/编辑（分区表单 + 底部操作）",
+      "use_when": ["新建", "编辑", "添加", "录入", "配置填写"],
+      "source": "patterns/form-page.md"
+    },
+    {
+      "id": "approval-page",
+      "type": "pattern",
+      "description": "审批页：摘要 + 详情 + 审批操作 + 审批记录",
+      "use_when": ["退款审批", "报销审批", "订单审核", "入驻审核", "内容审核", "待审批"],
+      "source": "patterns/approval-page.md"
+    },
+    {
+      "id": "dashboard-page",
+      "type": "pattern",
+      "description": "看板页：KPI + 趋势图 + 占比/排名 + 明细表",
+      "use_when": ["销售分析", "经营报表", "数据总览", "分析看板", "监控统计"],
+      "source": "patterns/dashboard-page.md"
+    },
+    {
+      "id": "media-detail",
+      "type": "pattern",
+      "description": "媒体详情页：预览区 + 元数据 + 操作，由 Aspect Ratio 驱动布局变体",
+      "use_when": ["海报详情", "图片详情", "视频详情", "封面详情", "素材详情", "广告素材查看"],
+      "source": "templates/media-detail.md"
+    },
+    {
+      "id": "media-editor",
+      "type": "pattern",
+      "description": "媒体编辑页：预览 + Inspector 表单，编辑场景表单优先",
+      "use_when": ["编辑海报", "编辑图片", "编辑视频素材", "替换封面", "素材属性编辑"],
+      "source": "templates/media-editor.md"
+    }
+  ],
+  "templates": [
+    {
+      "id": "dashboard",
+      "type": "template",
+      "description": "看板页：KPI + 趋势图 + 占比/排名 + 明细表",
+      "doc": "patterns/dashboard-page.md",
+      "source": "templates/dashboard.json",
+      "supported_devices": ["pc", "mobile"]
+    },
+    {
+      "id": "list",
+      "type": "template",
+      "description": "列表页：筛选 + 表格/卡片列表 + 分页",
+      "doc": "patterns/list-page.md",
+      "source": "templates/list.json",
+      "supported_devices": ["pc", "mobile"]
+    },
+    {
+      "id": "detail",
+      "type": "template",
+      "description": "详情页（信息型）：摘要 + 基本信息 + 关联信息 + 关联记录",
+      "doc": "patterns/detail-page.md",
+      "source": "templates/detail.json",
+      "supported_devices": ["pc", "mobile"]
+    },
+    {
+      "id": "form",
+      "type": "template",
+      "description": "表单页：分区表单 + 底部操作，Inspector 优先",
+      "doc": "patterns/form-page.md",
+      "source": "templates/form.json",
+      "supported_devices": ["pc", "mobile"]
+    },
+    {
+      "id": "media-detail",
+      "type": "template",
+      "description": "媒体详情页：预览 + 元数据 + 操作，Aspect Ratio 驱动",
+      "doc": "templates/media-detail.md",
+      "source": "templates/media-detail.json",
+      "supported_devices": ["pc", "mobile"]
+    },
+    {
+      "id": "media-editor",
+      "type": "template",
+      "description": "媒体编辑页：预览 + Inspector 表单，编辑场景表单优先",
+      "doc": "templates/media-editor.md",
+      "source": "templates/media-editor.json",
+      "supported_devices": ["pc", "mobile"]
+    }
+  ],
+  "components": [
+    {
+      "id": "button",
+      "type": "component",
+      "description": "按钮：primary/default/danger/text/link",
+      "use_when": ["主操作", "提交", "新增", "导出", "危险操作"],
+      "variants": ["primary", "default", "danger", "text", "link", "sm", "lg"],
+      "source": "components/button.html"
+    },
+    {
+      "id": "input",
+      "type": "component",
+      "description": "输入框：文本/带图标/文本域/表单字段",
+      "use_when": ["表单输入", "搜索框", "筛选条件", "备注"],
+      "variants": ["default", "affix", "textarea", "disabled", "sm"],
+      "source": "components/input.html"
+    },
+    {
+      "id": "select",
+      "type": "component",
+      "description": "下拉选择：单选/多选/禁用",
+      "use_when": ["状态选择", "枚举选择", "筛选条件"],
+      "variants": ["default", "multiple", "disabled", "sm"],
+      "source": "components/select.html"
+    },
+    {
+      "id": "search-form",
+      "type": "component",
+      "description": "列表页筛选区：多条件 + 查询/重置",
+      "use_when": ["列表页顶部筛选", "条件大于 1 个"],
+      "variants": ["single-line", "multi-line"],
+      "source": "components/search-form.html"
+    },
+    {
+      "id": "status-tag",
+      "type": "component",
+      "description": "状态标签/状态徽标：success/processing/warning/error/default",
+      "use_when": ["订单状态", "用户状态", "审批状态", "流程状态"],
+      "variants": ["success", "processing", "warning", "error", "default"],
+      "source": "components/status-tag.html"
+    },
+    {
+      "id": "card",
+      "type": "component",
+      "description": "卡片容器：标题 + 操作区 + 内容区",
+      "use_when": ["详情页分区", "看板分区", "列表容器"],
+      "variants": ["normal", "section"],
+      "source": "components/card.html"
+    },
+    {
+      "id": "descriptions",
+      "type": "component",
+      "description": "描述列表：键值对展示",
+      "use_when": ["详情基本信息", "实体摘要", "单据详情"],
+      "variants": ["horizontal", "vertical"],
+      "source": "components/descriptions.html"
+    },
+    {
+      "id": "table",
+      "type": "component",
+      "description": "数据表格：表头/表体/hover/操作列/金额对齐",
+      "use_when": ["列表数据", "明细数据", "关联记录"],
+      "variants": ["default", "striped", "bordered"],
+      "source": "components/table.html"
+    },
+    {
+      "id": "pagination",
+      "type": "component",
+      "description": "分页条：总数 + 页尺寸 + 页码 + 跳页",
+      "use_when": ["表格底部", "数据超一页"],
+      "variants": ["default", "simple"],
+      "source": "components/pagination.html"
+    },
+    {
+      "id": "tabs",
+      "type": "component",
+      "description": "页签切换：Tab 栏 + 内容面板",
+      "use_when": ["多视图切换", "详情页分类内容"],
+      "variants": ["line", "card"],
+      "source": "components/tabs.html"
+    },
+    {
+      "id": "modal",
+      "type": "component",
+      "description": "弹窗：标题 + 内容 + 底部操作",
+      "use_when": ["详情查看", "表单编辑", "确认操作", "导出设置"],
+      "variants": ["default", "sm", "lg", "form"],
+      "source": "components/modal.html"
+    },
+    {
+      "id": "drawer",
+      "type": "component",
+      "description": "抽屉：右侧滑出面板",
+      "use_when": ["信息量大详情", "保持上下文的新建/编辑", "高级筛选"],
+      "variants": ["default", "sm", "lg"],
+      "source": "components/drawer.html"
+    },
+    {
+      "id": "empty",
+      "type": "component",
+      "description": "空状态：无数据占位",
+      "use_when": ["表格无数据", "搜索无结果", "列表为空"],
+      "variants": ["default", "with-action"],
+      "source": "components/empty.html"
+    },
+    {
+      "id": "date-picker",
+      "type": "component",
+      "description": "日期选择器：月历弹层（周一起，今日高亮，选中填充）",
+      "use_when": ["日期选择", "时间范围筛选", "表单日期字段"],
+      "variants": ["default"],
+      "source": "components/date-picker.html"
+    },
+    {
+      "id": "page-header",
+      "type": "component",
+      "description": "页面标题栏：标题 + 描述 + 主操作；详情摘要条",
+      "use_when": ["独立页面顶部", "详情页摘要"],
+      "variants": ["default", "with-desc", "summary"],
+      "source": "components/page-header.html"
+    },
+    {
+      "id": "layout-split",
+      "type": "layout-primitive",
+      "description": "双栏布局原语：按档位分配比例（70/64/55/50/45/38/30），默认顶部对齐不等高",
+      "use_when": ["预览+元数据", "内容+侧栏", "双栏编辑", "master-detail"],
+      "variants": ["split-70", "split-64", "split-55", "split-50", "split-45", "split-38", "split-30"],
+      "source": "layout/layout.css"
+    },
+    {
+      "id": "layout-media",
+      "type": "layout-primitive",
+      "description": "媒体容器：按 Aspect Ratio 档位定尺寸（landscape/portrait/square/wide/4x3/3x4），object-fit contain",
+      "use_when": ["图片预览", "视频预览", "海报展示"],
+      "variants": ["landscape", "portrait", "square", "wide", "4x3", "3x4"],
+      "source": "layout/layout.css"
+    },
+    {
+      "id": "layout-panel",
+      "type": "layout-primitive",
+      "description": "侧栏/信息面板：min/max 宽度约束，可内部滚动",
+      "use_when": ["Metadata 区", "Inspector 区", "操作区"],
+      "variants": ["default", "scroll"],
+      "source": "layout/layout.css"
+    }
+  ]
+}

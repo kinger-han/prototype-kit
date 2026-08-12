@@ -1,0 +1,48 @@
+<!--
+  id: descriptions
+  type: component
+  description: 描述列表（键值对展示，详情页/摘要信息）
+  use_when: 详情页基本信息、实体摘要、审批单详情
+  variants: horizontal（默认 label 左 value 右）/ vertical（label 上 value 下）
+-->
+<style>
+/* ===== ui-descriptions ===== */
+.ui-descriptions { width: 100%; border-collapse: collapse; }
+.ui-descriptions th, .ui-descriptions td {
+  padding: var(--spacing-md) var(--spacing-lg); text-align: left;
+  border-bottom: 1px solid var(--color-border-secondary); font-size: var(--font-size-md);
+  vertical-align: top;
+}
+.ui-descriptions th {
+  width: 130px; color: var(--color-text-secondary); font-weight: var(--font-weight-regular);
+  background: var(--color-bg-fill); white-space: nowrap;
+}
+.ui-descriptions td { color: var(--color-text); }
+.ui-descriptions .ui-money { font-weight: var(--font-weight-medium); }
+.ui-descriptions .ui-strong { font-weight: var(--font-weight-semibold); }
+.ui-descriptions .ui-desc-col-2 th { width: 110px; }   /* 两列布局用 */
+.ui-descriptions .ui-desc-col-2 th:nth-child(odd) { width: 110px; }
+</style>
+
+<!-- HTML 模板：单列描述列表 -->
+<table class="ui-descriptions">
+  <tbody>
+    <tr><th>{字段1}</th><td>{值1}</td></tr>
+    <tr><th>{字段2}</th><td>{值2}</td></tr>
+    <tr><th>{金额字段}</th><td class="ui-money">¥ {金额}</td></tr>
+  </tbody>
+</table>
+
+<!-- HTML 模板：双列描述列表（信息多时，每行 2 个字段） -->
+<table class="ui-descriptions ui-desc-col-2">
+  <tbody>
+    <tr>
+      <th>{字段1}</th><td>{值1}</td>
+      <th>{字段2}</th><td>{值2}</td>
+    </tr>
+    <tr>
+      <th>{字段3}</th><td>{值3}</td>
+      <th>{状态字段}</th><td><span class="ui-tag ui-tag-success">{状态}</span></td>
+    </tr>
+  </tbody>
+</table>

@@ -1,0 +1,104 @@
+{
+  "id": "short",
+  "name": "短内容",
+  "notes": "标题短、描述短、元数据少、无标签、少操作",
+  "page_types": [
+    "media-detail",
+    "media-editor",
+    "detail",
+    "form"
+  ],
+  "regions": {
+    "page_header": {
+      "type": "page_header",
+      "data": {
+        "title": "夏季促销海报",
+        "description": "",
+        "actions": [
+          [
+            "下载",
+            "default",
+            "download"
+          ],
+          [
+            "编辑",
+            "primary",
+            "pencil"
+          ]
+        ]
+      }
+    },
+    "preview": {
+      "type": "media",
+      "data": {
+        "type": "image",
+        "aspect_ratio": "16:9",
+        "available": true,
+        "caption": null,
+        "src": null
+      }
+    },
+    "caption": {
+      "type": "caption",
+      "data": {
+        "filename": "夏季促销主视觉.jpg",
+        "meta": "1920×1080 · JPEG · 2.4MB"
+      }
+    },
+    "metadata": {
+      "type": "metadata",
+      "data": {
+        "title": "资源信息",
+        "items": [
+          [
+            "资源 ID",
+            "RES-20260810-001",
+            "text"
+          ],
+          [
+            "状态",
+            "已发布",
+            "tag"
+          ],
+          [
+            "尺寸",
+            "1920 × 1080 px",
+            "text"
+          ],
+          [
+            "文件大小",
+            "2.4 MB",
+            "text"
+          ]
+        ],
+        "columns": 2,
+        "scroll": false
+      }
+    },
+    "tags": {
+      "type": "tags",
+      "data": {
+        "tags": [],
+        "max_visible": null
+      }
+    },
+    "actions": {
+      "type": "actions",
+      "data": {
+        "items": [
+          [
+            "编辑",
+            "primary",
+            "pencil"
+          ],
+          [
+            "替换",
+            "default",
+            "refresh-cw"
+          ]
+        ],
+        "align": "left"
+      }
+    }
+  }
+}

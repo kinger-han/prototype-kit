@@ -1,0 +1,36 @@
+{
+  "_meta": {
+    "purpose": "Device Schema: define a device class (viewport, shell skeleton, interaction model).",
+    "scope": "Device owns the app shell (sidebar+content+inspector vs header+content+bottom-action) and responsive policy. It shares Component/Content Model with other devices, but may use completely different Layout Patterns.",
+    "key_principle": "PC and Mobile are NOT just CSS media queries. Same Content Model, different shell and layout pattern.",
+    "usage": "Planner selects device first, then picks Layout Pattern + Template variant for that device."
+  },
+  "$schema": "https://example.com/schemas/device-schema-v1",
+  "version": 1,
+  "required_fields": ["id", "name", "viewport", "shell", "layout_policy", "interaction_model"],
+  "field_specs": {
+    "id": "pc | mobile | ...",
+    "name": "human readable name",
+    "viewport": {
+      "min_width": "min viewport width (px)",
+      "max_width": "max viewport width (px), null for unbounded",
+      "breakpoints": "notable breakpoints",
+      "density_hint": "compact / comfortable / spacious default"
+    },
+    "shell": {
+      "structure": "app frame skeleton, e.g. sidebar+content+inspector / header+content+bottom-action",
+      "header_height": "header height token",
+      "sider_width": "sidebar width token, null if none"
+    },
+    "layout_policy": {
+      "default_split": "default split tier for split layouts",
+      "responsive_breakpoint": "width where multi-column collapses to single",
+      "stretch": "default stretch policy (false = start-aligned)"
+    },
+    "interaction_model": {
+      "primary_nav": "sidebar / tabbar / top-nav",
+      "detail_navigation": "in-page / modal / drawer / separate page",
+      "touch_target_min": "min touch target size, null for mouse"
+    }
+  }
+}

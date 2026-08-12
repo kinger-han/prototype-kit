@@ -1,0 +1,38 @@
+<!--
+  id: empty
+  type: component
+  description: 空状态（无数据时的占位展示）
+  use_when: 表格无数据、搜索无结果、列表为空
+  variants: default / with-action（带操作按钮）
+-->
+<style>
+/* ===== ui-empty ===== */
+.ui-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: var(--spacing-xxxl) var(--spacing-xl); text-align: center;
+}
+.ui-empty-icon {
+  width: 56px; height: 56px; margin-bottom: var(--spacing-lg);
+  color: var(--color-text-quaternary); display: flex; align-items: center; justify-content: center;
+}
+.ui-empty-icon i, .ui-empty-icon svg { width: 48px; height: 48px; }
+.ui-empty-title { font-size: var(--font-size-md); color: var(--color-text-secondary); margin-bottom: var(--spacing-xs); }
+.ui-empty-desc { font-size: var(--font-size-sm); color: var(--color-text-tertiary); margin-bottom: var(--spacing-lg); }
+</style>
+
+<!-- HTML 模板：默认空态 -->
+<div class="ui-empty">
+  <div class="ui-empty-icon"><i data-lucide="inbox"></i></div>
+  <div class="ui-empty-title">暂无{数据}</div>
+  <div class="ui-empty-desc">{可选的说明文案}</div>
+</div>
+
+<!-- HTML 模板：带操作按钮空态（列表为空引导创建） -->
+<div class="ui-empty">
+  <div class="ui-empty-icon"><i data-lucide="package"></i></div>
+  <div class="ui-empty-title">暂无{数据}</div>
+  <div class="ui-empty-desc">{说明文案}</div>
+  <button class="ui-btn ui-btn-primary"><i data-lucide="plus"></i>新建{对象}</button>
+</div>
+
+<!-- 规则：表格无数据时用「表头保留 + 空态占满表体」；图标选 inbox（数据类）或 package（对象类），从 icons/registry.json 查 -->

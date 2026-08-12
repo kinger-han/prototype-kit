@@ -1,0 +1,60 @@
+{
+  "page_type": "dashboard",
+  "name": "看板页",
+  "description": "KPI + 主趋势图 + 占比/排名 + 明细表",
+  "doc": "patterns/dashboard-page.md",
+  "supported_devices": ["pc", "mobile"],
+  "supported_themes": ["default"],
+  "layout_patterns": {
+    "pc": ["grid", "stack"],
+    "mobile": ["stack"]
+  },
+  "regions": [
+    { "id": "page_header", "role": "content", "required": true, "content_source": ["page-header"], "weight": 0.1 },
+    { "id": "kpi", "role": "content", "required": true, "content_source": ["card", "metric"], "weight": 0.3 },
+    { "id": "main-chart", "role": "content", "required": true, "content_source": ["charts/line"], "weight": 0.4 },
+    { "id": "breakdown", "role": "content", "required": false, "content_source": ["charts/donut", "charts/horizontal-bar"], "weight": 0.3 },
+    { "id": "detail-table", "role": "content", "required": false, "content_source": ["table"], "weight": 0.3 }
+  ],
+  "variants": {
+    "pc": [
+      {
+        "id": "dashboard-grid",
+        "condition": "default",
+        "layout_pattern": "grid",
+        "split": null,
+        "region_rules": {
+          "kpi": { "grid_columns": 4 },
+          "main-chart": { "grid_columns": 2, "span": 2 },
+          "breakdown": { "grid_columns": 2, "span": 1 },
+          "detail-table": { "grid_columns": 1, "span": 1 }
+        },
+        "density": "comfortable"
+      }
+    ],
+    "mobile": [
+      {
+        "id": "mobile-stack",
+        "condition": "default",
+        "layout_pattern": "stack",
+        "split": null,
+        "region_rules": {
+          "kpi": { "full_width": true, "grid_columns": 2 },
+          "main-chart": { "full_width": true },
+          "breakdown": { "full_width": true },
+          "detail-table": { "full_width": true }
+        },
+        "density": "compact"
+      }
+    ]
+  },
+  "content_requirements": {
+    "min_fields": 1,
+    "must_have": ["title"],
+    "media": null
+  },
+  "responsive_policy": {
+    "breakpoint": 1100,
+    "fallback": "stack"
+  }
+}

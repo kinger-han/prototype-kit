@@ -1,0 +1,30 @@
+{
+  "id": "mobile",
+  "name": "Mobile",
+  "viewport": {
+    "min_width": 320,
+    "max_width": 480,
+    "breakpoints": [320, 375, 414, 480],
+    "density_hint": "compact"
+  },
+  "shell": {
+    "structure": "header + content + bottom-action",
+    "header_height": "48px",
+    "sider_width": null
+  },
+  "layout_policy": {
+    "default_split": "stack",
+    "responsive_breakpoint": null,
+    "stretch": false
+  },
+  "interaction_model": {
+    "primary_nav": "tabbar",
+    "detail_navigation": "separate page",
+    "touch_target_min": 44
+  },
+  "shares": {
+    "content_model": "yes",
+    "components": "yes",
+    "theme": "yes"
+  }
+}

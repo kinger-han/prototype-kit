@@ -1,0 +1,51 @@
+<!--
+  id: search-form
+  type: component (composite)
+  description: 列表页筛选区（多条件 + 查询/重置）
+  use_when: list-page 顶部筛选；条件 2 个以上时使用
+  variants: single-line（一行排布）/ multi-line（换行排布）
+-->
+<style>
+/* ===== ui-search-form ===== */
+.ui-search-form {
+  background: var(--color-bg-container); border-radius: var(--radius);
+  padding: var(--spacing-xl) var(--spacing-xl) 0; margin-bottom: var(--spacing-lg);
+}
+.ui-search-form .ui-form-row {
+  display: flex; flex-wrap: wrap; gap: var(--spacing-lg) var(--spacing-xl);
+  padding-bottom: var(--spacing-xl);
+}
+.ui-search-form .ui-form-item { display: flex; align-items: center; gap: var(--spacing-sm); }
+.ui-search-form .ui-form-label { font-size: var(--font-size-md); color: var(--color-text-secondary); white-space: nowrap; }
+.ui-search-form .ui-input { width: 180px; }
+.ui-search-form .ui-select { width: 180px; }
+.ui-search-form .ui-btn-group { display: flex; gap: var(--spacing-sm); padding-bottom: var(--spacing-xl); }
+</style>
+
+<!-- HTML 模板：筛选区（2~4 个条件一行；条件多时用 3~4 个一行自动换行） -->
+<div class="ui-search-form">
+  <div class="ui-form-row">
+    <div class="ui-form-item">
+      <label class="ui-form-label">{状态}</label>
+      <select class="ui-select">
+        <option value="">全部</option>
+        <option value="1">{选项1}</option>
+        <option value="2">{选项2}</option>
+      </select>
+    </div>
+    <div class="ui-form-item">
+      <label class="ui-form-label">{关键词}</label>
+      <input class="ui-input" placeholder="请输入{名称}">
+    </div>
+    <div class="ui-form-item">
+      <label class="ui-form-label">{时间范围}</label>
+      <input class="ui-input" type="date" style="width:150px;">
+      <span style="color:var(--color-text-tertiary);">至</span>
+      <input class="ui-input" type="date" style="width:150px;">
+    </div>
+  </div>
+  <div class="ui-btn-group">
+    <button class="ui-btn ui-btn-primary"><i data-lucide="search"></i>查询</button>
+    <button class="ui-btn">重置</button>
+  </div>
+</div>

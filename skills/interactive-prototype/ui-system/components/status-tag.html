@@ -1,0 +1,46 @@
+<!--
+  id: status-tag
+  type: component
+  description: 状态标签（实底浅色 Tag）与状态徽标（圆点+文字）
+  use_when: 订单状态、用户状态、审批状态、流程状态展示
+  variants: success / processing / warning / error / default
+-->
+<style>
+/* ===== ui-tag / ui-status ===== */
+.ui-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 1px 8px; border-radius: var(--radius-sm);
+  border: 1px solid transparent; font-size: var(--font-size-xs);
+  line-height: 20px; white-space: nowrap;
+}
+.ui-tag-success  { background: var(--color-success-bg);  border-color: var(--color-success-border);  color: var(--color-success); }
+.ui-tag-processing{ background: var(--color-info-bg);    border-color: var(--color-info-border);    color: var(--color-info); }
+.ui-tag-warning  { background: var(--color-warning-bg);  border-color: var(--color-warning-border);  color: var(--color-warning); }
+.ui-tag-error    { background: var(--color-error-bg);    border-color: var(--color-error-border);    color: var(--color-error); }
+.ui-tag-default  { background: var(--color-bg-fill);     border-color: var(--color-border);         color: var(--color-text-secondary); }
+.ui-tag i, .ui-tag svg { width: 12px; height: 12px; }
+
+/* 圆点 + 文字状态（表格状态列常用） */
+.ui-status { display: inline-flex; align-items: center; gap: 6px; font-size: var(--font-size-sm); color: var(--color-text); }
+.ui-status::before {
+  content: ''; width: 6px; height: 6px; border-radius: var(--radius-round); background: var(--color-text-quaternary);
+}
+.ui-status-success::before  { background: var(--color-success); }
+.ui-status-processing::before{ background: var(--color-info); }
+.ui-status-warning::before  { background: var(--color-warning); }
+.ui-status-error::before    { background: var(--color-error); }
+.ui-status-default::before  { background: var(--color-text-quaternary); }
+</style>
+
+<!-- HTML 模板：Tag（表格状态列用 Tag 更醒目） -->
+<span class="ui-tag ui-tag-success">已通过</span>
+<span class="ui-tag ui-tag-processing">处理中</span>
+<span class="ui-tag ui-tag-warning">待审核</span>
+<span class="ui-tag ui-tag-error">已驳回</span>
+<span class="ui-tag ui-tag-default">草稿</span>
+
+<!-- HTML 模板：圆点状态（列表/详情摘要用） -->
+<span class="ui-status ui-status-success">正常运行</span>
+<span class="ui-status ui-status-warning">有告警</span>
+
+<!-- 状态映射参考：成功=通过/完成/正常/启用；processing=处理中/审核中/进行中；warning=待审核/待确认/部分完成；error=失败/驳回/停用/异常；default=草稿/未开始/未知 -->

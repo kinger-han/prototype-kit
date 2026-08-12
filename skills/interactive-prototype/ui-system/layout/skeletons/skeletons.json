@@ -1,0 +1,131 @@
+{
+  "_meta": {
+    "purpose": "Reusable Layout Pattern (Skeleton) library. Page Templates reference these ids; skeletons provide concrete primitive classes.",
+    "usage": "Template.variants[*].layout_pattern = one of these ids. Planner resolves template variant -> skeleton -> concrete classes from layout.css."
+  },
+  "patterns": [
+    {
+      "id": "split",
+      "name": "Split 双栏",
+      "primitive_classes": ["layout-split", "layout-region"],
+      "regions": [
+        { "id": "main", "class": "layout-region", "weight_default": 0.6 },
+        { "id": "side", "class": "layout-region", "weight_default": 0.4 }
+      ],
+      "variants": [
+        { "id": "split-70", "condition": "main strong priority", "classes": "layout-split-70", "region_rules": {} },
+        { "id": "split-64", "condition": "main wide (landscape media)", "classes": "layout-split-64", "region_rules": {} },
+        { "id": "split-55", "condition": "slightly main-biased", "classes": "layout-split-55", "region_rules": {} },
+        { "id": "split-50", "condition": "balanced (square media)", "classes": "layout-split-50", "region_rules": {} },
+        { "id": "split-45", "condition": "slightly side-biased", "classes": "layout-split-45", "region_rules": {} },
+        { "id": "split-38", "condition": "side wide (portrait media)", "classes": "layout-split-38", "region_rules": {} },
+        { "id": "split-30", "condition": "side strong priority", "classes": "layout-split-30", "region_rules": {} }
+      ],
+      "responsive": { "breakpoint": 1100, "collapse_to": "single-column" },
+      "stretch_default": false
+    },
+    {
+      "id": "master-detail",
+      "name": "Master Detail 主从",
+      "primitive_classes": ["layout-split", "layout-region"],
+      "regions": [
+        { "id": "list", "class": "layout-region", "weight_default": 0.45 },
+        { "id": "detail", "class": "layout-region", "weight_default": 0.55 }
+      ],
+      "variants": [
+        { "id": "md-45", "condition": "default", "classes": "layout-split-45", "region_rules": { "list": { "scroll": true } } }
+      ],
+      "responsive": { "breakpoint": 1100, "collapse_to": "stack" },
+      "stretch_default": false
+    },
+    {
+      "id": "grid",
+      "name": "Grid 网格",
+      "primitive_classes": ["layout-stack", "layout-region"],
+      "regions": [
+        { "id": "cell", "class": "layout-region", "weight_default": 0.5 }
+      ],
+      "variants": [
+        {
+          "id": "grid-4",
+          "condition": "default",
+          "classes": "layout-grid",
+          "region_rules": { "grid_columns": 4, "gap": "var(--spacing-xl)" }
+        }
+      ],
+      "responsive": { "breakpoint": 1100, "collapse_to": "stack" },
+      "stretch_default": false,
+      "notes": "Grid skeleton: for dashboard KPI rows and card matrices. Concrete grid CSS is template/region-rules driven; layout.css provides layout-stack fallback."
+    },
+    {
+      "id": "stack",
+      "name": "Stack 纵向堆叠",
+      "primitive_classes": ["layout-stack"],
+      "regions": [
+        { "id": "section", "class": "layout-region", "weight_default": 1.0 }
+      ],
+      "variants": [
+        { "id": "stack-default", "condition": "default", "classes": "layout-stack", "region_rules": {} },
+        { "id": "stack-compact", "condition": "dense content", "classes": "layout-stack-sm", "region_rules": {} }
+      ],
+      "responsive": { "breakpoint": null, "collapse_to": null },
+      "stretch_default": false
+    },
+    {
+      "id": "preview-inspector",
+      "name": "Preview + Inspector 预览检查器",
+      "primitive_classes": ["layout-split", "layout-region", "layout-panel"],
+      "regions": [
+        { "id": "preview", "class": "layout-region", "weight_default": 0.5 },
+        { "id": "inspector", "class": "layout-panel", "weight_default": 0.5 }
+      ],
+      "variants": [
+        {
+          "id": "pi-landscape",
+          "condition": "landscape media",
+          "classes": "layout-split-55",
+          "region_rules": { "preview": { "class": "layout-media-landscape", "max_height": "66vh" }, "inspector": { "scroll": false } }
+        },
+        {
+          "id": "pi-portrait",
+          "condition": "portrait media",
+          "classes": "layout-split-38",
+          "region_rules": { "preview": { "class": "layout-media-portrait", "max_height": "66vh" }, "inspector": { "scroll": false } }
+        },
+        {
+          "id": "pi-square",
+          "condition": "square media",
+          "classes": "layout-split-50",
+          "region_rules": { "preview": { "class": "layout-media-square", "max_height": "66vh" }, "inspector": { "scroll": false } }
+        },
+        {
+          "id": "pi-form",
+          "condition": "editor / form-heavy",
+          "classes": "layout-split-45",
+          "region_rules": { "preview": { "class": "layout-media", "max_height": "66vh" }, "inspector": { "scroll": true, "form_columns": 2 } }
+        }
+      ],
+      "responsive": { "breakpoint": 1100, "collapse_to": "stack" },
+      "stretch_default": false
+    },
+    {
+      "id": "sidebar-content",
+      "name": "Sidebar + Content 侧栏内容",
+      "primitive_classes": ["layout-split", "layout-region", "layout-panel"],
+      "regions": [
+        { "id": "sidebar", "class": "layout-panel", "weight_default": 0.3 },
+        { "id": "content", "class": "layout-region", "weight_default": 0.7 }
+      ],
+      "variants": [
+        {
+          "id": "sc-30",
+          "condition": "default",
+          "classes": "layout-split-30",
+          "region_rules": { "sidebar": { "scroll": true }, "content": {} }
+        }
+      ],
+      "responsive": { "breakpoint": 1100, "collapse_to": "stack" },
+      "stretch_default": false
+    }
+  ]
+}

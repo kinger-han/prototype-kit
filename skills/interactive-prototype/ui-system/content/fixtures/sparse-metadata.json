@@ -1,0 +1,105 @@
+{
+  "id": "sparse-metadata",
+  "name": "稀疏元数据",
+  "notes": "仅4项，验证右侧不空洞",
+  "page_types": [
+    "media-detail",
+    "detail"
+  ],
+  "regions": {
+    "page_header": {
+      "type": "page_header",
+      "data": {
+        "title": "简洁素材详情",
+        "description": "这是一段用于验证布局稳定性的描述文本。这",
+        "actions": [
+          [
+            "下载",
+            "default",
+            "download"
+          ],
+          [
+            "编辑",
+            "primary",
+            "pencil"
+          ]
+        ]
+      }
+    },
+    "preview": {
+      "type": "media",
+      "data": {
+        "type": "image",
+        "aspect_ratio": "16:9",
+        "available": true,
+        "caption": "夏季促销主视觉.jpg",
+        "src": null
+      }
+    },
+    "caption": {
+      "type": "caption",
+      "data": {
+        "filename": "夏季促销主视觉.jpg",
+        "meta": "1920×1080 · JPEG · 2.4MB"
+      }
+    },
+    "metadata": {
+      "type": "metadata",
+      "data": {
+        "title": "资源信息",
+        "items": [
+          [
+            "资源 ID",
+            "RES-20260810-001",
+            "text"
+          ],
+          [
+            "状态",
+            "已发布",
+            "tag"
+          ],
+          [
+            "尺寸",
+            "1920 × 1080 px",
+            "text"
+          ],
+          [
+            "文件大小",
+            "2.4 MB",
+            "text"
+          ]
+        ],
+        "columns": 2,
+        "scroll": false
+      }
+    },
+    "tags": {
+      "type": "tags",
+      "data": {
+        "tags": [
+          "夏季促销",
+          "新品上市"
+        ],
+        "max_visible": null
+      }
+    },
+    "actions": {
+      "type": "actions",
+      "data": {
+        "items": [
+          [
+            "编辑",
+            "primary",
+            "pencil"
+          ],
+          [
+            "替换",
+            "default",
+            "refresh-cw"
+          ]
+        ],
+        "align": "left"
+      }
+    }
+  }
+}

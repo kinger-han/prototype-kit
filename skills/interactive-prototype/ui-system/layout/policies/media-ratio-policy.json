@@ -1,0 +1,62 @@
+{
+  "policy_id": "media-ratio-policy",
+  "name": "媒体 Aspect Ratio → 布局策略",
+  "description": "根据媒体宽高比自动选择 Layout Variant。从 media-detail 成功经验抽象，可服务所有媒体相关页面（详情/编辑/预览/资源库）。",
+  "input": ["media.aspect_ratio", "media.available", "metadata.size", "title.length", "page_type"],
+  "rules": [
+    {
+      "when": { "aspect_ratio": "16:9", "page_type": "media-detail" },
+      "then": { "variant": "landscape-preview-wide", "layout_pattern": "split", "split": "split-64", "preview_class": "layout-media-landscape", "density": "comfortable" }
+    },
+    {
+      "when": { "aspect_ratio": "21:9", "page_type": "media-detail" },
+      "then": { "variant": "landscape-preview-wide", "layout_pattern": "split", "split": "split-64", "preview_class": "layout-media-wide", "density": "comfortable" }
+    },
+    {
+      "when": { "aspect_ratio": "4:3", "page_type": "media-detail" },
+      "then": { "variant": "landscape-preview-wide", "layout_pattern": "split", "split": "split-64", "preview_class": "layout-media-4x3", "density": "comfortable" }
+    },
+    {
+      "when": { "aspect_ratio": "9:16", "page_type": "media-detail" },
+      "then": { "variant": "portrait-preview-narrow", "layout_pattern": "split", "split": "split-38", "preview_class": "layout-media-portrait", "density": "comfortable" }
+    },
+    {
+      "when": { "aspect_ratio": "3:4", "page_type": "media-detail" },
+      "then": { "variant": "portrait-preview-narrow", "layout_pattern": "split", "split": "split-38", "preview_class": "layout-media-3x4", "density": "comfortable" }
+    },
+    {
+      "when": { "aspect_ratio": "1:1", "page_type": "media-detail" },
+      "then": { "variant": "square-balanced", "layout_pattern": "split", "split": "split-50", "preview_class": "layout-media-square", "density": "comfortable" }
+    },
+    {
+      "when": { "media.available": false, "page_type": "media-detail" },
+      "then": { "variant": "metadata-only", "layout_pattern": "stack", "split": null, "preview_class": "layout-media-placeholder", "density": "comfortable" }
+    },
+    {
+      "when": { "aspect_ratio": "16:9", "page_type": "media-editor" },
+      "then": { "variant": "editor-landscape-inspector", "layout_pattern": "split", "split": "split-55", "preview_class": "layout-media-landscape", "density": "comfortable" }
+    },
+    {
+      "when": { "aspect_ratio": "9:16", "page_type": "media-editor" },
+      "then": { "variant": "editor-portrait", "layout_pattern": "split", "split": "split-38", "preview_class": "layout-media-portrait", "density": "comfortable" }
+    },
+    {
+      "when": { "aspect_ratio": "1:1", "page_type": "media-editor" },
+      "then": { "variant": "editor-square", "layout_pattern": "split", "split": "split-50", "preview_class": "layout-media-square", "density": "comfortable" }
+    }
+  ],
+  "refinements": [
+    { "when": { "metadata.size": "large" }, "then": { "metadata_scroll": true } },
+    { "when": { "metadata.size": "small" }, "then": { "metadata_scroll": false, "keep_start_aligned": true } },
+    { "when": { "title.length": "long" }, "then": { "preview_boost": "split-70" } },
+    { "when": { "page_type": "media-editor", "metadata.size": "large" }, "then": { "density": "compact" } }
+  ],
+  "fallback": {
+    "variant": "square-balanced",
+    "layout_pattern": "split",
+    "split": "split-50",
+    "preview_class": "layout-media-square",
+    "density": "comfortable",
+    "note": "无法判断比例时的保守平衡布局"
+  }
+}

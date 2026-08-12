@@ -1,0 +1,42 @@
+{
+  "_meta": {
+    "library": "echarts",
+    "version": "5.5.0",
+    "cdn": "https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js",
+    "usage": "拷贝 recipes/<file> 函数到页面，echarts.init(容器).setOption(makeXxxOption({title,labels,series}))"
+  },
+  "recipes": [
+    {
+      "id": "line",
+      "type": "chart-recipe",
+      "description": "折线图：随时间变化的趋势",
+      "use_when": ["销售额趋势", "访问量变化", "用户增长", "时间序列指标"],
+      "source": "recipes/line.js",
+      "fills": ["title", "labels", "series[{name,data}]"]
+    },
+    {
+      "id": "bar",
+      "type": "chart-recipe",
+      "description": "柱状图：多个离散类别数值比较",
+      "use_when": ["各分类数量对比", "月度业绩对比", "渠道对比"],
+      "source": "recipes/bar.js",
+      "fills": ["title", "labels", "series[{name,data}]"]
+    },
+    {
+      "id": "horizontal-bar",
+      "type": "chart-recipe",
+      "description": "横向柱状图：排名（类别名较长）",
+      "use_when": ["Top N 排名", "销售排行", "热门排行"],
+      "source": "recipes/horizontal-bar.js",
+      "fills": ["title", "labels", "series[{name,data}]"]
+    },
+    {
+      "id": "donut",
+      "type": "chart-recipe",
+      "description": "环形图：少量类别占比（<=6）",
+      "use_when": ["占比分析", "渠道构成", "状态分布"],
+      "source": "recipes/donut.js",
+      "fills": ["title", "labels", "series[{name,data}]"]
+    }
+  ]
+}

@@ -1,0 +1,170 @@
+{
+  "id": "form-normal",
+  "name": "表单标准",
+  "notes": "3组12字段",
+  "page_types": [
+    "form"
+  ],
+  "regions": {
+    "page_header": {
+      "type": "page_header",
+      "data": {
+        "title": "新建素材",
+        "description": "创建并配置新的媒体素材",
+        "actions": [
+          [
+            "取消",
+            "default",
+            null
+          ],
+          [
+            "保存",
+            "primary",
+            "save"
+          ]
+        ]
+      }
+    },
+    "form": {
+      "type": "form",
+      "data": {
+        "groups": [
+          {
+            "title": "分组 1：基本信息",
+            "fields": [
+              {
+                "label": "素材名称",
+                "type": "text",
+                "required": true,
+                "placeholder": "输入素材名称",
+                "options": null
+              },
+              {
+                "label": "描述",
+                "type": "textarea",
+                "required": false,
+                "placeholder": "输入素材描述",
+                "options": null
+              },
+              {
+                "label": "类型",
+                "type": "select",
+                "required": true,
+                "placeholder": null,
+                "options": [
+                  "图片",
+                  "视频",
+                  "海报"
+                ]
+              },
+              {
+                "label": "分类",
+                "type": "select",
+                "required": false,
+                "placeholder": null,
+                "options": [
+                  "促销活动",
+                  "品牌形象",
+                  "产品介绍"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "分组 2：属性设置",
+            "fields": [
+              {
+                "label": "标签",
+                "type": "text",
+                "required": false,
+                "placeholder": "多个标签用逗号分隔",
+                "options": null
+              },
+              {
+                "label": "上传时间",
+                "type": "date",
+                "required": false,
+                "placeholder": null,
+                "options": null
+              },
+              {
+                "label": "是否发布",
+                "type": "switch",
+                "required": false,
+                "placeholder": null,
+                "options": null
+              },
+              {
+                "label": "投放渠道",
+                "type": "select",
+                "required": false,
+                "placeholder": null,
+                "options": [
+                  "微信",
+                  "抖音",
+                  "快手"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "分组 3：发布设置",
+            "fields": [
+              {
+                "label": "分辨率",
+                "type": "text",
+                "required": false,
+                "placeholder": "如 1920×1080",
+                "options": null
+              },
+              {
+                "label": "授权类型",
+                "type": "select",
+                "required": false,
+                "placeholder": null,
+                "options": [
+                  "商用授权",
+                  "独家授权"
+                ]
+              },
+              {
+                "label": "有效期至",
+                "type": "date",
+                "required": false,
+                "placeholder": null,
+                "options": null
+              },
+              {
+                "label": "备注",
+                "type": "textarea",
+                "required": false,
+                "placeholder": "其他说明",
+                "options": null
+              }
+            ]
+          }
+        ],
+        "columns": 2,
+        "validation": []
+      }
+    },
+    "actions": {
+      "type": "actions",
+      "data": {
+        "items": [
+          [
+            "取消",
+            "default",
+            null
+          ],
+          [
+            "保存",
+            "primary",
+            "save"
+          ]
+        ],
+        "align": "right"
+      }
+    }
+  }
+}

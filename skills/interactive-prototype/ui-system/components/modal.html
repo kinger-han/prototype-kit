@@ -1,0 +1,66 @@
+<!--
+  id: modal
+  type: component
+  description: 弹窗（居中对话框：标题 + 内容 + 底部操作）
+  use_when: 详情查看、表单编辑、确认操作、导出设置
+  variants: default（宽 520）/ sm（宽 400）/ lg（宽 720）/ form（表单类）
+-->
+<style>
+/* ===== ui-modal ===== */
+.ui-modal-overlay {
+  position: fixed; inset: 0; background: var(--color-bg-mask);
+  display: none; align-items: center; justify-content: center; z-index: 1000;
+}
+.ui-modal-overlay.show { display: flex; }
+.ui-modal {
+  width: 520px; max-width: calc(100vw - 48px); max-height: calc(100vh - 96px);
+  background: var(--color-bg-elevated); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-modal); display: flex; flex-direction: column;
+  animation: uiModalIn 0.2s ease;
+}
+@keyframes uiModalIn { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
+.ui-modal-sm { width: 400px; }
+.ui-modal-lg { width: 720px; }
+.ui-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--spacing-lg) var(--spacing-xl); border-bottom: 1px solid var(--color-border-secondary);
+  flex-shrink: 0;
+}
+.ui-modal-title { font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); color: var(--color-text); }
+.ui-modal-close {
+  width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;
+  border: none; background: none; color: var(--color-text-tertiary); cursor: pointer; border-radius: var(--radius-sm);
+}
+.ui-modal-close:hover { background: var(--color-bg-hover); color: var(--color-text); }
+.ui-modal-close i, .ui-modal-close svg { width: 16px; height: 16px; }
+.ui-modal-body { flex: 1; overflow-y: auto; padding: var(--spacing-xl); }
+.ui-modal-footer {
+  display: flex; justify-content: flex-end; gap: var(--spacing-sm);
+  padding: var(--spacing-lg) var(--spacing-xl); border-top: 1px solid var(--color-border-secondary);
+  flex-shrink: 0;
+}
+</style>
+
+<!-- HTML 模板：详情/表单弹窗（JS 见下方） -->
+<div class="ui-modal-overlay" id="{modalId}">
+  <div class="ui-modal">
+    <div class="ui-modal-header">
+      <div class="ui-modal-title">{弹窗标题}</div>
+      <button class="ui-modal-close" onclick="closeUiModal('{modalId}')"><i data-lucide="x"></i></button>
+    </div>
+    <div class="ui-modal-body">
+      {内容（表单 / 描述列表 / 表格）}
+    </div>
+    <div class="ui-modal-footer">
+      <button class="ui-btn" onclick="closeUiModal('{modalId}')">取消</button>
+      <button class="ui-btn ui-btn-primary">确定</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* 弹窗开关逻辑（复制到业务 script 中） */
+function openUiModal(id) { var el = document.getElementById(id); if (el) el.classList.add('show'); }
+function closeUiModal(id) { var el = document.getElementById(id); if (el) el.classList.remove('show'); }
+/* 点击遮罩关闭（可选）：document.getElementById('{modalId}').addEventListener('click', function(e){ if(e.target===this) closeUiModal('{modalId}'); }); */
+</script>

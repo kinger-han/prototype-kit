@@ -1,0 +1,88 @@
+{
+  "page_type": "media-editor",
+  "name": "媒体编辑页",
+  "description": "预览（所见即所得）+ Inspector 编辑表单，编辑场景表单优先",
+  "doc": "templates/media-editor.md",
+  "supported_devices": ["pc", "mobile"],
+  "supported_themes": ["default"],
+  "layout_patterns": {
+    "pc": ["split", "preview-inspector"],
+    "mobile": ["stack"]
+  },
+  "regions": [
+    { "id": "page_header", "role": "content", "required": true, "content_source": ["page-header"], "weight": 0.1 },
+    { "id": "preview", "role": "preview", "required": true, "content_source": ["layout-media"], "weight": 0.5 },
+    { "id": "inspector", "role": "form", "required": true, "content_source": ["input", "select", "date-picker", "switch"], "weight": 0.5 },
+    { "id": "actions", "role": "actions", "required": true, "content_source": ["button"], "weight": 0.1 }
+  ],
+  "variants": {
+    "pc": [
+      {
+        "id": "editor-landscape-inspector",
+        "condition": "policy:media-ratio -> landscape AND metadata.size <= 8",
+        "layout_pattern": "split",
+        "split": "split-55",
+        "region_rules": {
+          "preview": { "class": "layout-media layout-media-landscape", "max_height": "66vh" },
+          "inspector": { "class": "layout-panel", "form_columns": 2 }
+        },
+        "density": "comfortable"
+      },
+      {
+        "id": "editor-landscape-form",
+        "condition": "policy:media-ratio -> landscape AND metadata.size > 8",
+        "layout_pattern": "split",
+        "split": "split-45",
+        "region_rules": {
+          "preview": { "class": "layout-media layout-media-landscape", "max_height": "66vh" },
+          "inspector": { "class": "layout-panel", "form_columns": 2 }
+        },
+        "density": "compact"
+      },
+      {
+        "id": "editor-portrait",
+        "condition": "policy:media-ratio -> portrait",
+        "layout_pattern": "split",
+        "split": "split-38",
+        "region_rules": {
+          "preview": { "class": "layout-media layout-media-portrait", "max_height": "66vh" },
+          "inspector": { "class": "layout-panel", "form_columns": 2 }
+        },
+        "density": "comfortable"
+      },
+      {
+        "id": "editor-square",
+        "condition": "policy:media-ratio -> square",
+        "layout_pattern": "split",
+        "split": "split-50",
+        "region_rules": {
+          "preview": { "class": "layout-media layout-media-square", "max_height": "66vh" },
+          "inspector": { "class": "layout-panel", "form_columns": 2 }
+        },
+        "density": "comfortable"
+      }
+    ],
+    "mobile": [
+      {
+        "id": "mobile-stack",
+        "condition": "default",
+        "layout_pattern": "stack",
+        "split": null,
+        "region_rules": {
+          "preview": { "class": "layout-media", "max_height": "50vh" },
+          "inspector": { "class": "layout-panel", "form_columns": 1, "full_width": true }
+        },
+        "density": "compact"
+      }
+    ]
+  },
+  "content_requirements": {
+    "min_fields": 6,
+    "must_have": ["title", "status", "save_action"],
+    "media": { "type": "image|video|poster", "aspect_ratio_driven": true }
+  },
+  "responsive_policy": {
+    "breakpoint": 1100,
+    "fallback": "single-column"
+  }
+}

@@ -1,0 +1,62 @@
+<!--
+  id: page-header
+  type: component
+  description: 页面标题栏（标题 + 描述 + 右侧主操作）
+  use_when: 独立页面的顶部；需要明确页面标题与主操作时
+  variants: default / with-desc（带描述）
+-->
+<style>
+/* ===== ui-page-header ===== */
+.ui-page-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: var(--spacing-xl);
+}
+.ui-page-header-title { font-size: var(--font-size-xl); font-weight: var(--font-weight-semibold); color: var(--color-text); }
+.ui-page-header-desc { font-size: var(--font-size-sm); color: var(--color-text-tertiary); margin-top: 4px; }
+.ui-page-header-actions { display: flex; align-items: center; gap: var(--spacing-sm); flex-shrink: 0; }
+
+/* 摘要条（详情页头部：关键状态 + 主操作） */
+.ui-page-summary {
+  display: flex; align-items: center; gap: var(--spacing-xl);
+  background: var(--color-bg-container); border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-secondary);
+  padding: var(--spacing-lg) var(--spacing-xl); margin-bottom: var(--spacing-xl);
+  flex-wrap: wrap;
+}
+.ui-page-summary .ui-sum-item { display: flex; flex-direction: column; gap: 4px; }
+.ui-page-summary .ui-sum-label { font-size: var(--font-size-xs); color: var(--color-text-tertiary); }
+.ui-page-summary .ui-sum-value { font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); color: var(--color-text); display: flex; align-items: center; gap: var(--spacing-sm); }
+.ui-page-summary .ui-sum-actions { margin-left: auto; display: flex; gap: var(--spacing-sm); }
+</style>
+
+<!-- HTML 模板：页面标题栏 -->
+<div class="ui-page-header">
+  <div>
+    <div class="ui-page-header-title">{页面标题}</div>
+    <div class="ui-page-header-desc">{页面描述（可选）}</div>
+  </div>
+  <div class="ui-page-header-actions">
+    <button class="ui-btn"><i data-lucide="download"></i>导出</button>
+    <button class="ui-btn ui-btn-primary"><i data-lucide="plus"></i>新增{对象}</button>
+  </div>
+</div>
+
+<!-- HTML 模板：详情页摘要条（实体状态 + 关键信息 + 主操作） -->
+<div class="ui-page-summary">
+  <div class="ui-sum-item">
+    <div class="ui-sum-label">订单编号</div>
+    <div class="ui-sum-value">ORD20260810001</div>
+  </div>
+  <div class="ui-sum-item">
+    <div class="ui-sum-label">当前状态</div>
+    <div class="ui-sum-value"><span class="ui-tag ui-tag-warning">待审核</span></div>
+  </div>
+  <div class="ui-sum-item">
+    <div class="ui-sum-label">金额</div>
+    <div class="ui-sum-value">¥ 12,800.00</div>
+  </div>
+  <div class="ui-sum-actions">
+    <button class="ui-btn">退回</button>
+    <button class="ui-btn ui-btn-primary">通过</button>
+  </div>
+</div>

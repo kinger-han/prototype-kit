@@ -1,0 +1,25 @@
+{
+  "_meta": {
+    "purpose": "Benchmark Data Schema: define the fixture instance format for Visual Content Benchmark.",
+    "scope": "Fixtures provide REAL content (lengths vary meaningfully) to prove content-aware layout works. Not placeholders.",
+    "usage": "Each fixture is a full page Content Model instance. Layout-planner loads fixture by id, maps regions to template regions, renders real components."
+  },
+  "$schema": "https://example.com/schemas/benchmark-data-schema-v1",
+  "version": 1,
+  "required_fields": ["id", "name", "variant_notes", "page_types", "regions"],
+  "field_specs": {
+    "id": "fixture id (short/normal/long-title/...)",
+    "name": "human readable name",
+    "variant_notes": "which content dimension this fixture stresses",
+    "page_types": "template page_types this fixture is valid for",
+    "regions": "Content Model instance regions (see content-schema.json), at least the regions the target template needs",
+    "length_policy": {
+      "title_chars": "target title length",
+      "description_chars": "target description length",
+      "metadata_count": "target metadata item count",
+      "tag_count": "target tag count",
+      "action_count": "target action count"
+    }
+  },
+  "fixtures_dir": "ui-system/content/fixtures/"
+}

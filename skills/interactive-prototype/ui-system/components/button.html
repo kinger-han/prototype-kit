@@ -1,0 +1,52 @@
+<!--
+  id: button
+  type: component
+  description: 按钮。页面主操作入口
+  use_when: 需要触发操作时（查询/提交/新增/导出/危险操作…）
+  variants: primary / default / danger / text / link / sm / icon
+-->
+<style>
+/* ===== ui-button ===== */
+.ui-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: var(--control-height); padding: 0 var(--control-padding-horizontal);
+  border-radius: var(--radius); border: 1px solid var(--color-border);
+  background: var(--color-bg-container); color: var(--color-text);
+  font-size: var(--font-size-md); font-family: inherit; line-height: 1;
+  cursor: pointer; white-space: nowrap; transition: all 0.15s; user-select: none;
+}
+.ui-btn:hover { color: var(--color-primary); border-color: var(--color-primary); }
+.ui-btn:active { color: var(--color-primary-active); border-color: var(--color-primary-active); }
+.ui-btn:disabled { color: var(--color-text-quaternary); border-color: var(--color-border); background: var(--color-bg-fill); cursor: not-allowed; }
+.ui-btn svg, .ui-btn i { width: 14px; height: 14px; flex-shrink: 0; }
+
+.ui-btn-primary { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-text-inverse); }
+.ui-btn-primary:hover { background: var(--color-primary-hover); border-color: var(--color-primary-hover); color: var(--color-text-inverse); }
+.ui-btn-primary:active { background: var(--color-primary-active); border-color: var(--color-primary-active); color: var(--color-text-inverse); }
+.ui-btn-primary:disabled { background: var(--color-primary-bg); border-color: var(--color-primary-border); color: var(--color-text-quaternary); }
+
+.ui-btn-danger { color: var(--color-error); border-color: var(--color-error); }
+.ui-btn-danger:hover { background: var(--color-error-bg); border-color: var(--color-error); color: var(--color-error); }
+
+.ui-btn-text { border-color: transparent; background: transparent; color: var(--color-text-secondary); }
+.ui-btn-text:hover { color: var(--color-primary); background: var(--color-bg-hover); border-color: transparent; }
+
+.ui-btn-link { border: none; background: none; padding: 0 4px; height: auto; color: var(--color-link); font-size: var(--font-size-md); }
+.ui-btn-link:hover { color: var(--color-link-hover); }
+.ui-btn-link.ui-btn-danger { color: var(--color-error); }
+.ui-btn-link.ui-btn-danger:hover { color: var(--color-error); }
+
+.ui-btn-sm { height: var(--control-height-sm); padding: 0 var(--control-padding-horizontal-sm); font-size: var(--font-size-sm); }
+.ui-btn-lg { height: var(--control-height-lg); padding: 0 16px; font-size: var(--font-size-lg); }
+</style>
+
+<!-- HTML 模板：按钮组（主导按钮在左，次要按钮随后） -->
+<div style="display:flex; gap:var(--spacing-sm);">
+  <button class="ui-btn ui-btn-primary"><i data-lucide="plus"></i>新增{对象}</button>
+  <button class="ui-btn"><i data-lucide="download"></i>导出</button>
+  <button class="ui-btn ui-btn-danger">删除</button>
+</div>
+
+<!-- 文字链接按钮：表格操作列用（不放边框按钮） -->
+<span class="ui-btn ui-btn-link">编辑</span>
+<span class="ui-btn ui-btn-link ui-btn-danger">删除</span>

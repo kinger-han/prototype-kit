@@ -1,0 +1,58 @@
+<!--
+  id: input
+  type: component
+  description: 输入框（文本/数字/文本域/带图标/禁用态）
+  use_when: 表单输入、搜索框、筛选条件
+  variants: default / affix(带图标) / textarea / disabled / sm
+-->
+<style>
+/* ===== ui-input ===== */
+.ui-input {
+  height: var(--control-height); padding: 0 11px;
+  border: 1px solid var(--color-border); border-radius: var(--radius);
+  background: var(--color-bg-container); color: var(--color-text);
+  font-size: var(--font-size-md); font-family: inherit; line-height: var(--line-height);
+  outline: none; transition: all 0.15s; width: 100%; box-sizing: border-box;
+}
+.ui-input::placeholder { color: var(--color-text-tertiary); }
+.ui-input:hover { border-color: var(--color-primary-hover); }
+.ui-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary-bg); }
+.ui-input:disabled { background: var(--color-bg-fill); color: var(--color-text-quaternary); cursor: not-allowed; }
+.ui-input-sm { height: var(--control-height-sm); font-size: var(--font-size-sm); }
+
+.ui-input-affix { position: relative; width: 100%; }
+.ui-input-affix .ui-input { padding-left: 32px; }
+.ui-input-affix > i, .ui-input-affix > svg {
+  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+  width: 14px; height: 14px; color: var(--color-text-tertiary); pointer-events: none;
+}
+.ui-textarea { height: auto; min-height: 72px; padding: 8px 11px; resize: vertical; line-height: var(--line-height); }
+
+/* 表单字段（label + 控件 + 错误提示） */
+.ui-form-item { display: flex; flex-direction: column; gap: 6px; }
+.ui-form-label { font-size: var(--font-size-md); color: var(--color-text); }
+.ui-form-label .ui-required { color: var(--color-error); margin-right: 2px; }
+.ui-form-error { font-size: var(--font-size-xs); color: var(--color-error); }
+.ui-form-hint { font-size: var(--font-size-xs); color: var(--color-text-tertiary); }
+</style>
+
+<!-- HTML 模板：基础输入框 -->
+<div style="width:280px;">
+  <input class="ui-input" placeholder="请输入{名称}">
+</div>
+
+<!-- HTML 模板：带图标（搜索/前缀图标） -->
+<div class="ui-input-affix" style="width:280px;">
+  <i data-lucide="search"></i>
+  <input class="ui-input" placeholder="搜索{名称}">
+</div>
+
+<!-- HTML 模板：文本域 -->
+<textarea class="ui-input ui-textarea" placeholder="请输入{备注}"></textarea>
+
+<!-- HTML 模板：表单字段（label + 输入 + 错误） -->
+<div class="ui-form-item" style="width:320px;">
+  <label class="ui-form-label"><span class="ui-required">*</span>{字段名}</label>
+  <input class="ui-input" placeholder="请输入{字段名}">
+  <div class="ui-form-hint">{辅助说明}</div>
+</div>

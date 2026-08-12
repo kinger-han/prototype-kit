@@ -1,0 +1,63 @@
+{
+  "_meta": {
+    "purpose": "Page Template Schema: describe a page type independently from theme, device, and content.",
+    "scope": "Template owns page structure (which regions exist, their order), supported devices/themes, layout pattern choices, and content requirements. It does NOT own visual style (theme) or spatial allocation internals (layout pattern/policy).",
+    "key_principle": "Same Template can switch Theme (visual swap, zero structure change). Same Template can have PC/Mobile different Layout Variants. Same Layout Pattern is reusable across Templates.",
+    "usage": "Planner: Requirement -> pick template by page_type -> select device -> select theme -> template.variants[device] gives layout pattern -> policy refines to directive -> components fill regions."
+  },
+  "$schema": "https://example.com/schemas/template-schema-v1",
+  "version": 1,
+  "required_fields": [
+    "page_type",
+    "supported_devices",
+    "supported_themes",
+    "layout_patterns",
+    "regions",
+    "variants",
+    "content_requirements",
+    "responsive_policy"
+  ],
+  "field_specs": {
+    "page_type": "unique template id, e.g. media-detail",
+    "supported_devices": ["pc", "mobile"],
+    "supported_themes": ["default"],
+    "layout_patterns": {
+      "pc": ["split"],
+      "mobile": ["stack"]
+    },
+    "regions": [
+      {
+        "id": "region id",
+        "role": "preview | metadata | inspector | content | list | form | actions | related",
+        "required": true,
+        "content_source": "component ids or content model fields expected here",
+        "weight": 0.0
+      }
+    ],
+    "variants": {
+      "pc": [
+        {
+          "id": "variant id",
+          "condition": "policy condition (aspect-ratio / metadata size / title length)",
+          "layout_pattern": "split | master-detail | grid | stack | preview-inspector | sidebar-content",
+          "split": "split tier (if split pattern)",
+          "region_rules": {
+            "preview": { "class": "layout-media-landscape", "max_height": "66vh" },
+            "metadata": { "scroll": true }
+          },
+          "density": "compact | comfortable | spacious"
+        }
+      ],
+      "mobile": []
+    },
+    "content_requirements": {
+      "min_fields": "min metadata/form fields",
+      "must_have": ["title", "status"],
+      "media": "media config if media template"
+    },
+    "responsive_policy": {
+      "breakpoint": 1100,
+      "fallback": "single-column | stack | scroll"
+    }
+  }
+}

@@ -1,0 +1,62 @@
+<!--
+  id: card
+  type: component
+  description: 卡片容器（标题 + 操作区 + 内容区）
+  use_when: 详情页分区、看板分区、列表容器、仪表盘区块
+  variants: normal / section（分区卡片带标题）
+-->
+<style>
+/* ===== ui-card ===== */
+.ui-card {
+  background: var(--color-bg-container); border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-secondary); overflow: hidden;
+}
+.ui-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+.ui-card-title { font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); color: var(--color-text); display: flex; align-items: center; gap: var(--spacing-sm); }
+.ui-card-extra { display: flex; align-items: center; gap: var(--spacing-sm); font-size: var(--font-size-sm); }
+.ui-card-body { padding: var(--spacing-xl); }
+.ui-card-body.flush { padding: 0; }   /* 表格/列表贴边卡片用 */
+
+/* 分区标题（无卡片边框，仅文字分区，用于详情页分组） */
+.ui-card-section-title {
+  font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold);
+  color: var(--color-text); margin: var(--spacing-xl) 0 var(--spacing-lg);
+  display: flex; align-items: center; gap: var(--spacing-sm);
+}
+.ui-card-section-title::before {
+  content: ''; width: 3px; height: 14px; border-radius: 2px; background: var(--color-primary);
+}
+</style>
+
+<!-- HTML 模板：带标题卡片 -->
+<div class="ui-card">
+  <div class="ui-card-header">
+    <div class="ui-card-title">{区块标题}</div>
+    <div class="ui-card-extra">
+      <span class="ui-btn ui-btn-link">更多</span>
+    </div>
+  </div>
+  <div class="ui-card-body">
+    {内容}
+  </div>
+</div>
+
+<!-- HTML 模板：贴边卡片（内含表格/列表） -->
+<div class="ui-card">
+  <div class="ui-card-header">
+    <div class="ui-card-title">{列表标题}</div>
+    <div class="ui-card-extra">
+      <button class="ui-btn ui-btn-primary ui-btn-sm"><i data-lucide="plus"></i>新增</button>
+    </div>
+  </div>
+  <div class="ui-card-body flush">
+    {表格 HTML}
+  </div>
+</div>
+
+<!-- HTML 模板：详情页分区标题（不用卡片，直接分区） -->
+<div class="ui-card-section-title">{基本信息}</div>

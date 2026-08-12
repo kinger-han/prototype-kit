@@ -1,0 +1,78 @@
+/* ============================================================
+   ui-system/layout/layout-tokens.css — Layout Intelligence 维度 Token
+
+   作用域：页面级布局（区域如何组织、如何占空间）。
+   与 tokens.css 的关系：
+   - tokens.css            = 视觉原子（颜色/字体/间距/圆角/阴影）
+   - layout-tokens.css     = 空间决策（比例/密度/媒体尺寸/对齐）
+
+   ⚠️ 本文件是 Layout Engine 的 Source of Truth。
+      AI 不直接写裸 width/height/margin/position；
+      AI 通过 layout.css 的类 + 本文件的 token 表达布局意图。
+
+   用法（单 HTML 模式）：
+   1. 内联 tokens.css 全文
+   2. 内联 layout-tokens.css 全文（本文件）
+   3. 内联 layout.css 全文
+   4. 用 layout-* 类组合区域，用 var(--layout-*) 表达约束
+   ============================================================ */
+
+:root {
+  /* ========== 1. 内容宽度约束 ========== */
+  --layout-content-max-width: 1440px;      /* 整页内容最大宽度（超宽屏居中） */
+  --layout-content-min-width: 960px;       /* PC 端内容最小宽度（低于则触发横向滚动而非压缩） */
+  --layout-gutter: var(--spacing-xl);      /* 区域间距默认值（24px） */
+
+  /* ========== 2. 媒体 Aspect Ratio 档位（Layout Policy 用） ========== */
+  /* 语义档：AI 只需声明 landscape / portrait / square / wide / custom，几何由引擎给 */
+  --layout-ratio-landscape: 16 / 9;
+  --layout-ratio-portrait: 9 / 16;
+  --layout-ratio-square: 1 / 1;
+  --layout-ratio-wide: 21 / 9;
+  --layout-ratio-4x3: 4 / 3;
+  --layout-ratio-3x4: 3 / 4;
+
+  /* ========== 3. 媒体容器尺寸策略（Preview 区） ========== */
+  --layout-media-max-height: 66vh;         /* 媒体区最大高度（防超高撑爆页面） */
+  --layout-media-min-height: 240px;        /* 媒体区最小高度（防过小不可读） */
+  --layout-media-max-width: 100%;          /* 媒体区最大宽度（默认占满所在列） */
+
+  /* ========== 4. Split 区域比例档（Layout Policy 用） ========== */
+  /* AI 只声明档位名（如 split-64），几何由引擎给，禁止 AI 写 58.5% 这类自由值 */
+  --layout-split-70: 70fr 30fr;            /* 主区极宽：预览优先/内容优先 */
+  --layout-split-64: 62fr 38fr;            /* 主区宽：landscape 预览 + metadata */
+  --layout-split-55: 55fr 45fr;            /* 略偏主区 */
+  --layout-split-50: 1fr 1fr;              /* 平衡：square / 双栏编辑 */
+  --layout-split-45: 45fr 55fr;            /* 略偏次区 */
+  --layout-split-38: 38fr 62fr;            /* 次区宽：portrait 预览 */
+  --layout-split-30: 30fr 70fr;            /* 次区极宽 */
+
+  /* ========== 5. 密度档（Visual Density） ========== */
+  /* 每档同时影响 content density（字号/控件）与 layout density（间距） */
+  --layout-density-compact-gap: var(--spacing-md);        /* 12px */
+  --layout-density-compact-pad: var(--spacing-md);        /* 12px */
+  --layout-density-compact-font: var(--font-size-sm);     /* 13px */
+  --layout-density-comfortable-gap: var(--spacing-xl);    /* 24px */
+  --layout-density-comfortable-pad: var(--spacing-xl);    /* 24px */
+  --layout-density-comfortable-font: var(--font-size-md); /* 14px */
+  --layout-density-spacious-gap: var(--spacing-xxl);      /* 32px */
+  --layout-density-spacious-pad: var(--spacing-xxl);      /* 32px */
+  --layout-density-spacious-font: var(--font-size-lg);    /* 16px */
+
+  /* ========== 6. 区域视觉权重档（Visual Weight → 空间权重） ========== */
+  /* AI 声明优先级，planner 换算成比例；本档是换算参考表 */
+  --layout-weight-hero: 0.8;               /* 视觉主角（预览/主内容） */
+  --layout-weight-primary: 0.6;             /* 主内容 */
+  --layout-weight-secondary: 0.4;           /* 次要内容 */
+  --layout-weight-minor: 0.2;               /* 边缘内容（操作/元数据） */
+
+  /* ========== 7. 区域对齐与拉伸策略 ========== */
+  --layout-stretch: false;                  /* 默认禁止强制等高（flex/grid stretch） */
+  --layout-align-default: start;            /* 区域默认顶部对齐，不自动等高 */
+
+  /* ========== 8. Metadata / Inspector 面板约束 ========== */
+  --layout-panel-max-width: 480px;          /* 右侧面板最大宽度（超宽不拉伸） */
+  --layout-panel-min-width: 320px;          /* 面板最小宽度（过窄内容不可读） */
+  --layout-panel-max-height: calc(100vh - 160px);  /* 面板可滚动时最大高度 */
+  --layout-panel-scroll: auto;              /* 面板内容超长时的滚动策略 */
+}

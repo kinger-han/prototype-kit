@@ -1,0 +1,31 @@
+{
+  "_meta": {
+    "purpose": "Theme Schema: define the minimal required fields for a visual language (Theme).",
+    "scope": "Theme ONLY owns visual language (color/typography/spacing/radius/shadow/component visual style). It does NOT own page structure, region ratios, Page Templates, or content business logic.",
+    "extensibility": "Adding Theme 02/03 later only requires a new themes/<id>/theme.json. Template/Layout/Component core stays untouched.",
+    "usage": "Renderer: tokens.css provides the CSS variable baseline; theme.json declares semantic overrides. Components only reference var(--token); theming swaps token values, never rewrites components."
+  },
+  "$schema": "https://example.com/schemas/theme-schema-v1",
+  "version": 1,
+  "required_fields": ["id", "name", "base_tokens", "visual_language"],
+  "field_specs": {
+    "id": "unique id, e.g. default / theme-02",
+    "name": "human readable name",
+    "base_tokens": "base token source, default references ui-system/tokens.css CSS variables; overrides must be declared explicitly in visual_language",
+    "visual_language": {
+      "color": "semantic values or token overrides for brand/functional/text/background colors",
+      "typography": "font family / size scale / line height / weights",
+      "spacing": "spacing scale (4px base)",
+      "radius": "radius scale",
+      "shadow": "shadow / elevation scale",
+      "component_visual_style": "component-level visual tweaks (button fill, table density, card border), never structure"
+    }
+  },
+  "not_responsible_for": [
+    "page structure",
+    "region ratios",
+    "Page Template",
+    "Layout Pattern selection",
+    "content business logic"
+  ]
+}

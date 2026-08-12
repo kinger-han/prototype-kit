@@ -1,0 +1,121 @@
+{
+  "id": "unavailable-preview",
+  "name": "预览不可用",
+  "notes": "媒体缺失 fallback",
+  "page_types": [
+    "media-detail"
+  ],
+  "regions": {
+    "page_header": {
+      "type": "page_header",
+      "data": {
+        "title": "已删除素材详情",
+        "description": "这是一段用于验证布局稳定性的描述文本。这是一段用于验证布局稳",
+        "actions": [
+          [
+            "下载",
+            "default",
+            "download"
+          ],
+          [
+            "编辑",
+            "primary",
+            "pencil"
+          ]
+        ]
+      }
+    },
+    "preview": {
+      "type": "media",
+      "data": {
+        "type": "image",
+        "aspect_ratio": "16:9",
+        "available": false,
+        "caption": "夏季促销主视觉.jpg",
+        "src": null
+      }
+    },
+    "caption": {
+      "type": "caption",
+      "data": {
+        "filename": "夏季促销主视觉.jpg",
+        "meta": "1920×1080 · JPEG · 2.4MB"
+      }
+    },
+    "metadata": {
+      "type": "metadata",
+      "data": {
+        "title": "资源信息",
+        "items": [
+          [
+            "资源 ID",
+            "RES-20260810-001",
+            "text"
+          ],
+          [
+            "状态",
+            "已发布",
+            "tag"
+          ],
+          [
+            "尺寸",
+            "1920 × 1080 px",
+            "text"
+          ],
+          [
+            "文件大小",
+            "2.4 MB",
+            "text"
+          ],
+          [
+            "创建人",
+            "李明（市场部）",
+            "text"
+          ],
+          [
+            "创建时间",
+            "2026-08-08 14:30",
+            "text"
+          ],
+          [
+            "使用渠道",
+            "微信朋友圈 / 抖音信息流 / 快手 / B站",
+            "text"
+          ],
+          [
+            "标签",
+            "夏季促销 / 新品上市",
+            "text"
+          ]
+        ],
+        "columns": 2,
+        "scroll": false
+      }
+    },
+    "tags": {
+      "type": "tags",
+      "data": {
+        "tags": [],
+        "max_visible": null
+      }
+    },
+    "actions": {
+      "type": "actions",
+      "data": {
+        "items": [
+          [
+            "编辑",
+            "primary",
+            "pencil"
+          ],
+          [
+            "替换",
+            "default",
+            "refresh-cw"
+          ]
+        ],
+        "align": "left"
+      }
+    }
+  }
+}

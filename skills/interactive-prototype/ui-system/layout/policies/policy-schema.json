@@ -1,0 +1,28 @@
+{
+  "_meta": {
+    "purpose": "Layout Policy Schema: declarative, configurable policy mapping (input conditions -> layout decisions). NOT hardcoded if/else.",
+    "scope": "Policy owns the DECISION of spatial allocation given content/device/context conditions. It is consumed by Planner to produce a Layout Directive.",
+    "key_principle": "Aspect Ratio -> Layout Policy -> Layout Variant -> Layout Directive. Policies are data, swappable and extensible without code changes.",
+    "relationship": "Policy is the decision layer between Page Model (intent) and Template/Skeleton (structure). Multiple page types can share one policy (e.g. media-ratio-policy serves media-detail, media-editor, preview pages)."
+  },
+  "$schema": "https://example.com/schemas/layout-policy-schema-v1",
+  "version": 1,
+  "required_fields": ["policy_id", "input", "rules"],
+  "field_specs": {
+    "policy_id": "unique policy name",
+    "input": "conditions the policy reads (aspect_ratio, metadata_size, title_length, device, ...)",
+    "rules": [
+      {
+        "when": { "aspect_ratio": "16:9" },
+        "then": {
+          "variant": "landscape-preview-wide",
+          "layout_pattern": "split",
+          "split": "split-64",
+          "preview_class": "layout-media-landscape",
+          "density": "comfortable"
+        }
+      }
+    ],
+    "fallback": "decision when no rule matches"
+  }
+}

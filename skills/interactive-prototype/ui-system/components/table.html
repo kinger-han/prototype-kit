@@ -1,0 +1,88 @@
+<!--
+  id: table
+  type: component
+  description: 数据表格（表头/表体/hover/操作列/空态/金额右对齐）
+  use_when: 列表数据展示、明细数据、关联记录
+  variants: default / striped（斑马纹，低频可选）/ bordered（带竖线）
+-->
+<style>
+/* ===== ui-table ===== */
+.ui-table { width: 100%; border-collapse: collapse; background: var(--color-bg-container); }
+.ui-table th, .ui-table td {
+  padding: var(--table-cell-padding) var(--spacing-lg); text-align: left;
+  border-bottom: 1px solid var(--color-border-secondary);
+  font-size: var(--font-size-sm); color: var(--color-text); line-height: var(--line-height);
+}
+.ui-table th {
+  background: var(--color-bg-fill); font-weight: var(--font-weight-semibold);
+  color: var(--color-text); white-space: nowrap;
+}
+.ui-table tbody tr { transition: background 0.15s; }
+.ui-table tbody tr:hover { background: var(--color-primary-bg); }
+.ui-table .ui-num, .ui-table .ui-money { text-align: right; font-variant-numeric: tabular-nums; }
+.ui-table .ui-money { font-weight: var(--font-weight-medium); }
+.ui-table .ui-actions { white-space: nowrap; }
+.ui-table .ui-actions .ui-btn-link { margin-right: 4px; }
+.ui-table .ui-ellipsis { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ui-table tfoot td { background: var(--color-bg-fill); font-weight: var(--font-weight-medium); }
+
+/* 选中行（多选时） */
+.ui-table tr.ui-row-selected { background: var(--color-primary-bg); }
+
+/* 表格容器（含分页，白底卡片） */
+.ui-table-wrap {
+  background: var(--color-bg-container); border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-secondary); overflow: hidden;
+}
+
+/* 表格工具栏（左：批量操作；右：搜索） */
+.ui-table-toolbar {
+  display: flex; align-items: center; gap: var(--spacing-sm);
+  padding: var(--spacing-lg); border-bottom: 1px solid var(--color-border-secondary);
+}
+.ui-table-toolbar .ui-spacer { flex: 1; }
+</style>
+
+<!-- HTML 模板：表格容器（toolbar + table + 分页） -->
+<div class="ui-table-wrap">
+  <div class="ui-table-toolbar">
+    <button class="ui-btn ui-btn-primary ui-btn-sm"><i data-lucide="plus"></i>新增</button>
+    <button class="ui-btn ui-btn-sm">批量{操作}</button>
+    <div class="ui-spacer"></div>
+    <div class="ui-input-affix" style="width:220px;">
+      <i data-lucide="search"></i>
+      <input class="ui-input ui-input-sm" placeholder="搜索{关键词}">
+    </div>
+  </div>
+
+  <table class="ui-table">
+    <thead>
+      <tr>
+        <th style="width:40px;"><input type="checkbox"></th>
+        <th>{列1}</th>
+        <th>{列2}</th>
+        <th style="text-align:right;">{金额}</th>
+        <th>{状态}</th>
+        <th style="width:140px;">操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><input type="checkbox"></td>
+        <td>{值1}</td>
+        <td>{值2}</td>
+        <td class="ui-money">¥ 1,234.00</td>
+        <td><span class="ui-tag ui-tag-success">{状态}</span></td>
+        <td class="ui-actions">
+          <span class="ui-btn ui-btn-link">查看</span>
+          <span class="ui-btn ui-btn-link">编辑</span>
+          <span class="ui-btn ui-btn-link ui-btn-danger">删除</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 分页组件见 pagination.html；空态见 empty.html -->
+</div>
+
+<!-- 规则：金额列右对齐+等宽数字；操作列最多 3 个文字链接，超过折叠到「更多」；状态列用 Tag；长文本用 ui-ellipsis -->

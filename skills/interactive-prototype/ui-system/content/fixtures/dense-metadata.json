@@ -1,0 +1,249 @@
+{
+  "id": "dense-metadata",
+  "name": "密集元数据",
+  "notes": "18项，验证自动滚动",
+  "page_types": [
+    "media-detail",
+    "detail"
+  ],
+  "regions": {
+    "page_header": {
+      "type": "page_header",
+      "data": {
+        "title": "完整素材详情",
+        "description": "这是一段用于验证布局稳定性的描述文本。这是一段用于验证布局稳定性的描述文本。这是一段用于验证布局稳定性的描述文本。这是一",
+        "actions": [
+          [
+            "下载",
+            "default",
+            "download"
+          ],
+          [
+            "编辑",
+            "primary",
+            "pencil"
+          ]
+        ]
+      }
+    },
+    "preview": {
+      "type": "media",
+      "data": {
+        "type": "image",
+        "aspect_ratio": "16:9",
+        "available": true,
+        "caption": "夏季促销主视觉.jpg",
+        "src": null
+      }
+    },
+    "caption": {
+      "type": "caption",
+      "data": {
+        "filename": "夏季促销主视觉.jpg",
+        "meta": "1920×1080 · JPEG · 2.4MB"
+      }
+    },
+    "metadata": {
+      "type": "metadata",
+      "data": {
+        "title": "资源信息",
+        "items": [
+          [
+            "资源 ID",
+            "RES-20260810-001",
+            "text"
+          ],
+          [
+            "状态",
+            "已发布",
+            "tag"
+          ],
+          [
+            "尺寸",
+            "1920 × 1080 px",
+            "text"
+          ],
+          [
+            "文件大小",
+            "2.4 MB",
+            "text"
+          ],
+          [
+            "创建人",
+            "李明（市场部）",
+            "text"
+          ],
+          [
+            "创建时间",
+            "2026-08-08 14:30",
+            "text"
+          ],
+          [
+            "使用渠道",
+            "微信朋友圈 / 抖音信息流 / 快手 / B站",
+            "text"
+          ],
+          [
+            "标签",
+            "夏季促销 / 新品上市",
+            "text"
+          ],
+          [
+            "分辨率",
+            "72 dpi",
+            "text"
+          ],
+          [
+            "色彩空间",
+            "sRGB",
+            "text"
+          ],
+          [
+            "格式",
+            "JPEG",
+            "text"
+          ],
+          [
+            "版权",
+            "© 数熙科技 2026 保留所有权利",
+            "text"
+          ],
+          [
+            "授权类型",
+            "商用授权（年度）",
+            "text"
+          ],
+          [
+            "有效期",
+            "2026-12-31",
+            "text"
+          ],
+          [
+            "审核人",
+            "张伟（设计总监）",
+            "text"
+          ],
+          [
+            "审核时间",
+            "2026-08-10 09:00",
+            "text"
+          ],
+          [
+            "备注",
+            "夏季大促主视觉，已同步线下物料与门店灯箱",
+            "text"
+          ],
+          [
+            "投放平台",
+            "微信 / 抖音 / 快手 / B站 / 线下",
+            "text"
+          ]
+        ],
+        "columns": 2,
+        "scroll": true
+      }
+    },
+    "tags": {
+      "type": "tags",
+      "data": {
+        "tags": [
+          "夏季促销",
+          "新品上市",
+          "主视觉",
+          "电商",
+          "微信朋友圈",
+          "抖音信息流",
+          "快手",
+          "B站"
+        ],
+        "max_visible": null
+      }
+    },
+    "actions": {
+      "type": "actions",
+      "data": {
+        "items": [
+          [
+            "编辑",
+            "primary",
+            "pencil"
+          ],
+          [
+            "替换",
+            "default",
+            "refresh-cw"
+          ],
+          [
+            "下载",
+            "default",
+            "download"
+          ],
+          [
+            "分享",
+            "default",
+            "share-2"
+          ],
+          [
+            "复制链接",
+            "default",
+            "link-2"
+          ],
+          [
+            "删除",
+            "danger",
+            "trash-2"
+          ]
+        ],
+        "align": "left"
+      }
+    },
+    "related": {
+      "type": "related",
+      "data": {
+        "title": "使用记录",
+        "columns": [
+          [
+            "scene",
+            "场景",
+            "text"
+          ],
+          [
+            "pos",
+            "位置",
+            "text"
+          ],
+          [
+            "time",
+            "更新时间",
+            "text"
+          ],
+          [
+            "status",
+            "状态",
+            "tag"
+          ]
+        ],
+        "rows": [
+          [
+            "朋友圈广告",
+            "Banner 位 A1",
+            "2026-08-09 10:00",
+            "投放中"
+          ],
+          [
+            "抖音信息流",
+            "Feed 位 C3",
+            "2026-08-09 10:02",
+            "投放中"
+          ],
+          [
+            "公众号推文",
+            "封面",
+            "2026-08-08 18:00",
+            "待排期"
+          ]
+        ]
+      }
+    }
+  }
+}

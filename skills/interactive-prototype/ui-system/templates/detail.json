@@ -1,0 +1,72 @@
+{
+  "page_type": "detail",
+  "name": "详情页（信息型）",
+  "description": "摘要条 + 基本信息 + 关联信息 + 关联记录（非媒体对象的详情）",
+  "doc": "patterns/detail-page.md",
+  "supported_devices": ["pc", "mobile"],
+  "supported_themes": ["default"],
+  "layout_patterns": {
+    "pc": ["stack", "split"],
+    "mobile": ["stack"]
+  },
+  "regions": [
+    { "id": "page_header", "role": "content", "required": true, "content_source": ["page-header"], "weight": 0.1 },
+    { "id": "summary", "role": "content", "required": true, "content_source": ["page-summary"], "weight": 0.2 },
+    { "id": "main-info", "role": "content", "required": true, "content_source": ["card", "descriptions"], "weight": 0.5 },
+    { "id": "related", "role": "content", "required": false, "content_source": ["card", "table", "tabs"], "weight": 0.3 }
+  ],
+  "variants": {
+    "pc": [
+      {
+        "id": "detail-stack",
+        "condition": "default (metadata < 12 fields)",
+        "layout_pattern": "stack",
+        "split": null,
+        "region_rules": {
+          "page-header": { "full_width": true },
+          "summary": { "full_width": true },
+          "main-info": { "full_width": true, "columns": 2 },
+          "related": { "full_width": true }
+        },
+        "density": "comfortable"
+      },
+      {
+        "id": "detail-split",
+        "condition": "metadata >= 12 fields",
+        "layout_pattern": "split",
+        "split": "split-64",
+        "region_rules": {
+          "page-header": { "full_width": true },
+          "summary": { "full_width": true },
+          "main-info": { "columns": 2 },
+          "related": { "full_width": true, "grid_column": "1/-1" }
+        },
+        "density": "comfortable"
+      }
+    ],
+    "mobile": [
+      {
+        "id": "mobile-stack",
+        "condition": "default",
+        "layout_pattern": "stack",
+        "split": null,
+        "region_rules": {
+          "page-header": { "full_width": true },
+          "summary": { "full_width": true },
+          "main-info": { "full_width": true, "columns": 1 },
+          "related": { "full_width": true }
+        },
+        "density": "compact"
+      }
+    ]
+  },
+  "content_requirements": {
+    "min_fields": 6,
+    "must_have": ["title", "status"],
+    "media": null
+  },
+  "responsive_policy": {
+    "breakpoint": 1100,
+    "fallback": "single-column"
+  }
+}

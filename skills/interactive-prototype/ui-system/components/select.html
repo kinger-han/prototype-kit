@@ -1,0 +1,44 @@
+<!--
+  id: select
+  type: component
+  description: 下拉选择（单选/多选/禁用）
+  use_when: 筛选条件、表单枚举选择、状态选择
+  variants: default / multiple / disabled / sm
+-->
+<style>
+/* ===== ui-select ===== */
+.ui-select {
+  height: var(--control-height); padding: 0 30px 0 11px;
+  border: 1px solid var(--color-border); border-radius: var(--radius);
+  background: var(--color-bg-container) url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23bfbfbf' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center;
+  color: var(--color-text); font-size: var(--font-size-md); font-family: inherit;
+  outline: none; cursor: pointer; appearance: none; -webkit-appearance: none;
+  transition: all 0.15s; min-width: 140px; width: 100%; box-sizing: border-box;
+}
+.ui-select:hover { border-color: var(--color-primary-hover); }
+.ui-select:focus { border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary-bg); }
+.ui-select:disabled { background-color: var(--color-bg-fill); color: var(--color-text-quaternary); cursor: not-allowed; }
+.ui-select-sm { height: var(--control-height-sm); font-size: var(--font-size-sm); }
+
+/* 筛选区里的 select 固定宽度（列表页筛选用） */
+.ui-filter-select { width: 180px; }
+</style>
+
+<!-- HTML 模板：单选下拉 -->
+<select class="ui-select" style="width:200px;">
+  <option value="">全部{状态}</option>
+  <option value="1">{选项1}</option>
+  <option value="2">{选项2}</option>
+</select>
+
+<!-- HTML 模板：多选（原型交互：用点击 toggle 模拟，不追求真实多选） -->
+<select class="ui-select" multiple style="height:auto; padding:4px 11px;">
+  <option value="1">{选项1}</option>
+  <option value="2">{选项2}</option>
+  <option value="3">{选项3}</option>
+</select>
+
+<!-- HTML 模板：禁用态 -->
+<select class="ui-select" disabled style="width:200px;">
+  <option>已禁用</option>
+</select>

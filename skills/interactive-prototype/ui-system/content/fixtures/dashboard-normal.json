@@ -1,0 +1,173 @@
+{
+  "id": "dashboard-normal",
+  "name": "看板标准",
+  "notes": "KPI+双图+明细表",
+  "page_types": [
+    "dashboard"
+  ],
+  "regions": {
+    "page_header": {
+      "type": "page_header",
+      "data": {
+        "title": "经营数据看板",
+        "description": "核心指标与趋势总览",
+        "actions": [
+          [
+            "导出报表",
+            "default",
+            "download"
+          ],
+          [
+            "刷新",
+            "default",
+            "refresh-cw"
+          ]
+        ]
+      }
+    },
+    "kpi": {
+      "type": "kpi",
+      "data": {
+        "items": [
+          {
+            "label": "今日订单",
+            "value": "1,284",
+            "delta": 12.5,
+            "trend": "up"
+          },
+          {
+            "label": "销售额",
+            "value": "¥86.4万",
+            "delta": 8.2,
+            "trend": "up"
+          },
+          {
+            "label": "转化率",
+            "value": "3.42%",
+            "delta": -0.6,
+            "trend": "down"
+          },
+          {
+            "label": "客单价",
+            "value": "¥672",
+            "delta": 1.1,
+            "trend": "up"
+          }
+        ]
+      }
+    },
+    "main-chart": {
+      "type": "chart",
+      "data": {
+        "type": "line",
+        "title": "近30天订单趋势",
+        "labels": [
+          "1月",
+          "2月",
+          "3月",
+          "4月",
+          "5月",
+          "6月",
+          "7月",
+          "8月"
+        ],
+        "series": [
+          {
+            "name": "订单量",
+            "data": [
+              320,
+              460,
+              420,
+              610,
+              580,
+              720,
+              690,
+              840
+            ]
+          }
+        ]
+      }
+    },
+    "breakdown": {
+      "type": "chart",
+      "data": {
+        "type": "donut",
+        "title": "渠道占比",
+        "labels": [
+          "微信",
+          "抖音",
+          "快手",
+          "B站",
+          "其他"
+        ],
+        "series": [
+          {
+            "name": "占比",
+            "data": [
+              42,
+              28,
+              15,
+              9,
+              6
+            ]
+          }
+        ]
+      }
+    },
+    "detail-table": {
+      "type": "table",
+      "data": {
+        "title": "最新订单",
+        "columns": [
+          [
+            "no",
+            "订单号",
+            "text"
+          ],
+          [
+            "cust",
+            "客户",
+            "text"
+          ],
+          [
+            "amount",
+            "金额",
+            "money"
+          ],
+          [
+            "status",
+            "状态",
+            "tag"
+          ]
+        ],
+        "rows": [
+          [
+            "ORD-20260810-001",
+            "杭州云帆科技",
+            12800,
+            "已支付"
+          ],
+          [
+            "ORD-20260810-002",
+            "上海星图传媒",
+            8600,
+            "待审核"
+          ],
+          [
+            "ORD-20260810-003",
+            "北京远山广告",
+            15200,
+            "已支付"
+          ],
+          [
+            "ORD-20260810-004",
+            "深圳云起网络",
+            4300,
+            "已退款"
+          ]
+        ],
+        "pagination": true
+      }
+    }
+  }
+}

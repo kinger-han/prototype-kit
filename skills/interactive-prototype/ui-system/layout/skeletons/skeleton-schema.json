@@ -1,0 +1,40 @@
+{
+  "_meta": {
+    "purpose": "Layout Pattern (Skeleton) Schema: define reusable spatial skeletons decoupled from page type.",
+    "scope": "Layout Pattern owns the spatial arrangement (columns, regions order, alignment, stretch, responsive collapse). It is reusable across many Page Templates. It does NOT own page business structure (Template does) nor visual language (Theme does).",
+    "usage": "Template.variants[*].layout_pattern references a skeleton id. Skeleton provides the concrete CSS primitive classes (layout-split-*, layout-media-*, layout-panel) to use.",
+    "relationship": "Layout Pattern < Template < (Device + Theme). Same pattern reused by multiple templates."
+  },
+  "$schema": "https://example.com/schemas/layout-pattern-schema-v1",
+  "version": 1,
+  "required_fields": ["id", "name", "primitive_classes", "regions", "variants", "responsive"],
+  "field_specs": {
+    "id": "unique pattern id: split | master-detail | grid | stack | preview-inspector | sidebar-content",
+    "name": "human readable name",
+    "primitive_classes": "CSS classes from layout.css used to build this pattern",
+    "regions": [
+      {
+        "id": "region slot id (main | side | list | detail | preview | inspector | ...)",
+        "class": "layout-region | layout-panel | layout-media",
+        "weight_default": "default visual weight 0-1"
+      }
+    ],
+    "variants": [
+      {
+        "id": "variant id",
+        "condition": "aspect-ratio | device | metadata size | ...",
+        "classes": "concrete classes: e.g. layout-split-64",
+        "region_rules": {
+          "main": { "class": "layout-media-landscape", "max_height": "66vh" },
+          "side": { "class": "layout-panel", "scroll": true }
+        }
+      }
+    ],
+    "responsive": {
+      "breakpoint": 1100,
+      "collapse_to": "stack | single-column"
+    },
+    "stretch_default": false,
+    "notes": "Default no equal-height stretch; start-aligned; blank space on shorter side is normal, do not fill with decoration."
+  }
+}

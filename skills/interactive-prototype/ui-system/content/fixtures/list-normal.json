@@ -1,0 +1,159 @@
+{
+  "id": "list-normal",
+  "name": "列表标准",
+  "notes": "筛选+表格+分页",
+  "page_types": [
+    "list"
+  ],
+  "regions": {
+    "page_header": {
+      "type": "page_header",
+      "data": {
+        "title": "素材资源列表",
+        "description": "管理全部媒体素材资源",
+        "actions": [
+          [
+            "上传素材",
+            "primary",
+            "upload"
+          ]
+        ]
+      }
+    },
+    "filter": {
+      "type": "filter",
+      "data": {
+        "keyword_placeholder": "搜索素材名称 / ID",
+        "filters": [
+          {
+            "label": "类型",
+            "type": "select",
+            "options": [
+              "全部",
+              "图片",
+              "视频",
+              "海报"
+            ]
+          },
+          {
+            "label": "状态",
+            "type": "select",
+            "options": [
+              "全部",
+              "已发布",
+              "审核中",
+              "草稿",
+              "已下线"
+            ]
+          },
+          {
+            "label": "创建时间",
+            "type": "date",
+            "options": null
+          }
+        ]
+      }
+    },
+    "toolbar": {
+      "type": "toolbar",
+      "data": {
+        "primary_action": "上传素材",
+        "bulk_actions": [
+          "批量下载",
+          "批量删除"
+        ],
+        "search_placeholder": "搜索素材名称 / ID"
+      }
+    },
+    "table": {
+      "type": "table",
+      "data": {
+        "title": null,
+        "columns": [
+          [
+            "no",
+            "编号",
+            "text"
+          ],
+          [
+            "name",
+            "素材名称",
+            "text"
+          ],
+          [
+            "type",
+            "类型",
+            "text"
+          ],
+          [
+            "size",
+            "大小",
+            "text"
+          ],
+          [
+            "status",
+            "状态",
+            "tag"
+          ],
+          [
+            "updated",
+            "更新时间",
+            "text"
+          ]
+        ],
+        "rows": [
+          [
+            "RES-001",
+            "夏季促销主视觉",
+            "海报",
+            "2.4MB",
+            "已发布",
+            "2026-08-10"
+          ],
+          [
+            "RES-002",
+            "新品上市竖版海报",
+            "海报",
+            "1.8MB",
+            "审核中",
+            "2026-08-09"
+          ],
+          [
+            "RES-003",
+            "产品主图白底",
+            "图片",
+            "860KB",
+            "已发布",
+            "2026-08-08"
+          ],
+          [
+            "RES-004",
+            "品牌宣传视频",
+            "视频",
+            "48MB",
+            "草稿",
+            "2026-08-07"
+          ],
+          [
+            "RES-005",
+            "渠道推广 Banner",
+            "图片",
+            "1.2MB",
+            "已下线",
+            "2026-08-06"
+          ]
+        ],
+        "pagination": true
+      }
+    },
+    "pagination": {
+      "type": "pagination",
+      "data": {
+        "total": 128,
+        "page": 1,
+        "page_size": 10,
+        "simple": false
+      }
+    }
+  }
+}

@@ -1,0 +1,170 @@
+{
+  "_meta": {
+    "purpose": "Content Model Schema: define the structured data contract for each template region. Decouples WHAT content exists from HOW it is rendered.",
+    "scope": "Content Model owns data shape (fields, types, relations). It is device-agnostic and theme-agnostic: the same Content Model feeds PC and Mobile, and renders under any Theme.",
+    "data_flow": "Template -> Region -> Content Model -> Component -> Renderer",
+    "key_principle": "AI/benchmark provides CONTENT (instances of this schema); Template maps regions to content; Components render content fields; Renderer assembles. No region may be filled with 'placeholder' text in final output.",
+    "usage": "See content-schema.json for types. See fixtures/*.json for real benchmark data instances."
+  },
+  "$schema": "https://example.com/schemas/content-schema-v1",
+  "version": 1,
+  "region_content_types": {
+    "kpi": {
+      "description": "Dashboard KPI metric card",
+      "fields": {
+        "label": "string",
+        "value": "string",
+        "delta": "number|null",
+        "delta_label": "string|null",
+        "trend": "up|down|flat|null"
+      },
+      "required": ["label", "value"]
+    },
+    "chart": {
+      "description": "Dashboard chart (ECharts recipe-backed)",
+      "fields": {
+        "type": "line|bar|horizontal-bar|donut",
+        "title": "string",
+        "labels": "string[]",
+        "series": "array of {name, data}",
+        "legend": "boolean|null"
+      },
+      "required": ["type", "title"]
+    },
+    "filter": {
+      "description": "List search/filter region",
+      "fields": {
+        "keyword_placeholder": "string|null",
+        "filters": "array of {label, type: select|date, options: string[]|null}"
+      },
+      "required": ["filters"]
+    },
+    "toolbar": {
+      "description": "List toolbar (bulk actions + search)",
+      "fields": {
+        "primary_action": "string|null",
+        "bulk_actions": "string[]",
+        "search_placeholder": "string|null"
+      },
+      "required": ["bulk_actions"]
+    },
+    "table": {
+      "description": "Tabular data region",
+      "fields": {
+        "title": "string|null",
+        "columns": "array of {key, title, type: text|status|money|tag|action}",
+        "rows": "array of objects (values per column)",
+        "pagination": "bool|null"
+      },
+      "required": ["columns", "rows"]
+    },
+    "pagination": {
+      "description": "Pagination region",
+      "fields": {
+        "total": "number",
+        "page": "number",
+        "page_size": "number",
+        "simple": "bool|null"
+      },
+      "required": ["total", "page", "page_size"]
+    },
+    "page_header": {
+      "description": "Page title region",
+      "fields": {
+        "title": "string",
+        "description": "string|null",
+        "actions": "array of {label, variant: primary|default|danger, icon: string|null}"
+      },
+      "required": ["title"]
+    },
+    "status": {
+      "description": "Entity status (rendered as status-tag)",
+      "fields": {
+        "label": "string",
+        "tone": "success|processing|warning|error|default"
+      },
+      "required": ["label", "tone"]
+    },
+    "metadata": {
+      "description": "Key-value metadata region (descriptions)",
+      "fields": {
+        "title": "string|null",
+        "items": "array of {label, value, type: text|money|tag|status|link|null}",
+        "columns": "1|2|null",
+        "scroll": "bool|null"
+      },
+      "required": ["items"]
+    },
+    "media": {
+      "description": "Media preview region (layout-media frame)",
+      "fields": {
+        "type": "image|video|poster|null",
+        "aspect_ratio": "16:9|9:16|1:1|4:3|3:4|21:9|null",
+        "available": "bool",
+        "caption": "string|null",
+        "src": "string|null",
+        "placeholder_label": "string|null"
+      },
+      "required": ["available"]
+    },
+    "caption": {
+      "description": "Media caption overlay",
+      "fields": {
+        "filename": "string",
+        "meta": "string|null"
+      },
+      "required": ["filename"]
+    },
+    "tags": {
+      "description": "Tag list region",
+      "fields": {
+        "tags": "string[]",
+        "max_visible": "number|null"
+      },
+      "required": ["tags"]
+    },
+    "actions": {
+      "description": "Action button group",
+      "fields": {
+        "items": "array of {label, variant: primary|default|danger|link, icon: string|null}",
+        "align": "left|right|null"
+      },
+      "required": ["items"]
+    },
+    "form": {
+      "description": "Form region (Inspector)",
+      "fields": {
+        "groups": "array of {title, fields: array of {label, type: text|textarea|select|date|switch|number, required, placeholder|null, options|null}}",
+        "columns": "1|2|null",
+        "validation": "array of {field, error}"
+      },
+      "required": ["groups"]
+    },
+    "related": {
+      "description": "Related records region",
+      "fields": {
+        "title": "string|null",
+        "columns": "array of {key, title, type}",
+        "rows": "array of objects"
+      },
+      "required": ["columns", "rows"]
+    }
+  },
+  "instance_shape": {
+    "page_type": "dashboard|list|detail|form|media-detail|media-editor",
+    "device": "pc|mobile",
+    "theme": "default",
+    "regions": {
+      "<region_id>": {
+        "type": "kpi|chart|filter|toolbar|table|pagination|page_header|status|metadata|media|caption|tags|actions|form|related",
+        "data": {}
+      }
+    }
+  },
+  "not_responsible_for": [
+    "visual style (theme)",
+    "spatial allocation (layout)",
+    "region geometry (planner)",
+    "page structure order (template)"
+  ]
+}

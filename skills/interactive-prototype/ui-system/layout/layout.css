@@ -1,0 +1,344 @@
+/* ============================================================
+   ui-system/layout/layout.css — Layout 原语类（Composition Rules）
+
+   作用域：页面级布局。AI 只选择类名表达布局意图，禁止写裸几何。
+   配套：layout-tokens.css（token 基准）、planner.md（决策规则）、
+         patterns/media-detail.md / media-editor.md（页面模式）
+
+   ⚠️ 规则：
+   1. AI 不写 width: 65% / margin: 37px / position: absolute 等裸几何；
+      只使用本文件类 + var(--layout-*) token。
+   2. 所有类前缀 layout-，与 ui-* 组件类隔离。
+   3. 默认不强制区域等高（align-items: start），除非显式 layout-equal-height。
+   4. 媒体区尺寸由 aspect-ratio 档自动推导，禁止手写固定宽高。
+   ============================================================ */
+
+/* ---------- 1. 页面骨架 ---------- */
+.layout-page {
+  max-width: var(--layout-content-max-width);
+  min-width: var(--layout-content-min-width);
+  margin: 0 auto;
+  padding: var(--layout-content-padding);
+}
+
+.layout-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+/* ---------- 2. Split 双栏（核心布局原语） ---------- */
+/* 用法：父容器 .layout-split + 比例档类，两个子区域放 class="layout-region" */
+.layout-split {
+  display: grid;
+  grid-template-columns: var(--layout-split-50); /* 默认平衡 */
+  gap: var(--layout-gutter);
+  align-items: start;                            /* 关键：默认顶部对齐，不自动等高 */
+}
+.layout-split-70 { grid-template-columns: var(--layout-split-70); }
+.layout-split-64 { grid-template-columns: var(--layout-split-64); }
+.layout-split-55 { grid-template-columns: var(--layout-split-55); }
+.layout-split-45 { grid-template-columns: var(--layout-split-45); }
+.layout-split-38 { grid-template-columns: var(--layout-split-38); }
+.layout-split-30 { grid-template-columns: var(--layout-split-30); }
+
+/* 明确要求等高时使用（罕见），否则不要加 */
+.layout-equal-height { align-items: stretch; }
+
+/* ---------- 3. 区域（Region） ---------- */
+.layout-region {
+  min-width: 0;                                  /* 防止 grid 子项溢出 */
+  align-self: start;                             /* 区域内容多高就多高，不撑满 */
+}
+.layout-region-stretch { align-self: stretch; }  /* 明确要求该区撑满父容器高度 */
+
+/* 区域分组标题：section 语义分割，不用重复卡片 */
+.layout-section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  margin-bottom: var(--spacing-md);
+}
+.layout-section-title::before {
+  content: '';
+  width: 3px;
+  height: 14px;
+  border-radius: var(--radius-round);
+  background: var(--color-primary);
+  flex-shrink: 0;
+}
+
+/* ---------- 4. 媒体容器（Media Frame） ---------- */
+/* 关键：宽高由 aspect-ratio 档推导，禁止手写固定宽高。
+   ⚠️ aspect-ratio + max-height 冲突陷阱（2026-08-11 Critic 实测修复）：
+   max-height 会把高度钳制到 66vh 但宽度不变 → 容器比例失真（square 变 1.44:1、portrait 变 1.12:1）。
+   修复：同时给 max-width = 66vh × 比例，高度受钳时宽度同步收缩，比例保持；列内居中。 */
+.layout-media {
+  position: relative;
+  width: 100%;
+  background: var(--color-bg-fill);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.layout-media-landscape {
+  aspect-ratio: var(--layout-ratio-landscape);
+  max-height: var(--layout-media-max-height);
+  max-width: calc(var(--layout-media-max-height) * 16 / 9);
+  margin-inline: auto;
+}
+.layout-media-portrait {
+  aspect-ratio: var(--layout-ratio-portrait);
+  max-height: var(--layout-media-max-height);
+  max-width: calc(var(--layout-media-max-height) * 9 / 16);
+  margin-inline: auto;
+}
+.layout-media-square {
+  aspect-ratio: var(--layout-ratio-square);
+  max-height: var(--layout-media-max-height);
+  max-width: var(--layout-media-max-height);
+  margin-inline: auto;
+}
+.layout-media-wide {
+  aspect-ratio: var(--layout-ratio-wide);
+  max-height: var(--layout-media-max-height);
+  max-width: calc(var(--layout-media-max-height) * 21 / 9);
+  margin-inline: auto;
+}
+.layout-media-4x3 {
+  aspect-ratio: var(--layout-ratio-4x3);
+  max-height: var(--layout-media-max-height);
+  max-width: calc(var(--layout-media-max-height) * 4 / 3);
+  margin-inline: auto;
+}
+.layout-media-3x4 {
+  aspect-ratio: var(--layout-ratio-3x4);
+  max-height: var(--layout-media-max-height);
+  max-width: calc(var(--layout-media-max-height) * 3 / 4);
+  margin-inline: auto;
+}
+
+/* 媒体容器内部元素（img/video 占满，object-fit 保比例不裁主体） */
+.layout-media img,
+.layout-media video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;                         /* contain：完整展示，不裁切 */
+  background: var(--color-bg-layout);
+}
+/* 媒体不可用时的占位 */
+.layout-media-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-xl);
+  text-align: center;
+}
+
+/* 媒体区信息条（叠加在媒体底部：名称/时长/尺寸） */
+.layout-media-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: linear-gradient(180deg, transparent, rgba(0,0,0,0.6));
+  color: #fff;
+  font-size: var(--font-size-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+/* ---------- 5. 侧栏 / 信息面板（Metadata / Inspector / Actions） ---------- */
+.layout-panel {
+  min-width: var(--layout-panel-min-width);
+  max-width: var(--layout-panel-max-width);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+.layout-panel-scroll {
+  max-height: var(--layout-panel-max-height);
+  overflow-y: auto;
+}
+
+/* ---------- 6. 密度档（覆盖 gap 与 padding） ---------- */
+.layout-density-compact {
+  gap: var(--layout-density-compact-gap);
+}
+.layout-density-compact .layout-region,
+.layout-density-compact .layout-panel {
+  gap: var(--layout-density-compact-gap);
+}
+
+.layout-density-comfortable {
+  gap: var(--layout-density-comfortable-gap);
+}
+.layout-density-comfortable .layout-region,
+.layout-density-comfortable .layout-panel {
+  gap: var(--layout-density-comfortable-gap);
+}
+
+.layout-density-spacious {
+  gap: var(--layout-density-spacious-gap);
+}
+.layout-density-spacious .layout-region,
+.layout-density-spacious .layout-panel {
+  gap: var(--layout-density-spacious-gap);
+}
+
+/* ---------- 7. 堆叠（纵向区块，用于区域内多卡片） ---------- */
+.layout-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+.layout-stack-sm { gap: var(--spacing-md); }
+.layout-stack-lg { gap: var(--spacing-xl); }
+/* ⚠️ stack 容器内 region 必须全宽（2026-08-11 Phase2 统一流程实测修复）：
+   .layout-region 的 align-self:start 在 grid 双栏防等高，但在 flex column 会把区域收缩成内容宽度 → 窄条卡片。
+   显式覆盖为 stretch 并 width:100%。 */
+.layout-stack > .layout-region {
+  align-self: stretch;
+  width: 100%;
+}
+
+/* ---------- 8. Grid（Dashboard 网格，Phase 3A 真实现） ---------- *//* KPI 行 / 图表行 / 明细表。列数由 grid-cols-N 控制；窄屏按 viewport 降级。 */
+.layout-grid {
+  display: grid;
+  gap: var(--spacing-xl);
+  align-items: stretch;
+}
+.layout-grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.layout-grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.layout-grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+/* 图表/明细表区域跨列（模板 region_rules 指定） */
+.layout-grid .layout-grid-span-2 { grid-column: span 2; }
+.layout-grid .layout-grid-span-3 { grid-column: span 3; }
+.layout-grid .layout-grid-span-full { grid-column: 1 / -1; }
+/* KPI 卡：内容少但需要视觉重量，纵向弹性居中 */
+.layout-grid .ui-kpi-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xl);
+  background: var(--color-bg-container);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--radius-lg);
+}
+.layout-grid .ui-kpi-label { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+.layout-grid .ui-kpi-value { font-size: var(--font-size-xl); font-weight: var(--font-weight-semibold); color: var(--color-text); }
+.layout-grid .ui-kpi-delta { font-size: var(--font-size-xs); }
+.layout-grid .ui-kpi-delta.up { color: var(--color-success); }
+.layout-grid .ui-kpi-delta.down { color: var(--color-error); }
+/* 图表卡：固定图表容器高度，避免图表不定高 */
+.layout-grid .ui-chart-card { min-height: 320px; }
+.layout-grid .ui-chart-body { height: 260px; display: flex; align-items: center; justify-content: center; }
+
+/* 降级（viewport 驱动）：
+   <1280: 4 列 → 2 列；<1100: 全部 → 1 列 */
+@media (max-width: 1280px) {
+  .layout-grid-cols-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 1100px) {
+  .layout-grid-cols-2, .layout-grid-cols-3, .layout-grid-cols-4 { grid-template-columns: 1fr; }
+  .layout-grid .layout-grid-span-2, .layout-grid .layout-grid-span-3, .layout-grid .layout-grid-span-full { grid-column: auto; }
+}
+
+/* ---------- 9. 响应式安全（窄屏回退） ---------- */
+/* PC 端低于 min-width 时回退单列，避免挤爆 */
+@media (max-width: 1100px) {
+  .layout-split,
+  .layout-split-70, .layout-split-64, .layout-split-55,
+  .layout-split-45, .layout-split-38, .layout-split-30 {
+    grid-template-columns: 1fr;                /* 全部回退单列 */
+  }
+  .layout-page { min-width: 0; }
+}
+
+/* ============================================================
+   10. Mobile Card Mode（Phase 5：Table → Card/List Item 呈现）
+   ------------------------------------------------------------
+   Content Model 与 PC 完全共享；仅 Presentation 改变。
+   触发：template variants[device].region_rules[table].card_mode == true
+   规则：
+   - 每条数据一个独立 Card（白底圆角 + 边框）
+   - 主字段（列 type=primary 或首列）作为 Card 标题区，含状态 Tag
+   - 次要字段降级为小字描述行（两列 info-grid）
+   - 长标题换行不截断；空字段不显示该行
+   - Actions 沿用 action-overflow（默认 ≤2 主操作 + 更多）
+   - 视觉全部引用现有 token，不新增独立视觉语言
+   ============================================================ */
+.layout-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+.layout-card-item {
+  background: var(--color-bg-container);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+/* 卡片头：主标题 + 状态 Tag 右对齐 */
+.layout-card-item-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+.layout-card-item-title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  line-height: 1.4;
+  word-break: break-all;
+}
+/* 副信息（ID/编号等次要字段，次级色） */
+.layout-card-item-sub {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+/* 描述字段网格：次要字段降级，label 灰 value 黑 */
+.layout-card-item-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-xs) var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--color-border-light);
+}
+.layout-card-item-meta .k { color: var(--color-text-tertiary); }
+.layout-card-item-meta .v { color: var(--color-text); text-align: right; word-break: break-all; }
+/* 多标签：卡片内换行排列 */
+.layout-card-item-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+/* 卡片 Action 区：沿用 action-overflow（更多折叠） */
+.layout-card-item-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--color-border-light);
+}

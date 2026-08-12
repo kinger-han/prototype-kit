@@ -1,0 +1,66 @@
+<!--
+  id: drawer
+  type: component
+  description: 抽屉（右侧滑出面板：详情/表单/筛选高级区）
+  use_when: 信息量大的详情、需保持上下文的新建/编辑、高级筛选
+  variants: default（宽 480）/ sm（宽 360）/ lg（宽 640）
+-->
+<style>
+/* ===== ui-drawer ===== */
+.ui-drawer-overlay {
+  position: fixed; inset: 0; background: var(--color-bg-mask);
+  display: none; z-index: 1000;
+}
+.ui-drawer-overlay.show { display: block; }
+.ui-drawer {
+  position: absolute; top: 0; right: 0; height: 100%;
+  width: 480px; max-width: calc(100vw - 48px);
+  background: var(--color-bg-elevated); box-shadow: var(--shadow-lg);
+  display: flex; flex-direction: column; transform: translateX(100%);
+  transition: transform 0.25s ease;
+}
+.ui-drawer-overlay.show .ui-drawer { transform: translateX(0); }
+.ui-drawer-sm { width: 360px; }
+.ui-drawer-lg { width: 640px; }
+.ui-drawer-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--spacing-lg) var(--spacing-xl); border-bottom: 1px solid var(--color-border-secondary);
+  flex-shrink: 0;
+}
+.ui-drawer-title { font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); color: var(--color-text); }
+.ui-drawer-close {
+  width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;
+  border: none; background: none; color: var(--color-text-tertiary); cursor: pointer; border-radius: var(--radius-sm);
+}
+.ui-drawer-close:hover { background: var(--color-bg-hover); color: var(--color-text); }
+.ui-drawer-close i, .ui-drawer-close svg { width: 16px; height: 16px; }
+.ui-drawer-body { flex: 1; overflow-y: auto; padding: var(--spacing-xl); }
+.ui-drawer-footer {
+  display: flex; justify-content: flex-end; gap: var(--spacing-sm);
+  padding: var(--spacing-lg) var(--spacing-xl); border-top: 1px solid var(--color-border-secondary);
+  flex-shrink: 0;
+}
+</style>
+
+<!-- HTML 模板：抽屉（JS 见下方） -->
+<div class="ui-drawer-overlay" id="{drawerId}">
+  <div class="ui-drawer">
+    <div class="ui-drawer-header">
+      <div class="ui-drawer-title">{抽屉标题}</div>
+      <button class="ui-drawer-close" onclick="closeUiDrawer('{drawerId}')"><i data-lucide="x"></i></button>
+    </div>
+    <div class="ui-drawer-body">
+      {内容（表单 / 描述列表）}
+    </div>
+    <div class="ui-drawer-footer">
+      <button class="ui-btn" onclick="closeUiDrawer('{drawerId}')">取消</button>
+      <button class="ui-btn ui-btn-primary">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* 抽屉开关逻辑（复制到业务 script 中） */
+function openUiDrawer(id) { var el = document.getElementById(id); if (el) el.classList.add('show'); }
+function closeUiDrawer(id) { var el = document.getElementById(id); if (el) el.classList.remove('show'); }
+</script>

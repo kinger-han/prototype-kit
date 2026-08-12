@@ -1,0 +1,62 @@
+<!--
+  id: pagination
+  type: component
+  description: 分页条（总数 + 页尺寸 + 页码 + 跳页）
+  use_when: 表格底部、列表数据超过一页
+  variants: default / simple（仅上一页/下一页）
+-->
+<style>
+/* ===== ui-pagination ===== */
+.ui-pagination {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--spacing-lg); border-top: 1px solid var(--color-border-secondary);
+  background: var(--color-bg-container);
+}
+.ui-pagination .ui-total { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+.ui-pagination .ui-total b { color: var(--color-text); font-weight: var(--font-weight-medium); }
+.ui-pagination .ui-right { display: flex; align-items: center; gap: var(--spacing-sm); }
+.ui-pagination .ui-pages { display: flex; align-items: center; gap: var(--spacing-xs); }
+.ui-page-btn {
+  min-width: 28px; height: 28px; padding: 0 6px; display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+  background: var(--color-bg-container); color: var(--color-text); font-size: var(--font-size-sm);
+  cursor: pointer; transition: all 0.15s; user-select: none;
+}
+.ui-page-btn:hover { color: var(--color-primary); border-color: var(--color-primary); }
+.ui-page-btn.active { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-text-inverse); }
+.ui-page-btn.disabled { color: var(--color-text-quaternary); cursor: not-allowed; background: var(--color-bg-fill); }
+.ui-page-btn i, .ui-page-btn svg { width: 13px; height: 13px; }
+.ui-pagination .ui-size {
+  height: 28px; border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+  padding: 0 8px; font-size: var(--font-size-sm); color: var(--color-text); background: var(--color-bg-container);
+}
+.ui-pagination .ui-jump { display: flex; align-items: center; gap: var(--spacing-xs); font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+.ui-pagination .ui-jump input { width: 40px; height: 28px; text-align: center; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: var(--font-size-sm); outline: none; }
+.ui-pagination .ui-jump input:focus { border-color: var(--color-primary); }
+</style>
+
+<!-- HTML 模板：完整分页（左：总数；右：尺寸 + 页码 + 跳页） -->
+<div class="ui-pagination">
+  <div class="ui-total">共 <b>{总条数}</b> 条</div>
+  <div class="ui-right">
+    <select class="ui-size">
+      <option>10 条/页</option>
+      <option>20 条/页</option>
+      <option>50 条/页</option>
+    </select>
+    <div class="ui-pages">
+      <button class="ui-page-btn disabled"><i data-lucide="chevron-left"></i></button>
+      <button class="ui-page-btn active">1</button>
+      <button class="ui-page-btn">2</button>
+      <button class="ui-page-btn">3</button>
+      <span style="color:var(--color-text-tertiary); font-size:var(--font-size-sm);">…</span>
+      <button class="ui-page-btn">10</button>
+      <button class="ui-page-btn"><i data-lucide="chevron-right"></i></button>
+    </div>
+    <div class="ui-jump">
+      跳至<input type="text" value="1">页
+    </div>
+  </div>
+</div>
+
+<!-- 规则：PC 原型列表可保留分页（「共X条」仅分页条内使用，不放 toolbar） -->

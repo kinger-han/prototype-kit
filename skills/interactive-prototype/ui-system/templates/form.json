@@ -1,0 +1,68 @@
+{
+  "page_type": "form",
+  "name": "表单页（新建/编辑）",
+  "description": "分区表单 + 底部操作，Inspector 优先",
+  "doc": "patterns/form-page.md",
+  "supported_devices": ["pc", "mobile"],
+  "supported_themes": ["default"],
+  "layout_patterns": {
+    "pc": ["stack", "preview-inspector"],
+    "mobile": ["stack"]
+  },
+  "regions": [
+    { "id": "page_header", "role": "content", "required": true, "content_source": ["page-header"], "weight": 0.1 },
+    { "id": "form", "role": "form", "required": true, "content_source": ["card", "input", "select", "date-picker", "switch"], "weight": 0.8 },
+    { "id": "actions", "role": "actions", "required": true, "content_source": ["button"], "weight": 0.1 }
+  ],
+  "variants": {
+    "pc": [
+      {
+        "id": "form-stack",
+        "condition": "default (fields <= 12)",
+        "layout_pattern": "stack",
+        "split": null,
+        "region_rules": {
+          "page-header": { "full_width": true },
+          "form-sections": { "full_width": true, "columns": 2 },
+          "actions": { "full_width": true, "align": "right" }
+        },
+        "density": "comfortable"
+      },
+      {
+        "id": "form-split-inspector",
+        "condition": "fields > 12 OR has preview need",
+        "layout_pattern": "preview-inspector",
+        "split": "split-45",
+        "region_rules": {
+          "page-header": { "full_width": true },
+          "form-sections": { "columns": 2 },
+          "actions": { "full_width": true, "grid_column": "1/-1", "align": "right" }
+        },
+        "density": "compact"
+      }
+    ],
+    "mobile": [
+      {
+        "id": "mobile-stack",
+        "condition": "default",
+        "layout_pattern": "stack",
+        "split": null,
+        "region_rules": {
+          "page-header": { "full_width": true },
+          "form-sections": { "full_width": true, "columns": 1 },
+          "actions": { "full_width": true, "align": "right" }
+        },
+        "density": "compact"
+      }
+    ]
+  },
+  "content_requirements": {
+    "min_fields": 6,
+    "must_have": ["title", "save_action"],
+    "media": null
+  },
+  "responsive_policy": {
+    "breakpoint": 1100,
+    "fallback": "single-column"
+  }
+}

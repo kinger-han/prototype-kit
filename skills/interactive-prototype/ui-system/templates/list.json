@@ -1,0 +1,59 @@
+{
+  "page_type": "list",
+  "name": "列表页",
+  "description": "筛选 + 表格/卡片列表 + 分页",
+  "doc": "patterns/list-page.md",
+  "supported_devices": ["pc", "mobile"],
+  "supported_themes": ["default"],
+  "layout_patterns": {
+    "pc": ["stack"],
+    "mobile": ["stack"]
+  },
+  "regions": [
+    { "id": "page_header", "role": "content", "required": true, "content_source": ["page-header"], "weight": 0.1 },
+    { "id": "search-form", "role": "content", "required": false, "content_source": ["search-form"], "weight": 0.2 },
+    { "id": "table", "role": "list", "required": true, "content_source": ["table", "status-tag", "pagination"], "weight": 0.8 },
+    { "id": "pagination", "role": "content", "required": true, "content_source": ["pagination"], "weight": 0.1 }
+  ],
+  "variants": {
+    "pc": [
+      {
+        "id": "list-stack",
+        "condition": "default",
+        "layout_pattern": "stack",
+        "split": null,
+        "region_rules": {
+          "page-header": { "full_width": true },
+          "search-form": { "full_width": true },
+          "table": { "full_width": true },
+          "pagination": { "full_width": true }
+        },
+        "density": "comfortable"
+      }
+    ],
+    "mobile": [
+      {
+        "id": "mobile-card-list",
+        "condition": "default",
+        "layout_pattern": "stack",
+        "split": null,
+        "region_rules": {
+          "page-header": { "full_width": true },
+          "search-form": { "full_width": true },
+          "table": { "full_width": true, "card_mode": true },
+          "pagination": { "full_width": true, "simple": true }
+        },
+        "density": "compact"
+      }
+    ]
+  },
+  "content_requirements": {
+    "min_fields": 3,
+    "must_have": ["title", "table_columns"],
+    "media": null
+  },
+  "responsive_policy": {
+    "breakpoint": 1100,
+    "fallback": "single-column"
+  }
+}

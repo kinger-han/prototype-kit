@@ -1,0 +1,172 @@
+<!--
+  id: date-picker
+  type: component
+  description: 日期选择器（AntD 风格月历弹层，周一起）
+  use_when: 日期选择、时间范围筛选、表单日期字段
+  variants: default
+-->
+<style>
+/* ===== ui-date-picker ===== */
+.ui-date-picker { position: relative; display: inline-block; }
+.ui-date-input {
+  height: var(--control-height); width: 150px; padding: 0 30px 0 11px;
+  border: 1px solid var(--color-border); border-radius: var(--radius);
+  background: var(--color-bg-container); color: var(--color-text);
+  font-size: var(--font-size-md); font-family: inherit; outline: none;
+  cursor: pointer; transition: all 0.15s;
+}
+.ui-date-input:hover { border-color: var(--color-primary-hover); }
+.ui-date-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary-bg); }
+.ui-date-icon {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  width: 14px; height: 14px; color: var(--color-text-tertiary); pointer-events: none;
+}
+.ui-date-popup {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 100;
+  width: 252px; background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-secondary); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md); padding: var(--spacing-md);
+  display: none;
+}
+.ui-date-popup.show { display: block; }
+.ui-date-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--spacing-sm); }
+.ui-date-title { font-size: var(--font-size-md); font-weight: var(--font-weight-medium); color: var(--color-text); }
+.ui-date-nav {
+  width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center;
+  border: none; background: none; color: var(--color-text-secondary); cursor: pointer; border-radius: var(--radius-sm);
+}
+.ui-date-nav:hover { background: var(--color-bg-hover); color: var(--color-primary); }
+.ui-date-nav i, .ui-date-nav svg { width: 14px; height: 14px; }
+.ui-date-week { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 4px; }
+.ui-date-week span {
+  text-align: center; font-size: var(--font-size-xs); color: var(--color-text-secondary);
+  height: 28px; line-height: 28px;
+}
+.ui-date-week .ui-date-weekend { color: var(--color-text-tertiary); }
+.ui-date-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.ui-date-cell {
+  height: 28px; display: flex; align-items: center; justify-content: center;
+  font-size: var(--font-size-sm); color: var(--color-text); cursor: pointer;
+  border-radius: var(--radius-sm); transition: background 0.15s;
+}
+.ui-date-cell:hover { background: var(--color-bg-hover); }
+.ui-date-cell.other { color: var(--color-text-quaternary); }
+.ui-date-cell.today { color: var(--color-primary); font-weight: var(--font-weight-semibold); }
+.ui-date-cell.selected { background: var(--color-primary); color: var(--color-text-inverse); font-weight: var(--font-weight-medium); }
+.ui-date-cell.selected:hover { background: var(--color-primary-hover); }
+</style>
+
+<!-- HTML 模板：日期选择器（一个选择器 = 容器 + 输入框 + 图标 + 浮层） -->
+<div class="ui-date-picker">
+  <input class="ui-date-input" id="{pickerId}" readonly placeholder="选择日期">
+  <i class="ui-date-icon" data-lucide="calendar"></i>
+  <div class="ui-date-popup" id="{pickerId}-popup"></div>
+</div>
+
+<script>
+/* 日期选择器逻辑（页面加载后调用一次 initUiDatePickerAll()，自动绑定所有 .ui-date-picker） */
+function initUiDatePickerAll() {
+  document.querySelectorAll('.ui-date-picker').forEach(function (wrap) {
+    var input = wrap.querySelector('.ui-date-input');
+    var popup = wrap.querySelector('.ui-date-popup');
+    if (!input || !popup || wrap.dataset.dateInit) return;
+    wrap.dataset.dateInit = '1';
+
+    var state = { y: 0, m: 0, selected: null };
+    var today = new Date();
+
+    function pad(n) { return n < 10 ? '0' + n : '' + n; }
+    function fmt(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+
+    function render() {
+      var y = state.y, m = state.m;
+      popup.innerHTML = '';
+
+      var head = document.createElement('div');
+      head.className = 'ui-date-head';
+      var prev = document.createElement('button');
+      prev.type = 'button'; prev.className = 'ui-date-nav';
+      prev.innerHTML = '<i data-lucide="chevron-left"></i>';
+      var title = document.createElement('div');
+      title.className = 'ui-date-title';
+      title.textContent = y + ' 年 ' + (m + 1) + ' 月';
+      var next = document.createElement('button');
+      next.type = 'button'; next.className = 'ui-date-nav';
+      next.innerHTML = '<i data-lucide="chevron-right"></i>';
+      head.appendChild(prev); head.appendChild(title); head.appendChild(next);
+      popup.appendChild(head);
+
+      var week = document.createElement('div');
+      week.className = 'ui-date-week';
+      ['一', '二', '三', '四', '五', '六', '日'].forEach(function (w, i) {
+        var s = document.createElement('span');
+        s.textContent = w;
+        if (i >= 5) s.className = 'ui-date-weekend';
+        week.appendChild(s);
+      });
+      popup.appendChild(week);
+
+      var grid = document.createElement('div');
+      grid.className = 'ui-date-grid';
+      var first = new Date(y, m, 1);
+      var lead = (first.getDay() + 6) % 7; /* 周一起：周一=0 */
+      for (var i = 0; i < 42; i++) {
+        var d = new Date(first.getFullYear(), first.getMonth(), 1 - lead + i);
+        var cell = document.createElement('div');
+        cell.className = 'ui-date-cell';
+        cell.textContent = d.getDate();
+        if (d.getMonth() !== m) cell.classList.add('other');
+        var ds = fmt(d);
+        if (ds === fmt(today)) cell.classList.add('today');
+        if (state.selected === ds) cell.classList.add('selected');
+        cell.dataset.date = ds;
+        (function (c) {
+          c.addEventListener('click', function () {
+            var t = new Date(c.dataset.date + 'T00:00:00');
+            state.y = t.getFullYear(); state.m = t.getMonth();
+            state.selected = c.dataset.date;
+            input.value = c.dataset.date;
+            render(); close();
+          });
+        })(cell);
+        grid.appendChild(cell);
+      }
+      popup.appendChild(grid);
+      if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+    }
+    function open() {
+      if (input.value && /^\d{4}-\d{2}-\d{2}$/.test(input.value)) {
+        var p = input.value.split('-');
+        state.y = parseInt(p[0], 10); state.m = parseInt(p[1], 10) - 1;
+        state.selected = input.value;
+      } else {
+        state.y = today.getFullYear(); state.m = today.getMonth();
+        state.selected = null;
+      }
+      document.querySelectorAll('.ui-date-picker .ui-date-popup.show').forEach(function (o) {
+        if (o !== popup) o.classList.remove('show');
+      });
+      render();
+      popup.classList.add('show');
+    }
+    function close() { popup.classList.remove('show'); }
+
+    popup.addEventListener('click', function (e) {
+      var nav = e.target.closest ? e.target.closest('.ui-date-nav') : null;
+      if (!nav) return;
+      if (nav === popup.querySelector('.ui-date-nav:first-child')) {
+        state.m--; if (state.m < 0) { state.m = 11; state.y--; }
+      } else {
+        state.m++; if (state.m > 11) { state.m = 0; state.y++; }
+      }
+      render();
+    });
+
+    input.addEventListener('click', function () {
+      if (popup.classList.contains('show')) close(); else open();
+    });
+    wrap.addEventListener('click', function (e) { e.stopPropagation(); });
+    document.addEventListener('click', function () { close(); });
+  });
+}
+</script>
