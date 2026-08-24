@@ -385,17 +385,14 @@ print(r.returncode, r.stdout[-2500:], r.stderr[-1500:])
 ### 3.6 工作流程
 - **新建原型**：确认平台/模板/交互范围/数据量 → 创建 proto-config.json + pages/（含 _shared.html）→ 编写 → 构建 → 验证
 - **增量修改**：用户说"改一下XX" → 先列 todo，逐个完成，做完自检，构建验证。改动落点：页面 HTML/交互 → pages/xxx.html；弹窗结构 → _shared.html；弹窗逻辑 → 业务页面；框架层 → 先说明等授权
-- **委派失败后接手前先查工作区（2026-08-14 实测；2026-08-18 补充）**：外部 agent（Claude Code/Codex/delegate_task）委派失败（429/断连/超时/参数错误）后 Hermes 自行接手时，先 `git status` + 页面文件 mtime——工作区可能已有完整改动 + dist 已重建（用户手动通道或"失败"进程的部分执行）。正确动作：`git diff` 审查 → 完整验收（node --check → build → dist 检查 → DOM 验证）→ 补遗漏 → commit + push，**不要凭"委派失败"就重做**
-  - **2026-08-18 实测 delegate_task 超时形态**：600s 硬超时后 status=timeout、16 次 API call 全耗在侦查/读 SKILL，**零文件写入**（git 干净 + mtime 未变）。验证工作区后确认无需恢复，直接 Hermes 接手补全即可
-  - **委派降级链实例（2026-08-18）**：Claude CLI 通道失败（直连 api.anthropic.com 被拒/CC Switch 未注入中转，重试无意义）→ delegate_task(MIMO) 超时 → Hermes 直接接手（熟练任务下比再委派要快）。判定通道性失败后不要再赌重试
-
+- **委派失败后接手前先查工作区**：外部 agent 委派失败（429/断连/超时）后 Hermes 接手时，先 `git status` + 页面 mtime——可能已有完整改动或 dist 已重建。正确动作：`git diff` 审查 → 完整验收 → 补遗漏 → commit + push，不凭"委派失败"就重做。delegate_task 超时的典型形态：600s 硬超时、零文件写入（git 干净）。判定为通道性失败（如 CLI 直连被拒）后不要再赌重试，直接 Hermes 接手
 ### 3.7 Token 高效三阶段（读一次，想清楚，改一轮）
 1. **侦查**：execute_code + Python 一次提取锚点坐标，输出摘要不读全文
 2. **读局部**：search_files 定位 → read_file(offset,limit) 只读改的 20-30 行；不读 Shell 模板全量
 3. **一轮执行**：所有修改写进一个 Python 脚本按区域一次执行
 
 ### 3.8 验证（每次构建后必做）
-> ⚠️ **verify-output.py 作用域**：`scripts/verify-output.py` 是 **build.py 组件化 Pipeline** 的验证工具，仅适用于组件化构建产物（dist/）。它检查 proto-page / 侧边栏 / 无外部 JS 依赖 / JS 语法等组件化 Shell 契约。**单 HTML Pipeline（第 2 章）不调用 verify-output.py**——单 HTML 按 2.5 组装清单允许 Lucide/ECharts CDN，且无 proto-page/sidebar 类名，运行该脚本会产生误报。
+> verify-output.py 仅适用组件化产物；单 HTML 不调用（原因见 2.5.1）。
 1. **组件化验证链**：`pages → build.py → dist → verify-output.py → Browser/功能验证`
    ```bash
    PYTHON="D:/HermesData/hermes-agent/venv/Scripts/python.exe"
@@ -450,8 +447,8 @@ print(r.returncode, r.stdout[-2500:], r.stderr[-1500:])
 ### JS 语法与执行
 - **花括号不匹配 → 整个 script 块失效**：所有页面脚本合并进一个 `<script>`，任一页缺 `{`/`}` → 全部函数 undefined、页面无法切换。修改后必数 `{}` 平衡
 - **onclick 引号嵌套冲突**：单引号与外层冲突 → SyntaxError。用 `&apos;` 或反引号
-- **⚠️ onclick 内嵌 JS 的转义漂移（`\\'` 层数错乱）极难手修（2026-08-18 严重踩坑）**：patch 可能把正确的 `onclick="resToast(\\'xx\\')"` 悄悄改成 `resToast(\\\\'xx\\\\')`（多一层反斜杠把引号"吃"掉），`node --check` 报 `Unexpected identifier 'xx'`；**手重打转义序列越修越错，可反复 3-4 轮不收敛、浪费大量轮次**。可靠修法：**字节级拷贝兄弟页同款行**——页面集内常有结构完全相同的页（07 公共/11 私有），从 `node --check` 已通过的那页把该行原样（Python 读取写入，不手敲）复制到坏页对应行。止损：连续 2 次未收敛 `git checkout` 回滚到干净基线，标注"该行暂不改"跳过（用户明确偏好小问题先跳过，别为一行转义死磕）
-- **⚠️ 治本：新写交互不要在 onclick 字符串里嵌 id/参数（2026-08-21 排播计划任务实战）**：`onclick` 内拼参易触发上面转义漂移（本会话 `node --check` 报 `Unexpected string` 反复不收敛）。根治：DOM 属性 + 事件委托——卡片外层 div 写 `data-id` 属性 + 直接 `ondragstart="fn(event)"`（不传参），函数内 `ev.currentTarget.getAttribute('data-id')` 取回 id。零转义零嵌套，天然免疫本条漂移。新写交互优先用 data-* 属性方案，不再手动拼 onclick 传参。
+- **⚠️ onclick 内嵌 JS 转义漂移极难手修**：patch 可能把 `onclick="f(\'xx\')"` 的转义层数悄悄改错 → `node --check` 报 Unexpected identifier，手重打转义越修越错。修法：**从已通过检查的兄弟页字节级拷贝同款行**（Python 读写，不手敲）；连续 2 次未收敛 `git checkout` 回滚跳过
+- **⚠️ 治本：新写交互不在 onclick 字符串里嵌 id/参数**：DOM 属性 + 事件委托——元素写 `data-id`、`ondragstart="fn(event)"` 不传参，函数内 `ev.currentTarget.getAttribute('data-id')` 取值。零转义零嵌套，天然免疫转义漂移
 - **IIFE 内函数对 onclick 不可见**：`(function(){})()` 内函数需 `window.xxx = xxx` 暴露
 - **模板字符串数字 id 变字符串**：`openDetail('${s.id}')` → `'1' === 1` false 静默失效。不加引号 `openDetail(${s.id})`
 - **onclick 字符串传参 + 数字 id → 交互全失效（高频）**：`onclick="f('1')"` 内 `data.id === id` 永远 false。统一 `String(x) === String(id)` 辅助函数；验证必须真实 DOM click（`document.querySelector(...).click()`），不能只调函数
@@ -459,18 +456,18 @@ print(r.returncode, r.stdout[-2500:], r.stderr[-1500:])
 - **空数组 [] 是 truthy**：判空用 `(val && val.length > 0)`，不能 `val ?`
 
 ### 页面组件规范
-- **新增功能元素（把手/开关/角标）不得改变原有字段展示（2026-08-21 排播计划任务用户强烈纠正："不要改原来的页面展示，我让你改啥你改啥"）**：给已有卡片/容器加辅助控件时，**作为独立的绝对定位兄弟元素挂在外层根**（如 `.spl-drag-handle` 绝对定位在 `.spl-added-card` 右上角），**绝不插进已有内容子容器内**（如 `.sdl-preview` 预览图容器）。本会话把拖动手柄插进 `.spl-preview` 内虽然"效果对"，但用户感知为"卡片字段信息被改了"。治本：改前明确"仅新增独立控件、原字段 DOM 零改动"，改后 `git diff` 对比该卡片 HTML 确认字段行逐字节未变；验收/交接写明这点
-- **（承接上条）视图/功能新增先确认"是不是照搬某页既有模式"**：用户常说"参考 XX 页面的那个按钮/效果"。动手前定位参照页对应代码（如公共资源 `resMgmtViewBtn` + `toggleResMgmtView` 的「主题▾/资源▾」切换 = 主题表格↔资源卡片整块切换 + 返回条），按同款按钮样式（`resmg-btn`）、同款位置（topbar/批量操作旁）、同款逻辑照搬，别自创另一套。**"照搬=样式+位置+交互三样都对齐**，只学其一会被用户指为"位置和逻辑都不对"
+- **新增功能元素（把手/开关/角标）不得改变原有字段展示**：给已有卡片/容器加辅助控件时，作为独立绝对定位元素挂在外层根，绝不插进已有内容子容器。治本：改前明确"仅新增独立控件、原字段 DOM 零改动"，改后 `git diff` 对比确认字段行未变
+- **视图/功能新增先确认"是不是照搬某页既有模式"**："参考 XX 页的按钮/效果"= 样式+位置+交互三样都对齐参照页，动手前定位参照代码按同款照搬；拿不准就先澄清"照搬哪页、按钮放哪"，不自创另一套
 - **"框架在但数据全空" → 先查 init 是否抛 ReferenceError**：用户说没实现 ≠ 真没实现。最常见：init 首次读取未 `var` 声明的变量。排查：browser console 跑 `protoShowPage('页面id')` 看报错 → `grep -rn "var XXX" pages/` 确认声明归属
 - **跨页同名变量引用 → 逻辑静默失效**：合并作用域下引用别页变量不会报错，只读到别页初始值（`''`）→ 条件永不成立。引用"像自己的"变量前先 grep 全仓确认归属
 - **私有树跨客户串数据**：分类兜底匹配 `themePath.indexOf(分类名)` 须带客户根校验（`themePath` 以客户根开头）
-- **工厂函数不透传新增数据字段 → 数据有了但渲染读不到（静默，2026-08-18 实测）**：给共享 mock/VISUAL 数据加新字段（如 timeTags/regionTags/industryTags）后，**只有新建对应的工厂函数构造对象也带上这些字段，下游 grouped helper 才能读到**。本例数据 `RES_MGMT_VISUAL` 每项已带 timeTags，但 `resMgmtCardList()` 构造 out 对象时没透传 → `resTagsGrouped(c,...)` 读到 `c.timeTags` undefined → 标签显示为兜底值/缺项、无任何报错。**教训**：加数据字段后 grep 该数据的生产者函数（`XxxCardList`/`XxxList` 把原始数据映射成新对象的工厂），确认新字段一并写进构造对象；否则症状隐蔽（显示兜底值或缺项）极难定位
+- **工厂函数不透传新增数据字段 → 数据有了但渲染读不到（静默）**：给共享数据加新字段后，只有把字段写进对应工厂函数的构造对象，下游 helper 才能读到；漏了则显示兜底值且无任何报错。加字段后 grep 该数据的生产者函数（XxxCardList/XxxList 类映射函数）确认字段已透传
 - **proto-page 外元素被静默丢弃**（Toast/页脚常见）；**新页面不自动激活**（首页才需自调用 protoShowPage）；**删/改 HTML 后必须清理引用它的 JS**（getElementById null → 异常中断全 JS）；**Tab 结构必须闭合**（数 div 平衡）
 - **_shared.html 弹窗事件引用的函数名 ≠ 业务页面定义名 → 交互静默失效**：弹窗 HTML 的 onclick/oninput 调 `searchMergeKb()`，业务页实际定义 `searchMergeTarget()`，搜索点击无反应且无报错。弹窗事件函数必须与业务页定义名完全一致；验收时 grep 两侧函数名核对（`grep -n "oninput=\|function 函数名" pages/*.html`）
 - **隐藏共享源模式**：共享数据/函数集中在某页（如 02 页 MOCK_RESOURCES/findRes/renderAppSidebar），其他页依赖其合并全局作用域。要"删"该页只能从菜单去入口，**不能删文件**；交接文档必须告知执行 agent 文件保留
 - **共享数据数组不能直接改字段值**：其他页用动态统计驱动 Tab 计数，改了破坏统计。业务页建独立副本（RES_MGMT_TOPICS/PVT_MGMT_TOPICS）
 - **同页双视图数据源脱节 → 切视图空白 + 统计 0**：列表和卡片用两套不关联数据。修复：重建数据让两视图同源，数字与实际条数一致
-- **视图/分组枚举错数据词汇表 → 点进去全空（2026-08-21 排播选择页主题视图实战）**：要做「按主题分组的资源视图」时，先确认枚举来源字段 = 资源对象实际带的分组字段。本会话一度从分类树 CATEGORY_TREE 的 node.name 枚举（公共类/地域类…），但资源对象分组靠 `theme` 字段（主题名，如\"听党指挥能打胜仗\"）——**分类树节点名 ≠ 资源 theme，是两套词汇表**，做出来点任何主题都是空。正确做法：从 `sdlCardList()`（资源数据）里 `theme` 字段去重建主题列表，统计数也基于它。教训：新视图的分组/枚举源一定是**资源数据的字段**，不是导航树的结构；动手前 `grep` 确认目标字段真实存在且与被枚举数据同源
+- **视图/分组枚举错数据词汇表 → 点进去全空**：做"按 X 分组的视图"前先确认枚举来源字段 = 数据对象实际带的分组字段（导航树节点名 ≠ 数据分组字段是两套词汇表）；动手前 grep 确认目标字段真实存在且与被枚举数据同源
 - **dist 中共享函数出现 2 次是正常结构**（壳 div + 组件 div + 末尾全局合并大块），勿误判重复注入；grep 计数注意子串误匹配，用 `grep -bo` 看偏移
 
 ### 表格渲染
@@ -495,11 +492,9 @@ print(r.returncode, r.stdout[-2500:], r.stderr[-1500:])
 - build.py 写文件必须 `newline=''`（CRLF 污染 `\n` 正则致 JS 崩溃）；str.replace 注意 `\r\n`、unicode 转义、区域边界
 - **修改源文件前先备份（git 或 .bak.txt）**
 - **patch old_string 范围过宽 → 误删相邻弹窗/节点（2026-08-18 实测）**：插入新弹窗到 _shared.html 时，old_string 若把上一个弹窗整块包含进去、而 new_string 没写回它 → 该弹窗被静默删除、页面功能缺失。防范：patch 只锚定插入点附近 2-3 行（如尾部 `</div>` 容器 + 注释行），不把整块旧弹窗作为 old_string 起点；执行后立即 git diff 审查 `-` 删除行。恢复：误删后补回原块（从 git show HEAD:文件 取原文）再验证 div 平衡
-- **⚠️ patch 模糊匹配整块带转义 JS → 整块缩进错乱 + 转义漂移双害（2026-08-21 排播计划实战）**：当 patch 的 old_string 与文件实际行首缩进不精确匹配（少匹配前导空格）时，patch 会把整个函数块多缩进一层、并把块内所有 onclick 转义 `\\'` 悄悄改写成 `\\\\'` —— 功能能跑但代码脏、`node --check` 可能报错。**治本：含转义串的整函数块不要用 patch 单次替换**，改用 Python 脚本从 git 基线取原函数 `git show <commit>:文件` 定位起止按字节重建、只注入新变量行与把手行，其余字段行原样保留。改完必须 `node --check` + 与基线逐行 diff 确认字段零改动
+- **⚠️ patch 对含转义串的整函数块会造成缩进错乱+转义漂移双害**：old_string 缩进不精确匹配时触发。治法：含转义的整函数块不用 patch 单次替换——用 Python 从 git 基线 `git show <commit>:文件` 取原函数按字节重建，只注入改动行；改完 `node --check` + 与基线逐行 diff 确认字段零改动
 - **恢复错误实现后 git 状态显示 `MM`（不是单 M），别困惑**：`git checkout <commit> -- 文件` 会把该文件抓进**暂存区**（=干净基线），随后你新增的改动落在**工作区**（MM = 暂存区M + 工作区M）。确认"暂存区=基线、工作区=新实现"用 `git diff`（工作区vs暂存区）看差异、用 `grep -c 新函数 文件` 确认无旧实现残留；commit 前 `git add` 覆盖暂存区即可。原始备份 `.hermes-backup/` 留在项目根不影响 build/git，用处：改坏时对比"当前 vs 原始"确认字段/转义是否被误改
-- **用户确认方案后才可动手，但"我给方案你确认"不等于"自创另一套"**（2026-08-21 用户纠正）：当需求是"参考/照搬 XX 页的某按钮+切换效果"时，方案的**样式、位置、交互三样都要对齐参照页**，不能只学卡片切换逻辑却把按钮位置和主题视图形态自创成另一套。本会话先按自己理解做了"顶部独立按钮+主题卡片块"，被明确指"位置和逻辑都不对"，问清后才发现用户要的是跟公共资源 `resMgmtViewBtn` 完全同款的「主题▾/资源▾」按钮 + 主题表格↔资源卡片整块切换。**动手前若拿不准参照细节，用先确认/澄清快速锁定"照搬哪页、按钮放哪、主题视图长啥样"，别直接自创**
-
-### 交接文档与工具路径（2026-08-18 标签方案67 实战）
+### 交接文档与工具路径
 - **交接文档只信结构，不信行号/函数名/页面归属**：文档写"上传逻辑在 07 页、openResMgmtCatModal 树形多选可参考"，实际函数在 03 页、该弹窗根本不存在。开工前 `grep -n` 逐一验证每个关键函数/数据源真实位置，再按实际落点改
 - **read_file 报 binary 但文件是 UTF-8**：含 BOM/控制符会误报，改用 `python -c "print(open('...',encoding='utf-8').read())"` 读取（交接文档、README 常见）
 - **search_files 对中文路径可能静默返回 0 匹配**（主会话同样踩，非仅子 agent）：改用 terminal `grep -n`
