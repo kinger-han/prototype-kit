@@ -3,200 +3,117 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>移动端原型 - 评审视图</title>
+  <title>移动端原型</title>
   <style>
 /* __BASE_CSS__ placeholder */
   </style>
   <style>
-/* __SCOPED_CSS__ placeholder */
-  </style>
-  <style>
-    /* 移动端专用样式 */
-    body { background: #f0f1f5; }
-    .review-shell { display: flex; height: 100vh; overflow: hidden; }
-    .review-phone-area {
-      width: 440px; flex-shrink: 0; display: flex;
-      align-items: flex-start; justify-content: center;
-      padding: 24px 20px; overflow-y: auto;
+    /* ===== 手机壳：全面屏 · 居中展示 ===== */
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #EFEAE0;
+      display: flex; align-items: center; justify-content: center;
+      padding: 12px; min-height: 100vh;
     }
+    /* 手机壳：默认小米17比例 2656:1220 ≈ 1:2.177（360 × 783.6），项目可覆盖 */
     .mobile-shell {
-      width: 375px; min-height: 720px; background: #000;
-      border-radius: 44px; padding: 12px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.18), inset 0 0 0 2px #333;
-      position: relative;
+      width: 360px; height: 783.6px;
+      background: #1C1C1E; border-radius: 44px; padding: 8px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+      display: flex; flex-direction: column; position: relative;
+      transform-origin: center center;
     }
     .mobile-screen {
-      background: #fff; border-radius: 32px; overflow: hidden;
-      min-height: 696px; display: flex; flex-direction: column;
+      flex: 1; min-height: 0; background: #fff; border-radius: 36px; overflow: hidden;
+      display: flex; flex-direction: column; position: relative;
     }
-    .dynamic-island {
-      position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-      width: 100px; height: 28px; background: #000; border-radius: 20px; z-index: 9999;
+    /* 桌面预览：视口不够高时等比缩小（不影响移动端原型比例） */
+    @media (max-height: 830px) {
+      .mobile-shell { zoom: 0.9; }
     }
+    @media (max-height: 750px) {
+      .mobile-shell { zoom: 0.82; }
+    }
+    @media (max-height: 680px) {
+      .mobile-shell { zoom: 0.72; }
+    }
+    /* 状态栏（全面屏 · 仿真信号区） */
     .status-bar {
-      height: 48px; display: flex; align-items: flex-end;
-      justify-content: space-between; padding: 0 24px 6px;
-      font-size: 14px; font-weight: 600; color: #000; flex-shrink: 0;
+      height: 46px; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px; flex-shrink: 0; z-index: 5;
+      background: transparent;
     }
-    .status-bar-left { font-size: 15px; font-weight: 600; z-index: 1; }
-    .status-bar-right {
-      display: flex; align-items: center; gap: 6px; z-index: 1;
+    .status-bar .sb-left {
+      font-size: 15px; font-weight: 600; color: #1a1a1a; letter-spacing: 0.5px;
     }
-    .app-root { flex: 1; overflow-y: auto; overflow-x: hidden; }
+    .status-bar .sb-right { display: flex; align-items: center; gap: 7px; }
+    .status-bar svg { display: block; }
+    .app-root { flex: 1; min-height: 0; overflow-y: auto; position: relative; }
+    .app-root::-webkit-scrollbar { display: none; }
+    /* 全面屏底部横条（安卓手势条） */
+    .home-indicator {
+      height: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      background: transparent;
+    }
+    .home-indicator::after {
+      content: ''; width: 110px; height: 4px; border-radius: 4px;
+      background: rgba(0,0,0,0.22);
+    }
+    /* 底部 Tab（项目通过 tabBar 配置注入） */
     .tab-bar {
-      height: 50px; border-top: 1px solid #f0f0f0; display: flex;
+      height: 52px; border-top: 1px solid #f0f0f0; display: flex;
       background: #fff; flex-shrink: 0;
     }
     .tab-bar-item {
       flex: 1; display: flex; flex-direction: column; align-items: center;
       justify-content: center; font-size: 10px; color: #999;
-      cursor: pointer; text-decoration: none;
+      cursor: pointer; text-decoration: none; gap: 2px;
     }
     .tab-bar-item.active { color: {{PRIMARY_COLOR}}; }
-    .tab-bar-item .tab-icon { font-size: 20px; margin-bottom: 2px; }
-    .safe-bottom { height: 20px; background: #fff; flex-shrink: 0; }
-
-    /* 页码导航 */
-    .page-nav {
-      display: flex; gap: 8px; margin-top: 16px;
-      flex-wrap: wrap; justify-content: center;
-    }
-    .page-nav-btn {
-      padding: 6px 14px; border-radius: 6px; border: 1px solid #d9d9d9;
-      background: #fff; font-size: 12px; cursor: pointer;
-      transition: all 0.15s; color: #666;
-    }
-    .page-nav-btn:hover { border-color: {{PRIMARY_COLOR}}; color: {{PRIMARY_COLOR}}; }
-    .page-nav-btn.active {
-      background: {{PRIMARY_COLOR}}; color: #fff; border-color: {{PRIMARY_COLOR}};
-    }
-
-    /* 右侧文档区 */
-    .review-doc-area {
-      flex: 1; overflow-y: auto; padding: 28px 36px; background: #fff;
-      border-left: 1px solid #eee; display: flex; flex-direction: column;
-    }
-    .doc-toolbar {
-      display: flex; gap: 8px; margin-bottom: 16px;
-      padding-bottom: 12px; border-bottom: 1px solid #f0f0f0;
-    }
-    .doc-title {
-      font-size: 20px; font-weight: 700; color: #1a1a1a;
-      margin-bottom: 6px; display: flex; align-items: center; gap: 10px;
-    }
-    .doc-title-icon {
-      width: 28px; height: 28px;
-      background: linear-gradient(135deg, #a855f7, #3b82f6, #22c55e);
-      border-radius: 6px; display: flex; align-items: center;
-      justify-content: center; color: #fff; font-size: 14px; font-weight: 700;
-    }
-    .doc-subtitle {
-      font-size: 13px; color: #999; margin-bottom: 20px;
-      padding-bottom: 16px; border-bottom: 1px solid #f0f0f0;
-    }
-    .doc-panel {
-      flex: 1; overflow-y: auto;
-    }
-    .doc-panel:focus { outline: 2px solid {{PRIMARY_COLOR}}; outline-offset: 2px; border-radius: 4px; }
-
-    /* 文档卡片 */
-    .doc-card {
-      background: #fafbfc; border: 1px solid #f0f0f0;
-      border-radius: 10px; padding: 20px 24px; margin-bottom: 16px;
-      transition: all 0.25s;
-    }
-    .doc-card.highlight {
-      border-color: #3b82f6; background: #f0f7ff;
-      box-shadow: 0 2px 12px rgba(59,130,246,0.1);
-    }
-    .doc-card-title {
-      font-size: 15px; font-weight: 600; color: #333;
-      margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
-    }
-    .page-tag {
-      display: inline-block; padding: 2px 8px; border-radius: 4px;
-      font-size: 11px; font-weight: 500; background: #e6f7ff; color: #1890ff;
-    }
-    .doc-card.highlight .page-tag { background: #1890ff; color: #fff; }
-
-    .doc-steps { list-style: none; padding: 0; margin: 0 0 16px 0; }
-    .doc-steps li {
-      padding: 6px 0; font-size: 14px; color: #555; line-height: 1.6;
-      display: flex; gap: 8px;
-    }
-    .doc-steps li .step-num { color: #3b82f6; font-weight: 600; flex-shrink: 0; }
-
-    .doc-feature { padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
-    .doc-feature:last-child { border-bottom: none; }
-    .doc-feature-name { font-size: 14px; font-weight: 500; color: #333; margin-bottom: 4px; }
-    .doc-feature-desc { font-size: 13px; color: #666; line-height: 1.6; }
-    .doc-api {
-      font-size: 12px; color: #999; font-family: monospace;
-      background: #f5f5f5; padding: 2px 8px; border-radius: 3px; margin-top: 4px;
-      display: inline-block;
-    }
-    .doc-feature-tag {
-      display: inline-block; padding: 1px 6px; border-radius: 3px;
-      font-size: 11px; margin-right: 6px;
-    }
-    .doc-feature-tag.logic { background: #fff7e6; color: #d48806; }
-    .doc-feature-tag.ui    { background: #e6f7ff; color: #1890ff; }
-    .doc-feature-tag.data  { background: #f6ffed; color: #52c41a; }
+    .tab-bar-item .tab-icon { font-size: 20px; line-height: 1; }
+    /* 页面容器：flex 纵向布局，壳内滚动（页面组件自带业务样式时按需覆盖） */
+    .page { display: none; height: 100%; background: #fff; }
+    .page.active { display: flex; flex-direction: column; }
+    .page-body { flex: 1; overflow-y: auto; min-height: 0; }
+    .page-body::-webkit-scrollbar { display: none; }
   </style>
 </head>
 <body>
-  <div class="review-shell">
-    <!-- 左侧：手机原型 -->
-    <div class="review-phone-area">
-      <div>
-        <div class="mobile-shell">
-          <div class="dynamic-island"></div>
-          <div class="status-bar">
-            <span class="status-bar-left">9:41</span>
-            <span class="status-bar-right">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M1 11l3-3 3 3M5 8l3-3 3 3M9 5l3-3 3 3" stroke="currentColor" stroke-width="1.5" fill="none"/>
-              </svg>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M8 2a6 6 0 016 6h-2a4 4 0 00-4-4V2z"/>
-              </svg>
-              <svg width="22" height="12" viewBox="0 0 22 12" fill="currentColor">
-                <rect x="0" y="1" width="18" height="10" rx="2" stroke="currentColor" stroke-width="1" fill="none"/>
-                <rect x="19" y="4" width="2" height="4" rx="1"/>
-                <rect x="2" y="3" width="12" height="6" rx="1"/>
-              </svg>
-            </span>
-          </div>
-          <div class="app-root" id="app-root">
-            <!-- 组件 page div 注入处 -->
-          </div>
-          <nav class="tab-bar" id="tab-bar">
-            <!-- build.py 根据 config.json 生成 -->
-          </nav>
-          <div class="safe-bottom"></div>
-        </div>
-        <!-- 页码导航 -->
-        <div class="page-nav" id="page-nav">
-          <!-- build.py 生成 -->
-        </div>
+  <div class="mobile-shell">
+    <div class="mobile-screen">
+      <div class="status-bar">
+        <span class="sb-left">10:24</span>
+        <span class="sb-right">
+          <!-- 信号 -->
+          <svg width="17" height="11" viewBox="0 0 17 11" fill="none">
+            <rect x="0" y="7" width="3" height="4" rx="0.8" fill="#1a1a1a"/>
+            <rect x="4.6" y="5" width="3" height="6" rx="0.8" fill="#1a1a1a"/>
+            <rect x="9.2" y="2.5" width="3" height="8.5" rx="0.8" fill="#1a1a1a"/>
+            <rect x="13.8" y="0" width="3" height="11" rx="0.8" fill="#1a1a1a" opacity="0.25"/>
+          </svg>
+          <!-- WiFi -->
+          <svg width="15" height="11" viewBox="0 0 15 11" fill="none">
+            <path d="M1.2 3.4a9.4 9.4 0 0112.6 0" stroke="#1a1a1a" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M3.6 5.9a5.9 5.9 0 017.8 0" stroke="#1a1a1a" stroke-width="1.6" stroke-linecap="round"/>
+            <circle cx="7.5" cy="9" r="1.6" fill="#1a1a1a"/>
+          </svg>
+          <!-- 电池 -->
+          <svg width="24" height="12" viewBox="0 0 24 12" fill="none">
+            <rect x="0.5" y="0.5" width="20" height="11" rx="3" stroke="#1a1a1a" stroke-width="1"/>
+            <rect x="2" y="2" width="14.5" height="8" rx="1.6" fill="#1a1a1a"/>
+            <path d="M22.5 4v4a2 2 0 000-4z" fill="#1a1a1a"/>
+          </svg>
+        </span>
       </div>
-    </div>
-
-    <!-- 右侧：文档说明区 -->
-    <div class="review-doc-area">
-      <div class="doc-title">
-        <span class="doc-title-icon">✦</span>
-        功能亮点及操作引导
+      <div class="app-root" id="app-root">
+        <!-- 组件 page div 注入处 -->
       </div>
-      <div class="doc-subtitle">点击左侧页面切换，右侧同步高亮对应说明</div>
-      <div class="doc-toolbar">
-        <button class="btn btn-sm btn-default" onclick="ProtoDoc.save()">💾 保存</button>
-        <button class="btn btn-sm btn-default" onclick="ProtoDoc.reset()">↩️ 重置</button>
-        <button class="btn btn-sm btn-default" onclick="ProtoAnno.toggle()">🏷️ 标注显隐</button>
-      </div>
-      <div class="doc-panel" id="doc-panel" contenteditable="true">
-        <!-- 文档联动注入处 -->
-      </div>
+      <nav class="tab-bar" id="tab-bar">
+        <!-- build.py 根据 config.json 生成 -->
+      </nav>
+      <div class="home-indicator"></div>
     </div>
   </div>
 
@@ -212,7 +129,7 @@
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       window.PLATFORM = 'mobile';
-      ProtoRouter.init('{{DEFAULT_PAGE}}');
+      ProtoRouter.init('m-home');
     });
   </script>
 </body>

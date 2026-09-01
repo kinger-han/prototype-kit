@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>智融平台 - 场馆管理</title>
+<title>PC 端原型</title>
 <style>
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -742,35 +742,15 @@ table tr { cursor: pointer; }
 <div class="layout">
   <!-- ====== 左侧导航 ====== -->
   <div class="sidebar">
-    <div class="sidebar-logo"><span>智融平台</span></div>
+    <div class="sidebar-logo"><span>项目名称</span></div>
     
     <div class="sidebar-menu">
-      <div class="menu-item"><span class="menu-icon">🏠</span>首页</div>
-      <div class="menu-group-title"><span class="menu-icon">🏭</span>生产管理<span class="menu-arrow">▾</span></div>
-      <div class="sub-menu"></div>
-      <div class="menu-group-title"><span class="menu-icon">⭐</span>智能排播<span class="menu-arrow">▾</span></div>
-      <div class="sub-menu"></div>
-      <div class="menu-group-title"><span class="menu-icon">📋</span>排播计划v2<span class="menu-arrow">▾</span></div>
-      <div class="sub-menu"></div>
-      <div class="menu-group-title"><span class="menu-icon">👕</span>主题管理<span class="menu-arrow">▾</span></div>
-      <div class="sub-menu"></div>
-      <!-- 客户管理V2 子菜单已隐藏 -->
-      <div class="menu-group-title"><span class="menu-icon">📺</span>设备管理<span class="menu-arrow">▾</span></div>
-      <div class="sub-menu"></div>
-      <div class="menu-group-title"><span class="menu-icon">📦</span>仓库设备管理<span class="menu-arrow">▾</span></div>
-      <div class="sub-menu"></div>
-      <div class="menu-group-title"><span class="menu-icon">📜</span>播放列表<span class="menu-arrow">▾</span></div>
-      <div class="sub-menu"></div>
-      <!-- 智能导游（放在下方） -->
+      <!-- ===== 示例菜单：新项目在此处自行替换菜单（格式参考） ===== -->
       <div class="menu-group-title expanded" onclick="toggleMenu(this)">
-        <span class="menu-icon">🏛️</span>智能导游<span class="menu-arrow">▾</span>
+        <span class="menu-icon">📁</span>示例分组<span class="menu-arrow">▾</span>
       </div>
       <div class="sub-menu open">
-        <div class="menu-item active" onclick="switchPage('用户管理', this)" id="menuUserMgmt">用户管理</div>
-        <div class="menu-item" onclick="switchPage('场馆管理', this)" id="menuVenueMgmt">场馆管理</div>
-        <div class="menu-item" onclick="switchPage('知识库管理', this)" id="menuKbMgmt">知识库管理</div>
-        <div class="menu-item" onclick="switchPage('会话记录', this)" id="menuSessionLogs">会话记录</div>
-        <div class="menu-item" onclick="switchPage('未命中问题统计', this)" id="menuMissStats">未命中问题统计</div>
+        <div class="menu-item active" onclick="switchPage('示例页面', this)" id="menuDemo">示例页面</div>
       </div>
     </div>
   </div>

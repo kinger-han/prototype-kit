@@ -109,6 +109,24 @@ def strip_outer_div(html):
     return html[gt+1:].strip()
 
 
+def resolve_pages_dir(project_path, platform):
+    """解析页面组件目录：优先 <project>/prototype/pages/<platform>/，无则回退 pages/
+
+
+    平台子目录用于同一项目同时构建 PC 与 Mobile（页面互不干扰）；
+
+    老项目页面直接在 pages/ 下，无子目录时行为不变（向后兼容）。
+
+    """
+    if not project_path:
+        return None
+    pages_dir = os.path.join(project_path, "prototype", "pages")
+    sub = os.path.join(pages_dir, platform)
+    if os.path.isdir(sub):
+        return sub
+    return pages_dir
+
+
 def resolve_shell_path(template_name, project_path=None):
     """根据 template 名称解析 shell 文件路径
 
@@ -156,7 +174,7 @@ def build_pc(project_path=None, platform_key="zhirong", with_annotations=False, 
         # ---- 引用模式：从外部项目目录读取 ----
         project_path = os.path.normpath(project_path)
         config_path = os.path.join(project_path, "prototype", "proto-config.json")
-        pages_dir = os.path.join(project_path, "prototype", "pages")
+        pages_dir = resolve_pages_dir(project_path, "pc")
         out_dir = os.path.join(project_path, "prototype", "dist")
 
         if not os.path.exists(config_path):
@@ -368,7 +386,7 @@ def build_mobile(project_path=None):
         # ---- 引用模式 ----
         project_path = os.path.normpath(project_path)
         config_path = os.path.join(project_path, "prototype", "proto-config.json")
-        pages_dir = os.path.join(project_path, "prototype", "pages")
+        pages_dir = resolve_pages_dir(project_path, "mobile")
         out_dir = os.path.join(project_path, "prototype", "dist")
 
         if not os.path.exists(config_path):
@@ -376,7 +394,7 @@ def build_mobile(project_path=None):
             return False
 
         config = json.loads(read_file(config_path))
-        shell_path = resolve_shell_path("mobile")
+        shell_path = resolve_shell_path("mobile", project_path)
     else:
         # ---- 内嵌模式 ----
         config_path = os.path.join(SRC_DIR, "mobile", "config.json")
