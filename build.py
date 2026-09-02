@@ -458,6 +458,8 @@ def build_mobile(project_path=None):
     output = output.replace("/* __MOCK_DATA__ placeholder */", mock_data)
     output = output.replace("/* __COMPONENT_SCRIPTS__ placeholder */", all_scripts)
     output = output.replace("/* __BASE_JS__ placeholder */", base_js)
+    # 默认页占位符（2026-09-01 修复：此前 mobile/PC 构建都不替换 {{DEFAULT_PAGE}}，白屏）
+    output = output.replace("{{DEFAULT_PAGE}}", default_page)
     output = output.replace("<!-- build.py 根据 config.json 生成 -->", tabbar_html)
     output = output.replace("<!-- 组件 page div 注入处 -->", pages_html)
     output = output.replace("<!-- build.py 生成 -->", pagenav_html)
