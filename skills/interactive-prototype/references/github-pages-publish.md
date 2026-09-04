@@ -58,6 +58,22 @@ pause
 ```
 踩坑：老 build.bat 里引用了不存在的 `data-inject.ps1`（死步骤）；中文路径被存成 `??`（历史编码损坏，实际跑不通）。**Windows .bat 必须用 GBK 编码写**（python `open(...,'wb').write(content.encode('gbk'))`），UTF-8 写中文路径在 cmd 里会乱码。
 
+## push 网络与代理（2026-08-17 实测）
+
+- **本机 git 全局代理已配置**：`git config --global http.proxy = http://127.0.0.1:10809` → 普通 `git push` 自动走代理；**不要用 `-c http.proxy= -c https.proxy=` 强制直连**（直连大陆常 `Connection was reset`，仅当全局代理挡路时才尝试临时直连）
+- **publish-preview.sh 已内置 push 重试（2026-08-17 修复）**：`git_push_with_retry()` → 第1次全局代理 → 失败第2次显式 `-c http.proxy=http://127.0.0.1:10809` 重试 → 仍失败输出 4 条可操作提示（代理未启动/网络不通/认证过期/手动命令），不再静默 `set -e` 退出。**发布失败第一排查：代理 10809 是否启动**
+- push 超时先 `git status -sb` 确认是否 ahead，再换通道重试，不要反复跑发布脚本
+- **发布脚本自动设置浏览器标题**（输出 `🔖 浏览器标题已设置`，读 publish-config.json 的 `title`）——"预览标题对但本地打开标题不对"时，要改源 shell（`prototype/shell-pc.html` 的 `<title>`）+ 重建 dist，build.py 不覆盖 shell title
+- build.bat `publish` 参数模式（智能导游已实现）：构建 → bash 存在性检查（`where bash`）→ 调 publish-preview.sh → errorlevel 检查 + 可操作提示；Windows 下 bash 缺失时明确报"请使用 git-bash 环境"
+
+## 本地管理工具（manager.bat）故障排查
+
+工具位置：`D:/hpy/桌面/数熙相关文档/prototype-preview/tools/manager.bat`（双击 → http://localhost:8765，功能：发布/改名/改浏览器标题/复制链接/下线）
+
+**⚠️ [WinError 2] 系统找不到指定的文件（2026-08-17 实测）**：manager.bat 用 Windows 原生 Python 启动，PATH 里没有 git-bash → `subprocess.run(['bash', ...])` 报 WinError 2（终端里手跑脚本正常是因为终端本身就是 bash 环境）。已修复：manager_server.py 顶部解析 bash 绝对路径（`shutil.which('bash')` 失败则回退 `C:\Program Files\Git\bin\bash.exe` / `usr\bin\bash.exe` / `x86\Git` 候选），调用处用 `[BASH, SCRIPT, ...]`。改完代码必须**重启 manager.bat**（旧进程不加载新代码）。验证：`python -c "import manager_server; print(manager_server.BASH)"`。
+
+**⚠️ 端口 8765 残留进程（2026-08-10 实测）**：kill 服务时只杀 bash 包装进程会留 python 子进程占着 8765，多个实例同时监听导致请求打到旧代码。清理：`netstat -ano | grep 8765` 找 LISTENING PID → python subprocess 调 `taskkill /F /PID`（bash 里 taskkill 参数会被路径转换搞坏）→ 确认无监听再重启。
+
 ## GitHub API 调用坑（启用 Pages / 建仓）
 
 - **curl `-d` 带中文 JSON → "Problems parsing JSON" (400)**；`-d @file` 读中文路径文件也会失败。**改用 Python urllib**：
