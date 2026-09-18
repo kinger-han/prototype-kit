@@ -40,6 +40,7 @@ trigger:
 - `references/patch-workflow.md` — 增量修改方法论；`references/dead-code-audit.md` — 死代码审计
 - `references/batch-operations-pattern.md` — **列表页批量操作完整模式**（复选框列/选中操作栏/跨页全选/确认弹窗跳过统计/批量按钮类型敏感判断）；列表页加批量操作必读
 - `references/topic-mgmt-v2-notes.md` — 主题管理V2原型结构速查（关键函数落点、V4.20样式约定、批量文本替换做法）
+- `references/style-derivative-works.md` — **同底片衍生作品（风格化/多版本）合并展示模式**：方案判据（标签合并 vs 独立页）、数据模型（sourceWorkId/styleId 归组）、移动端标签行+合并卡、PC 详情弹窗分组渲染、跨页共享数据覆盖坑（党代会 V2.1 实测）
 - `references/antd5-primary-override.md` — 全站 AntD5 主色覆盖；`references/detail-edit-page-layout.md` — 详情/编辑页布局
 - `references/visual-reference.md` — 视觉风格参考（Ant Design Pro 整站 demo 源、配色偏好 #1677ff/#e6f4ff）；**视觉风格类改动先给参考再动手**
 - `references/element-ui-legacy-doc-fetch.md` — Element UI 老系统规范核查/UI交接：官网超时的 GitHub raw 抓取法、Dialog/Tree/Cascader/Drawer 能力速查、判断哪些页面可跳过UI设计的复用框架
@@ -47,6 +48,8 @@ trigger:
 - `references/ai-design-prompt-template.md` — 用户嫌界面丑、要求写"给 AI 设计工具的设计图提示词"时的六段式模板（场景/入口/字段/交互/风格/输出规格）
 - `references/page-js-debugging.md` / `references/js-interaction-traps.md` — JS 排查与交互陷阱
 - `references/prd-gap-analysis.md` — PRD 差距分析
+- `references/ai-failure-states.md` — **AI 生成功能的失败态设计规范**：用户界面永不出现的技术信息清单、失败分类表（网络/生成故障/内容安全/照片不合规/次数用尽）、行内失败态（**不做模态失败卡**）与各入口表现、前端 fail_code 字典约定；设计或排查任何「生成失败」界面时必读
+- `references/demo-asset-sourcing.md` — **真实素材获取与合规筛查**：Wikimedia / 公开报道找图与代理用法、extract→vision 核验→PIL 裁切流水线、命名与 CSS 类约定、许可与署名口径、政治敏感素材排除清单
 
 ---
 
@@ -81,6 +84,34 @@ Mode Router
 ### 只改用户明确要求的内容
 - 没提到的逻辑/字段/交互不擅动；影响其他页面先说明让用户决策
 - 不简化/重写用户已确认内容；**"同步/对齐"类需求先确认方向**（以哪边为准、几级层级），不自行假设
+- **用户给「最终内容 / 定稿文案」清单 = 整页替换语义**：清单即该页的完整内容，清单里没再出现的既有小节属于「被替换掉」，删掉它而不是留成页面尾巴。判据：措辞是「下面是最终内容 / 帮我换一下」且给了成篇完整文案 → 整页替换；只说「改一下 X 段」→ 只改那段。**删除必须可见**：报告里单独列出「清单外被你删掉的既有小节」+ 一句恢复口径（要保留说一声就加回），既不静默保留旧小节、也不静默删完不吭声。交付功能描述类顺带需求（用户要「一句话说明这个功能」）时直接给成品句，不解释你怎么写的
+
+### 引用页面一律带人类可读的名字（不要只报序号）
+用户不记得 `pages/` 的文件序号。只说「12 页」「07 页」用户无法对应，会直接反问「12/13 页指的啥？说序号我不知道」。
+规则：任何提到具体页面的地方一律写「菜单名/功能名（文件序号）」，如「播放列表-选择（12-schedule-select.html）」「资源审核（04-resource-audit.html）」；首次出现给全称，后文可简称但至少带菜单名。同理适用于 PRD 章节号、列号（写「操作记录表第 3 列」而不是「第 3 列」）。
+
+### 结构 / 入口类需求：先查已定决策，再给判断
+用户问「要不要加个入口 / 卡片 / 页面」这类**结构变更**时，不要凭产品直觉直接答，先两步取证：
+1. `grep` PRD 与《页面改动交接说明》相关章节，找**已定决策**（PRD 常写死「不做成 X」「不进入 Y 列表」）与**历史回退记录**（交接说明的「相对上版的落地差异（已拍板，不要回退）」小节）。
+2. 能引用原文条款时判断有据；引不到就明说「这是新增提议，需你拍板」，不把推测讲成结论。
+
+给判断时把**时机 / 定位 / 代价**三条分开讲，而不是只说「不合适」：
+- **时机**：用户此刻有没有做该判断所需的信息（例：在还没拍照的模板页选「AI 风格」，用户无从预期结果）。
+- **定位**：新入口与既有路线是平级还是增值？会不会分流用户、让主产物拿不到。
+- **代价**：数据模型 / 路由 / 审核链路要不要动（如「无模板作品」会撞上「作品必挂模板」的既有模型）。
+
+用户说「做之前先分析下」= **只出结论 + 依据 + 代价 + 替代方案，不动手改代码**。分析要主动指出方案本身的问题（含文案用词），但给一次判断即可、不反复劝说；用户没采纳就按用户口径执行。
+
+### Demo 范围与产品形态（从 SDD/PRD 起手时先怀疑它的隐含主体）
+- **SDD/PRD 的隐含主体 ≠ 产品的正确形态**：以「某平台现有能力清单」为骨架写出的 SDD，会让 demo 被收窄成那一个能力（实测：校史馆 SDD 以「问境现有能力」起手 → 原型做成问答助手，用户退回「跟我想的不一样，里面现在全是问答的」）。动手前先问一句「这个产品类别里，用户进来第一眼该看到什么」——校史馆/展馆 = 可浏览的展陈内容，问答只是服务层。
+  - 判据：**首屏主体是「可浏览的内容」还是「需要组织语言的行为」**。把要打字的入口与可浏览入口做成平级大卡 = 把高门槛伪装成低门槛，点进去必有落差。服务层入口（输入框）常驻即可，不占平级大卡位。
+  - 分专题/分模块时，给每一个补一句「实体场馆做不到的什么」，答不出来就会做成换个壳的问答。
+  - 内容形态必须互相区分：线性叙事（有终点、给完全不了解的人）/ 横向对比（无终点、换维度就有新结论）/ 轻内容卡片流（可传播）。三者底料可同源，交互与终点必须不同。
+- **改了前台结构，同步检查后台配置页**：前台模块改了而运营后台的编排项还是旧结构，客户走一遍后台就看出前后台不一致。改完前台在报告里单独点出后台待同步项。
+- **内容都做全了用户仍说"单薄" → 缺的是形式不是内容，别再补内容页**：用户看完"时间轴 + 年代对比 + 故事卡 + 问答"仍反馈"说到底还是只有问答"时，真因是产品只覆盖了「看」和「问」两种。按"人认识一个对象"的方式盘点七种形式，缺哪补哪：**看**（内容）/ **问**（问答）/ **找**（地图、检索）/ **玩**（对比滑块、找不同、闯关）/ **做**（AI 生成、把自己合进历史场景）/ **听**（口述音频）/ **说**（留言、认领）。补形式 ≠ 补内容页
+- **形式选型要交付「可点击的样张页」，不是文字方案**：用户在这种"要哪个形式"的问题上评的是手感，文字清单和 clarify 选项都答不出来（实测 clarify 直接超时、零回复）。做法：新建一个「形式样张」页，每种形式做成能上手操作的核心交互（滑块真能拖、地图真能点、生成真走一遍流程），每节固定两段 —— **「解决什么」** 与 **「正式版还需要什么素材」**；后者才是用户拍板的依据（实测四个形式里只有"按年份生成个人时间轴"不需要新素材，另三个分别卡在同机位新老照片 / 校园平面图 / 人脸合成授权）。落位规则：样张页**不进主导航**，入口挂在演示控制菜单下并标「待选」，页内首句明写"这一页不是正式功能"，避免未拍板的东西污染主流程
+- **推荐顺序按"哪个现在就能做成真的"排，不按"哪个炫"**：素材前提是第一判据，做不出来的一律往后放并写明卡在哪
+- **用户说"这版还是只有 X"时先验版本再讨论**：可能是他开的是另一个端（运营后台 ≠ 客户端）、命中了 CDN 缓存（微信/GitHub Pages 预览有 max-age 缓存）、或看的是旧产物。先实测线上/本地产物里有没有新标记，再决定是解释还是返工——不要在错误的版本前提上展开产品讨论
 
 ### 模板铁律（组件化模式）
 - Shell 由构建系统注入，AI 一般不改；业务内容三出口：proto-config menu → 菜单、pages/*.html → 页面、_shared.html → 共享弹窗
@@ -487,6 +518,18 @@ print(r.returncode, r.stdout[-2500:], r.stderr[-1500:])
 - **视图/分组枚举错数据词汇表 → 点进去全空**：做"按 X 分组的视图"前先确认枚举来源字段 = 数据对象实际带的分组字段（导航树节点名 ≠ 数据分组字段是两套词汇表）；动手前 grep 确认目标字段真实存在且与被枚举数据同源
 - **dist 中共享函数出现 2 次是正常结构**（壳 div + 组件 div + 末尾全局合并大块），勿误判重复注入；grep 计数注意子串误匹配，用 `grep -bo` 看偏移
 
+### 衍生作品与合并展示（同底片多版本/风格化，党代会 V2.1 实测）
+- **方案判据（合并展示 vs 独立详情页）**：衍生是"同一张照片/同一对象的变体"（同模板、同底片、同一作品关系）→ 收进原详情页**标签行切换**，不拆独立页。拆页代价：稀释主对象参与感（"第 N 号档案"被同一张脸拆成 N 个档案）、对比切换成本高、要多一个路由+详情页、数据模型反着来（后端本来靠 `sourceWorkId` 归组）。独立页只在"每个变体要作为完全独立的正式作品被高频独立传播/管理"时才值得。完整理由与落地细节见 `references/style-derivative-works.md`
+- **数据模型**：派生作品加 `sourceWorkId`（空=原图/主作品）+ `styleId`（空=直出）；归组 = 主作品 + 所有 `sourceWorkId===主作品.no` 的派生。移动端：详情页标签行默认选中进入时的作品；"我的纪念"按组合并卡（主封面 + 派生缩略行 + `✦N` 角标，不折叠）；PC 共用详情弹窗加标签行——**公共字段（模板/微信号/来源）固定展示、作品字段（画风/状态/时间/源自）随标签切换**。派生编号仅后台主键，界面显示"风格名 · 源自 <主编号>"，不显示自身流水号；原型用 CSS filter 表达画风差异，不做真图；enabled 热开关全关时生成入口整体隐藏回主作品直出
+- **⚠️ 跨页共享详情数据被覆盖（01 photo vs 02 selection 实测）**：两个页面各自 `buildPhotoDetails()`/`selBuildDetails()` 写**同一个** `window.__PHOTO_DETAILS`，切页后打开详情读的是另一页残留数据（组标签数量不一致）。修法：**每次打开详情前无条件重建自己的数据**（`openPhotoDetail` 里直接 `buildPhotoDetails()`），不要只在为空时构建
+- **⚠️ 全局共享列表多脚本兜底初始化用 `window.X = window.X || [...]`**：build 注入页面脚本顺序不确定，任一页面都可能是首个执行者；多页面兜底初始化全局（如 `window.__STYLE_LIST`）时用 `||` 保首个完整定义，后执行页直接赋值会覆盖前页已设完整数据
+
+### 衍生作品方向演化（合并 → 独立行）与异步风格生成模式（党代会 V2.1→V2.6 实测）
+- **⚠️ 「合并展示 vs 独立数据行」的取舍会随需求演化反转，别把上一版当最终版写死**：V2.1 拍板合并（标签切换/合并卡/✦角标），用户迭代后嫌合并卡/角标/「源自 xx」不直观，最终反转为**每个风格照片=独立数据行**：PC 照片管理/上屏审核只加一列**单值「成像风格」**（原图行显示"原图"、风格行显示画风名标签），PC 详情弹窗回归单作品只加「成像风格」字段（去掉分组标签行）；移动端同样独立展示、我的纪念每作品一卡（风格卡带画风小标+滤镜）。可复用判据：标签合并适合用户端「同一张脸对比不同画风」；但 B 端台账/上屏按行管理、用户要求一眼区分每张数据时独立行更顺——拍板前给利弊，别预设
+- **风格生成 = 异步任务（真实约 90s）的移动端完整模式（党代会 V2.6）**：① 生成入口按钮三态：空闲 / **生成中**（金色光晕呼吸动效；跑马灯流光做过被嫌丑回退）/ **待确认**（右上红点，可带数字）；② 点击「生成」后**弹窗不关、当场把该项按钮刷新成"生成中…"**（完成后自动变「查看」，弹窗开着就实时刷新）——不要点完就关弹窗；③ 结果入**待确认池**（持久化、退出不丢；原型用 `state.pendingStyles` 模拟，刷新重置需向用户说明），**不自动进我的纪念**；④ 提醒多入口同源（红点计数同一数据源）：首页入口按钮红点 + 我的纪念顶部「风格照生成」区（**生成中+待确认全量列出**）+ 详情页入口红点（按底片过滤）；⑤ **查看即已读清红点**（不必等确认）；确认三选一（保存到纪念照/重新生成/放弃）才移出池；⑥ 进详情默认原图，不自动跳已上屏风格；⑦ 前台**不展示作品流水号**（编号仅后台统计/PC 台账用），界面只留访客档案号「第 N 号纪念档案」、风格详情只显示画风名；⑧ 现场风采/墙上风格照标识**写画风名**（如「水墨国风」金字角标），**禁止出现「AI 风格」字样**（对外口径无 AI）；⑨ 生成口径：**以已生成的纪念照成品（含模板框与文字层）为输入做画风迁移**；提示词必须强约束「相框与文字原样保留、不重绘、不改字」（模板文字/边框不被 AI 重绘糊掉，合规稳）；风格照「拍同款」= 用底片模板拍新原图、不继承画风
+- ⚠️ 点击类反馈缺失先查弹层归属层级，别猜逻辑：「按钮点击无反应」在移动端高频真因=弹层 DOM 挂在隐藏 .page 或壳外（见上文三层放置坑），先 grep 弹层 id 相对 page/shell 的位置，再查函数
+- **演示态优先用数据打标做确定性触发（如画风项 `demoFail:true` → 该画风生成必失败），而非演示菜单注入**：测试者可随时走正常路径触达失败/超时/空态链路验收，不用翻演示菜单找入口，也不依赖特定操作顺序；优于只在演示 FAB 里藏一个触发项
+
 ### 弹窗/详情字段
 - **共用弹窗/详情页字段必须覆盖所有入口列表字段**（党代会）：照片管理详情页 = 上屏展示审核详情页，用户明确要求「字段信息注意要完整，比如在照片管理详情页要包括'上屏展示审核'的所有字段」。设计共用详情弹窗前，先枚举各入口列表的表头字段并集，逐项确认弹窗都渲染；构建后 grep dist 确认每个字段字符串出现（列表 + 弹窗各至少一次）
 - **PC 端弹窗表单字段遵循「用户给什么就留什么」**：模板管理弹窗用户明确「能力类型、排序权重、字段都去掉」——先做完整字段版本再按用户删减是常态流程；**不要自己反复加回已删字段**（保留在数据层即可，表单不展示）。弹窗字段精简后要同步清理三处引用：DOM 元素、open 回填、save 读取，`grep tpl-cap|tpl-sort|tpl-hot` 残留归零
@@ -505,12 +548,19 @@ print(r.returncode, r.stdout[-2500:], r.stderr[-1500:])
 - **折叠菜单收纳 + 置灰两层语义**：操作过多收进三点 `.more-btn`（svg 三圆点 + hover 蓝 #1677ff）触发 `.more-menu`，`.more-menu-item.disabled { color:#c0c4cc !important; cursor:not-allowed }` 表终态禁用。**置灰必须分清两种语义**：①功能弱化（可点低调——用户曾明确"忽略按钮不用强调灰色"）②终态禁用（不可点，处理完该行只剩详情可点）——动手前先确认用户要哪种，别混。展开交互：`toggleMissMenu(ev, elm)`（`ev.stopPropagation()` + 先关闭全部再开当前）+ `document click` 外部关闭（`!e.target.closest('.more-menu-wrap')` 时全关）；菜单项动作经统一 `missMenuAction(type, a, b, c)` 转发，新增/合并共享菜单 HTML 模板函数 `missMenuHtml(tr, disabled)` 从行 td 取参数、disabled 时输出无 onclick 的灰项（零转义）
 - **局部状态切换不要整页重渲染**（用户纠正）：卡片开关只更新该卡 DOM（classList + 改节点），数据源同步改，不重渲染列表
 - **演示优先原则（用户多次）**：原型是 demo，避免"真实系统才需要"的自动化行为——下架后自动沉底排序被用户要求撤销（"我方便演示开启关闭"）；状态变化用视觉表达（置灰蒙层、徽章变色），不动列表顺序
+- **主操作双按钮并列防沉底（用户偏好）**：分享/提交等传播关键按钮不能沉在页面底部（一屏看不到容易遗漏——用户原话"原来在最下面，一屏看不到"）——与"保存"并成两个并列主按钮，并保持**文案字数对仗**（`保存本地` / `分享上屏` 4字对4字）。设计时先问：这个动作是不是用户容易漏掉的关键动作？是 → 提到主操作区
+- **原型效果最小化（用户多次拍板）**：保存等动作点击直接 toast 即可，不做长按弹层效果（"不浪费时间做效果，这个是原型"）；画风/滤镜等视觉示意用简单 CSS（filter）表达，不花精力做真图——**功能与逻辑讲清楚优先**；常驻区块非必要不保留（详情页"更多风格"大片卡区位 → 折叠进标签行 `+ 加个风格` 轻量弹层入口），考虑用户交互优先
+- **政务移动端文案禁用内部术语（用户偏好）**：面向现场年纪偏大的用户，界面文案不得出现「模板 / 素材 / 底片 / 原图」这类团队内部词——用户视角是「相框 / 纪念框 / 照片」。写或改文案前先自问「这个词现场用户会不会说」；拿不准就给 2-3 个候选让用户挑，并标注字数（手机一行约 18-20 字 @12px 才不折行）。用户会直接采用你给的候选原句，所以候选要能直接用。
+- **示意缩略图不要继承「当前对象」的视觉，也别把区分度改没**：列表/弹层里的风格缩略图若沿用当前模板底图（`.photo-bg` 挂 `data-tpl`），一旦文案写「不带当前模板」就自相矛盾——去掉继承属性即可。但**别顺手把底色统一成中性色**：CSS filter 示意在低饱和底上几乎无差异，几张缩略图会长得一样、演示失效；改为按风格各给一个示意底色，兼顾「不继承」与「可区分」。
 - **⚠️ 置灰禁用 opacity/filter，用白色蒙层 ::after（两轮）**：卡片加 `opacity` 或 `filter:grayscale` 会创建**新堆叠上下文**，把卡内绝对定位的「更多」下拉困在本卡图层里，被相邻卡片元素（如 hover 查看大图层）遮挡。正确做法：`.card.off::after { content:''; position:absolute; inset:0; background:rgba(255,255,255,.45); z-index:<盖过卡内悬浮层>; pointer-events:none; }`——白蒙层不建堆叠上下文、视觉轻（用户嫌 opacity+grayscale 太重）、菜单(z100)保持最上层；**不要给信息区再单独加 z-index 层**（会反过来压住菜单）
 - **需求边做边追加是常态**：一轮任务常收到 3-10 条增量修正，正常节奏 = todo 清单累积 → 统一实施 → 一次构建统一验证 → 单次完整状态报告；不要每条小改都单独走完整构建+报告循环
 - JS 生成的 HTML 用 shell 未定义的 CSS 类 → 下拉平铺无样式。核对可用 CSS 类清单
 - **CSS 布局陷阱（aspect-ratio/max-height 冲突、align-self 收缩）→ 详见 `references/layout-intelligence-pitfalls.md`**（2026-08-11 Critic 实测，含修复 CSS；执行时遇媒体比例失真/区域收缩先查该库）
 
 ### 构建与编码
+- **⚠️ 双端项目（移动端 + PC 后台）`proto-config.json` 的 `template` 必须写 `"pc"`**：`build_pc` 读 config 的 `template` 字段选 shell **和输出文件名**（`build_pc` line ≈186、318），而 `build_mobile` 固定用 `shell-mobile.html`、输出名固定 `<项目名>-mobile-原型.html`。若 config 写 `"mobile"`，跑 `pc` target 会把 PC 页面注入**移动端壳**并输出成 `-mobile-原型.html`，**静默覆盖移动端产物**（症状：dist 只剩一个文件、内容里是 PC 页面 + 移动端壳；构建日志打印「模板: mobile」）。判据：每次构建后核对日志的「模板:」与产物文件名。
+- **双端项目结构（一套 config 服务两端）**：`prototype/pages/mobile/` + `pages/pc/`（build 的 `resolve_pages_dir` 按 target 优先读子目录，无子目录回退 `pages/`）、`prototype/shell-mobile.html` + `shell-pc.html`、`publish-config.json` 配两个 slug（`prototype/dist/*mobile*.html` / `*pc*.html`）、`proto-config.json` 的 `template` 写 `"pc"`。
+- **图片资源路径用 `../assets/xxx.jpg`**：dist 与 assets 同在 `prototype/` 下，本地打开正常；`publish-preview.sh` 发布时会自动把 `../assets/` 重写为 `assets/` 并复制 assets 目录（>300KB 自动转 WebP 1080px q82），**不要手工写成 `assets/`**（本地会全裂）。
 - **同一项目同时构建 PC + Mobile：页面分目录 `pages/pc/` 与 `pages/mobile/`（build.py 新增 `resolve_pages_dir`）**：build_pc/build_mobile 各自优先读对应子目录，无子目录回退 `pages/`（老项目不受影响）。此时 `proto-config.json` 单一文件服务双端（name/primaryColor/tabBar 共用），shell 各自独立（shell-pc.html + shell-mobile.html）。构建命令分别跑 `pc` 与 `mobile` 两个 target
 - **默认落地页 = 字母序第一个页面的自调用 protoShowPage，与菜单无关**：隐藏菜单项后打开原型仍落在被隐藏页。机制：build.py 按文件名排序，首个含 `if (typeof protoShowPage === 'function') { protoShowPage('xxx'); }` 自调用的页面成为默认页；菜单只是 renderAppSidebar 的显示层。修法：改那个页面尾部的自调用目标（如 `protoShowPage('topic-mgmt')` → `protoShowPage('resource-mgmt')`），重建即可；不要去动 proto-config 或 shell。改完默认页必须检查该页尾部有无残留的**手动 `init_xxx()` 调用**——它在 protoShowPage 之后执行，会用被隐藏页的 init 覆盖面包屑（实测：打开即显示「首页/内容管理/V2主题管理」，点一下菜单才恢复正确的「首页/资源管理/公共资源」）；init 一律由 protoShowPage 内部按需调用，页面尾部禁止手动调
 - **默认落地页变体：全程无任何自调用时（smart-tour-guide 实测）**：首屏 = build 注入的**第一个 proto-page**（按文件名排序，dist 里第一个 `data-page-id` 无 `display:none`），面包屑 current 与菜单 active 都写死在 shell。要让首屏=目标页：在目标页 script 尾部加 `if (typeof protoShowPage === 'function') { protoShowPage('目标pageid'); }`（页面脚本按文件序合并成一个块，**最后一个自调用生效**，仅加这一处即可覆盖默认显示），并同步 shell 的 `<span class="current">` 面包屑文本与 menu-item 的 active class。验证：dist 里 grep `protoShowPage('目标'` 存在 + 面包屑文字已改
@@ -521,6 +571,12 @@ print(r.returncode, r.stdout[-2500:], r.stderr[-1500:])
 - **⛔️ 移动端不要模板级 shell 的评审布局（用户明确要求）**：用户要"正中间显示移动端原型、全面屏、无刘海、不要页码导航、仿真状态栏"，拒绝旧 shell-mobile.html 的左手机+右文档 review-shell。**模板级 `src/shells/shell-mobile.html` 即全面屏壳**（body flex 居中 + mobile-shell 固定比例 + 仿真状态栏 SVG + home-indicator 手势条），旧 review 布局模板已删除；新项目首次构建复制到项目后即可用，一般无需再自定壳。真实机型比例（小米17=2656x1220→360x783.6px），低视口用 media query 等比缩放（zoom 0.9/0.82/0.72）。模板壳不注入页码导航（base.js 的 `.page-nav-btn` 查询对缺失容错）
 - **⚠️ 移动端全局浮层（toast/演示菜单/公共弹层）必须放 shell，不能放页面组件 div 内**：`.page` 未激活时 `display:none`，放组件内的 fixed 浮层全部不可见——toast 放 08 页组件里、其他页调用 toast() 时元素存在但被父级隐藏。正确做法：toast、演示 FAB/菜单等跨页浮层 DOM 放 `shell-mobile.html` 的 `mobile-screen` 内（页面 div 之外），演示/全局函数也放 shell 独立 `<script>`（在 base.js 之后追加）；与 PC `_shared.html` 弹窗机制不同，mobile 全局浮层没有共享组件容器
 - **⛔️ 移动端弹层必须 `absolute` 定位，禁止 `fixed`（党代会项目）**：`position:fixed` 相对**浏览器视口**，弹窗遮罩会覆盖整个浏览器窗口而不是手机框架内（用户报「照片使用说明弹窗跑到手机壳外面」）。修法：所有业务弹层（说明弹窗/save/submit/wall-detail/leave/full-photo/toast）统一 `position:absolute; inset:0`——它们挂在 `.page` 容器（`absolute inset:0`）内，absolute 自然相对手机屏；toast 必须位于 `mobile-screen` 内（shell 里从 mobile-screen 外移进来）。唯一保留 `fixed` 的是浏览器级演示工具（demo-fab/demo-menu），它们本来就该浮在手机壳外。⚠️ 模板库 `src/assets/base.css` 自带 PC 风格 `.toast{position:fixed;top:60px}` 与 `.modal-overlay{position:fixed}`，构建时会拼进 mobile dist——项目 shell 里同级规则在后（CSS 后者胜）即覆盖生效；grep 出多条 `.toast` 规则属正常，按 CSS 顺序判生效值
+- **⛔️ 全局弹层（多页打开：确认卡/公共 modal）三层放置坑（党代会 V2.6 实测）**：① 放业务 `.page` 内 → 从别的页面打开时该 `.page` 是 `display:none`，弹层不可见（症状=「点确认无反应」）；② 放 body 层（`.mobile-shell` 外）→ absolute 失去 positioned 祖先（`.mobile-screen`），相对浏览器视口 → **遮罩覆盖整个浏览器窗口**（症状=「弹窗弹到浏览器全屏」）；③ 正确位置 = **`.mobile-screen` 内、`.app-root`/页面注入点之外的全局浮层区**（与 consent-modal/toast/home-indicator 同级；`.mobile-screen{position:relative}` 提供定位上下文）。shell 层级速查：`.mobile-shell`(360px 手机框) > `.mobile-screen`(relative/flex) > `.app-root`(页面注入标记 `<!-- 组件 page div 注入处 -->`) + 全局弹层区；`.st-mask`/`.st-sheet` 业务弹层是 `position:absolute`，必须挂在这个 positioned 容器内。验证：dist 中弹层 id 应位于 page-* 之外、home-indicator 附近、demo-fab 之前
+- **移动端底部弹层（bottom sheet）高度 / 滚动 / 隔离四条（党代会 V2.6「更多风格」弹层实测）**：
+  ① **封顶高度用 `%` 不用 `vh`**——`vh` 相对**浏览器视口**，会超出手机壳；业务弹层挂在 `.page`（`absolute inset:0`，相对手机框）内，`max-height: 76%` 才对齐手机框。
+  ② **头部固定 + 列表内滚**：容器 `max-height` + `display:flex; flex-direction:column`，头部（标题/说明/关闭）`flex-shrink:0`，列表区 `flex:1 1 auto; min-height:0; overflow-y:auto`。**`min-height:0` 必写**——缺了 flex 子项不收缩，内容溢出弹层。
+  ③ **共用基类必须用专属修饰类隔离**：同一基类被多个弹层共用时（如 `.st-sheet` 被「更多风格 / 确认风格照 / 生成中 / 生成失败」四个共用），只在其中一个改布局，新规则一律挂修饰类（`.st-sheet.st-style-sheet`），**禁止直接改通用 `.st-sheet`**——直接改会让另外几个一起变 flex 容器、按钮行被压缩。动手前先 `grep -n "<基类名>" shell-*.html pages/**/*.html` 盘点复用方，别假设只有一个弹层。
+  ④ **不要在 open 函数里重置列表 `scrollTop`**：若存在「弹层开着时点击某项 → 重渲染列表」的路径（如 `openStyleSheetIfOpen()`），重置会把用户甩回顶部。
 - **⚠️ 弹窗语义：提示弹窗 ≠ 同意弹窗**：「照片使用说明」这类告知性弹窗是**提示**不是**授权门槛**——确认按钮用单个「我已了解」，不要做成「暂不使用 / 同意并使用」双按钮同意式。判据：内容是告知信息（照片用途/流程说明）→ 单按钮提示；涉及服务条款/隐私授权/不可逆操作 → 才用双按钮同意式。用户原话：「这个是提示弹窗，不是需要必须点击同意之类的」
 - **build.py 吞 `<script src>` CDN 标签**：页面里写 `<script src="...">` 会被静默丢弃（只提取内联 `<script>`）→ CDN 库必须 JS 动态加载（createElement('script')），详见 `references/ui-system-lucide-migration.md`
 - **HTML div 不平衡 → build.py 静默产出空页面**（不报错、构建成功、页面空白）。排查：浏览器元素全 MISSING → 查 dist 该页内容长度（len≈2）→ 源文件 div 深度扫描
@@ -531,6 +587,7 @@ print(r.returncode, r.stdout[-2500:], r.stderr[-1500:])
 - **正则替换字段后必须 grep 实测**：group 边界不含闭合引号会静默丢引号（替换计数正常但数据已坏）
 - build.py 写文件必须 `newline=''`（CRLF 污染 `\n` 正则致 JS 崩溃）；str.replace 注意 `\r\n`、unicode 转义、区域边界
 - **修改源文件前先备份（git 或 .bak.txt）**
+- **⚠️ patch 的 old_string 与 new_string 必须换行对称**：old_string 以换行结尾而 new_string 不以换行结尾时，后一行会被并到前一行（实测：数据数组相邻两行被合并成一行，语法仍合法所以不报错，只是格式坏掉、且下次锚点对不上）。改完扫一眼 diff 的上下文行，发现合并用等长换行重写。
 - **patch old_string 范围过宽 → 误删相邻弹窗/节点**：插入新弹窗到 _shared.html 时，old_string 若把上一个弹窗整块包含进去、而 new_string 没写回它 → 该弹窗被静默删除、页面功能缺失。防范：patch 只锚定插入点附近 2-3 行（如尾部 `</div>` 容器 + 注释行），不把整块旧弹窗作为 old_string 起点；执行后立即 git diff 审查 `-` 删除行。恢复：误删后补回原块（从 git show HEAD:文件 取原文）再验证 div 平衡
 - **⚠️ patch 对含转义串的整函数块会造成缩进错乱+转义漂移双害**：old_string 缩进不精确匹配时触发。治法：含转义的整函数块不用 patch 单次替换——用 Python 从 git 基线 `git show <commit>:文件` 取原函数按字节重建，只注入改动行；改完 `node --check` + 与基线逐行 diff 确认字段零改动
 - **⚠️ patch 的 new_string 同样会二次转义（实测，坑的新变体）**：已知 patch 改含 `\'` 的行会漂移转义；实测即使只改 new_string 里**新写**的 `\', \'copy\')` 拼接，也会被写成 `\\'copy\\'` → SyntaxError。症状：diff 输出里出现 `\\\\'`。修法：写一个 3 行 Python 脚本做精确字符串替换（chr(92) 构造反斜杠避免脚本自身转义），改后立即 node --check。治本不变：新写 onclick 拼接用 data-* + 事件委托，不写 `\'` 嵌套
@@ -539,9 +596,18 @@ print(r.returncode, r.stdout[-2500:], r.stderr[-1500:])
 - **⚠️ 写回禁止「手动转 CRLF + newline=None」双转换 → \r\r\n 累积（实测，同文件多轮修改必爆）**：若误解旧配方写成 `open(P,'w',...,newline=None)` 且写入前又手动 `s2.replace('\n','\r\n')`，Windows 上 newline=None 会把每个 `\n` **再**转一次 `\r\n` → 首次写回行尾变 `\r\r\n`；同一文件第二轮起 `s.replace('\r\n','\n')` 只剥掉一个 `\r`，锚点明明看着一致却全部 `count==0` assert 白跑（本会话 01-home.html 两轮修改后行尾 `\r\r\r\n`）。修复存量污染：`re.sub(r'\r+','\r',text)` 折叠多余 `\r`。**推荐写回配方（二进制，零翻译）**：`raw=open(P,'rb').read()` → `crlf = b'\r\n' in raw` → `work = raw.decode('utf-8').replace('\r\n','\n')`（LF 操作版）→ 替换（锚点用 LF、先 assert count）→ `out = work.replace('\n','\r\n') if crlf else work` → `open(P,'wb').write(out.encode('utf-8'))`。症状排查：锚点 `count==0` 但文本肉眼相同 → `repr` 行尾看是否连续 `\r`
 - **⚠️ 大块删除用「行号区间法」而非文本锚点**：整段删除（TAB 容器/弹窗/函数区，如把某页 TAB 内容搬迁成独立页时）文本锚点 find 可能因换行/缩进/全半角差异静默返回 -1。改用：read_file 拿准确行号 → `split('\n')` 按 1-indexed 行号区间 drop 重建 → 删完 grep 残留引用 + div/tr 平衡检查。另：**execute_code 脚本运行在独立临时目录，脚本内文件读写必须绝对路径**（相对路径必 FileNotFoundError，harness 提示易漏）
 - **项目里可能有「独立单文件原型」直接放在 dist/（非 build.py 产物；实测：智能导游-小程序.html）**：特征＝pages/ 无对应页面源 + 文件内 `grep -c PAGE_META` 为 0 + proto-config 是另一套模板。此时项目 README 的「dist 只读」规则不适用——该文件本身就是源，直接改它（改前 `cp 原文件 原文件.bak.原因.txt` 备份）。大 HTML 多点改动的安全配方：execute_code 写 Python 脚本逐锚点 str.replace，每个锚点先 `assert content.count(old)==1` 防误替换；写回后校验 `<div` 与 `</div>` 数量平衡；再用正则抽出全部内联 `<script>` 合并成临时 .js 过 `node --check`，三项全绿才算完成。
+  **同原型还可能有「手工另存的变体产物」留在 dist/**（实测 `党代会-AI纪念相册-mobile-原型--步骤简化版.html`：更早时间手工另存、页面流程已分叉，build.py 不重建它）：共用文案/数据改完后它会停在旧值，受众点开该文件看到的仍是旧口径。判据＝dist 下同名前缀多个 .html + 其 mtime 明显早于主产物。规则：改共用文案后 `grep` 一遍这些变体，**是否同步由用户拍板，但必须在报告里点明「变体仍是旧文案」**；发布链取哪份见 `references/github-pages-publish.md`
+
+### 素材合规（政务 / 党建 / 学校类项目必查）
+- **下载到的历史图片必须逐张过筛，政治敏感素材主动排除并留痕**：给公办学校 / 党政客户做 demo 时，公开图库里混着带特定历史时期政治标语、领袖像的老照片，以及带民国纪年铭文的实物照。**不要因为「是历史照片」就默认能用**——现场大屏一放就是事故。已排除过的样本：含时代标语的校门照、民国纪年 + 当时政界人士署名的奠基铭文照。
+  - 顺带校验**素材与叙事对不对得上**：碑是「奠基」物证就不等于「建校」物证，拿它讲建校年份本身不严谨。
+  - 排除动作要留痕 + 当面告知：README 里单独列「主动排除的素材 + 原因」并标注勿擅自加回；报告里如实说明，用户可能判断可用，但风险要他知道。
+  - 缺图时**明示缺图**（斜纹占位 + 「那个年代没有留下照片」），不配错图、不拿现代图充数。
+- 找图、核验、裁切、署名口径全流程 → `references/demo-asset-sourcing.md`
 
 ### 演示数据与交付
-- **⚠️ 演示数据口径必须自洽，用户会追问「数字从哪来」（党代会项目）**：首页统计（人参与/作品数/档案数）不是随便填的装饰数字——用户会问业务来源。口径定义（如「参与人数=扫码即参与=发放编号数=档案数」）要在首次给出数字时就说清三数关系，数字打架（如参与 286 < 档案 328）必然被质疑。改口径时**同步 PRD 文档**（grep 全库旧数字，文档/原型必须一致，否则后来者被文档误导）
+- **⚠️ 过滤型视图要逐项跑空：凡按时间/分类/年份过滤的入口，每个选项都必须有非空结果**：基于精选数据集做过滤（"输入入学年份 → 你在校期间发生了什么"这类个人化视图）时，数据集在早期年份往往有空洞——实测两个年份直接返回空态。交付前**把每个选项逐个跑一遍**并记录条数，空结果要么补数据节点、要么放宽匹配窗口，不允许把空态当正常交付。配套：非数字标签（如"今天"）会被 `parseInt` 判成 NaN 而静默从时间过滤里消失，给它加一个数字 `num` 字段供比较，过滤用 `n.num || parseInt(n.year,10)`
+- **⚠️ 演示数据口径必须自洽，用户会追问「数字从哪来」（党代会项目）**：首页统计（人参与/作品数/档案数）不是随便填的装饰数字——用户会问业务来源。口径定义（如「参与人数=扫码即参与=发放编号数=档案数」）要在首次给出数字时就说清三数关系，数字打架（如参与 286 < 档案 328）必然被质疑。改口径时**同步 PRD 文档**（grep 全库旧数字，文档/原型必须一致，否则后来者被文档误导）。**功能落地的交接说明同步**：改完一类功能后把「页面改动交接说明」重写为实际落地版，并记录「相对原方案的落地差异（已拍板，不要回退）」小节（如 V2.1→V2.2），防后续接手 AI 被旧文档误导；PRD 声称留在文案定稿里，原型实现以交接说明为准
 - **⚠️ 推送前确认全部改动完成（用户纠正「改好之后再推送啊」）**：不要中途/未验证完就 push。push 前 checklist：① 源文件改完 ② build.py 重建 dist ③ dist 残留旧值清零（grep 旧数字/旧字段）④ 文档同步（PRD/README 若涉及）⑤ verify 通过。尤其**数字/口径类改动**：源文件数字改了 ≠ 做完——dist 是构建产物，必须重建后才生效；`git status` 列出的改动清单就是交付清单
 
 ### 交接文档与工具路径
@@ -555,11 +621,12 @@ print(r.returncode, r.stdout[-2500:], r.stderr[-1500:])
 
 ### 其他
 - **浏览器验证作用域（模式限定）**：组件化增量修改默认**不主动**截图验证（改完告知用户查看，用户明确要求才用）；**单 HTML Layout Intelligence Pipeline 必须执行 Step 8 Screenshot + Step 9 Critic**（这是该流程的硬性要求，见第 2 章）
-- **真实交互验证用自动化 Chrome 9333（drive_preview 有旧快照局限）**：drive_preview 的 read/elements 在页面重渲染后可能返回**旧快照**（点击后 delta 只有 same、read_preview 读不到弹窗文本），据此判断「弹窗没弹出」会误判——真实 Chrome 里一切正常。需要确凿的交互验证（点击是否生效/弹窗 display）时启动自动化实例：后台进程跑 `"D:/Chrome/Application/chrome.exe" --remote-debugging-port=9333 --user-data-dir="D:/Chrome/User Data_automation" --no-first-run --no-default-browser-check about:blank` → `curl 127.0.0.1:9333/json/version` 确认就绪 → browser_exec 打开 `file://` 原型 → `document.querySelector(...).click()` + `getComputedStyle(m).display` 实测 → 用完 kill 该后台进程。**drive_preview 与 browser_exec 结论矛盾时以真实浏览器为准**
+- **⚠️ 多页原型里查 DOM 数量为 0 ≠ 渲染失败**：页面 `init_xxx()` 只在它被激活时才跑，停在别的页面时查目标页的容器子元素必然得 0（实测首页卡片数读到 0，误判成专题没渲染，其实切过去就正常）。**先 `showPage('目标页')` 再查数量**；同理，页面切换后要重新取元素引用（旧快照会误导）
+- **真实交互验证用自动化 Chrome 9333（drive_preview 有旧快照局限）**：drive_preview 的 read/elements 在页面重渲染后可能返回**旧快照**（点击后 delta 只有 same、read_preview 读不到弹窗文本），据此判断「弹窗没弹出」会误判——真实 Chrome 里一切正常。需要确凿的交互验证（点击是否生效/弹窗 display）时启动自动化实例：后台进程跑 `"D:/Chrome/Application/chrome.exe" --remote-debugging-port=9333 --user-data-dir="D:/Chrome/User Data_automation" --no-first-run --no-default-browser-check about:blank` → `curl 127.0.0.1:9333/json/version` 确认就绪 → browser_exec 打开 `file://` 原型 → `document.querySelector(...).click()` + `getComputedStyle(m).display` 实测 → 用完 kill 该后台进程。**drive_preview 与 browser_exec 结论矛盾时以真实浏览器为准**。启动方式（git-bash 实测）：直接 `terminal(background=true)` 执行 chrome.exe，**不要用 `start ""`**——bash 下 `start` 会起一个 cmd 窗口而 Chrome 根本没启动；`browser_exec` 报 `BU_CDP_URL ... unreachable` 就是它没起来，按上面方式拉起再重试
 - **⚠️ browser_exec 的 js() 参数不能含换行**：`js("(() => { try {\n return ...` —— js() 字符串含字面换行会在 browser-exec harness 的 Python 层报 `SyntaxError: unterminated string literal`（与页面 JS 无关）。JS 一律压成单行；需要多语句时拆多个 `js()` 调用，或用 `import time` 在 Python 层间隔
 - **文档锚点含中文引号时先 read_file 确认实际字符（PRD 更新实测）**：文件里是弯引号（“”）时锚点写直引号（""）必然 `assert count==0` 白跑；错写弯直引号、全半角差异、空格差异都会静默 count 为 0。含中文标点的锚点先 read_file 原文段落再构造 old_string，或锚点只取不含引号的子串
 - **browser_vision 视口裁剪误报字段缺失**：视觉截图只确认布局是否变形，字段存在性用 DOM 实测（两者矛盾以 DOM 为准）
-- **预览同步（GitHub Pages）**：完整发布规程见 `references/github-pages-publish.md`；**⚠️ 必须等用户明确说「同步预览」才执行**——源码 push 不会自动更新预览仓。**⚠️ 用户说「传到预览的 GitHub 仓库」= prototype-preview 仓的 GitHub Pages（`https://kinger-han.github.io/prototype-preview/<slug>/`），不是项目自己的源码仓（党代会项目）**：项目源码 push 到自己的 repo 不等于预览更新。判据：用户提到「预览/更新到预览」→ 跑 `publish-preview.sh --project <项目目录>`（读取 publish-config.json，多原型一次发布）；只提「改好推送」→ 推项目仓。两动作经常都要做：先推源码仓，再发布预览
+- **预览同步（GitHub Pages）**：完整发布规程见 `references/github-pages-publish.md`；**⚠️ 必须等用户明确说「同步预览」才执行**——源码 push 不会自动更新预览仓。**⚠️ 用户说「传到预览的 GitHub 仓库」= prototype-preview 仓的 GitHub Pages（`https://kinger-han.github.io/prototype-preview/<slug>/`），不是项目自己的源码仓（党代会项目）**：项目源码 push 到自己的 repo 不等于预览更新。判据：用户提到「预览/更新到预览」→ 跑 `bash "D:/hpy/桌面/数熙相关文档/prototype-preview/tools/publish-preview.sh" --project <项目目录>`（脚本在 prototype-preview 仓的 tools/ 下，**不在 prototype-kit 里**；读 publish-config.json，多原型一次发布；推送成功即报链接，不阻塞等部署验证）；只提「改好推送」→ 推项目仓。两动作经常都要做：先推源码仓，再发布预览
 
 ---
 
