@@ -164,3 +164,12 @@ shared = base + '\n' + insert + '</div>\n'
 8. 构建原件验证 → commit + push（智能导游有 remote 已 push；prototype-kit 无 remote 仅 commit）
 
 **⚠️ 注意**：build.py 用 `BASE_DIR=__file__` 定位 shell——用**原件** build.py 构建**测试副本**项目时，会读**原件 shell**（弹窗未清）+ 副本 _shared.html → 弹窗 id 出现 2 次（shell 旧 + shared 新）。这不是 bug，是"原件 shell 未清理"的预期状态；验证正向功能必须用**与原件字节一致的副本 build.py**（副本 shell 已清）。
+
+## 跨页复用的通用确认弹窗：一个 DOM + 一个参数化函数
+
+新增「多页都会用」的确认类弹窗时（保存触发审核、重新上架、删除前的二次确认），不要每场景加一个弹窗：
+- **HTML**：进 `_shared.html`，与其他弹窗作兄弟节点。一个 `resConfirmModal` 承载所有场景，内部 id 固定为 `rcTitle` / `rcDesc` / `rcNote` / `rcOkBtn`；`rcNote` 用 `style="display:none"` 做可选行，不传就不显示
+- **函数**：`openResConfirm(title, desc, note, okText, cb)` 放**共享数据页**（通常是 02 页，即 `findRes` / `resToast` / `resPlatformsOf` 的所在地）——所有页面都依赖该页的合并作用域，跨页调用安全。**不要**写进 `_shared.html`（保持本文件「DOM 与 JS 分离」的既有约定），也不要挂在触发方页面让别的页面跨页调
+- **回调存模块级变量，取用后即清**（`RES_CONFIRM_CB = null`）——否则上一次的回调残留到下一次，弹窗点了会执行错的逻辑
+- 描述支持 HTML（命中字段名需要加粗时直接传 `<b>`）；关闭/取消路径同样要清回调
+- 验证：dist 里 `id="resConfirmModal"` 应恰好 1 次（多页共用不重复注入）

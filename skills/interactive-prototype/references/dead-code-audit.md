@@ -38,7 +38,28 @@ dup = {n: d for n, d in defs.items() if len({f for f, _ in d}) > 1}
 1. **被活函数间接调用的不算死**：先查候选死函数被哪些函数调用（引用它的行在哪个函数体内），被活函数调用的保留（实例：03 页 `renderBatchAuditList` 被活函数 `openBatchAuditModal` 调用）。
 2. **渲染循环里调的 trigger 函数是活的**：`updateResMgmtCatTrigger` 被 `renderResMgmtCards()` 调用 → 保留；簇内其余函数（open/modal/render tree 等）才删。看起来属于"死簇"但被渲染路径引用的函数要留下，否则渲染时 ReferenceError。
 3. **删函数前 grep 全部引用点**：`grep -rn "函数名" *.html`——HTML 按钮 onclick、_shared.html 弹窗 DOM 按钮 onclick 都会把"已删函数名"留在 dist。连引用点一起清（按钮删掉、弹窗 DOM 整块删掉）。
-4. 删除整页文件前：确认菜单无入口（`grep renderAppSidebar` groups）+ 其他页无页面 id 引用 + rm2 等前缀函数无外部引用。
+4. **删除整页文件前必须过「符号盘点」硬门禁**（只看页面 id 引用远远不够）：① 提取该页定义的**全部**函数名；② 每个名字统计**全站出现次数（含该页自身文件）**，定义处之外为 0 才算真死；③ 逐个列出仍被引用的函数及其引用方文件，据此刻画该页是「纯死」还是「隐藏共享源」。实测教训：某页零菜单入口、零页面 id 引用，看似可删，实际承载 17 个被 `_shared.html` + 4 个业务页引用的弹窗函数（上传/导入/批量审核/轮播时长）——删文件后**构建照常成功、node --check 全绿、dist 检查也过**，直到用户点「上传」才炸。→ 跑 `scripts/scan-page-symbols.py <项目目录> --page <文件名>`
+5. **判死的口径只有一个：全站计数（含定义文件自身）**。不要用「其他文件有没有引用」的简化版——函数自己 script 里拼出的 `onclick="fn(...)"` 字符串是合法调用点。实测：`removeUploadTag` 被这条简化口径误判为死函数删掉，而它的调用点就在同文件的 HTML 拼串里，删完无任何报错。
+
+## 二·补、页面退役：废弃页 → 共享组件（首选，优于删文件）
+
+页面已无菜单/路由入口、但仍承载共享函数时，标准动作是**退役为共享组件**，不是删文件：
+
+1. **先 commit**：退役是破坏性操作，靠 git 兜底（出事用 `git show <commit>:<原路径>` 取回原文，别指望手工重建）
+2. 改文件头 `PAGE_META` 为 `{"id": "_新名", "shared": true}`
+3. **保留外层 `.proto-page` 容器**但改名 + 加隐藏：`<div class="proto-page" id="page-新名" style="display:none;">`——build.py 的 `parse_component` 靠 `class="proto-page"` 提取内容，去掉容器反而解析不到
+4. **只删 UI**：`</style>` 之后到 `<script>` 之前的页面 DOM 整段丢弃；`<style>` 与 `<script>` **原样保留**（共享 CSS 与全部函数都在这两段里）
+5. 清理页面身份残留：`RES_CURRENT_PAGE` / `RES_BACK_PAGE` 默认值、返回按钮兜底、`renderAppSidebar` 的 backId 映射里指向旧 id 的分支，全部改到现役页面
+6. **shell 静态占位菜单一并清**：菜单若由 `renderAppSidebar` 动态渲染，shell `.sub-menu` 里那些 `menu-item`（onclick 指向已不存在页面的标题）就是死 HTML；每个页面的 `init_xxx` 都会重渲染菜单，删静态项安全（删前 grep 确认 `renderAppSidebar` 在全部页面 init 里都调了）
+7. 验证：断链扫描为空 + node --check + 构建注入页数 = 剩余页面数 + dist 内旧页面容器 id 计数为 0
+
+命名按**职责**而非原页面序号：`_res-core.html`（数据 + 通用函数）、`_res-upload.html`（弹窗业务函数）。
+
+## 二·补2、页面/菜单重构后必跑：断链扫描
+
+页面重命名、函数删除、菜单清洗之后，做一次**双向符号核对**（`scripts/scan-page-symbols.py`）：收集**全部** `onclick/oninput/onchange/...` HTML 属性里的调用名，**加上** script 拼串里出现的 `onclick="fn(...)"`，减去已定义函数集合，差集必须为空。白名单只在明确知道来源时加（`protoShowPage` 由 build 注入；`getElementById`/`preventDefault` 这类成员调用属误匹配，脚本已按「先剥 `obj.method(` 再取裸调用」处理）。
+
+价值实测：这条扫描揪出一个**早就存在**的断链——01 页编辑弹窗的类别搜索框 `oninput="onEditCasSearch()"`，而该函数从未定义，一输入就报错，长期无人发现（因为没人点过那个框）。补齐时照同类入口（筛选 / 批量搜索）同构实现即可。
 
 ## 三、清理执行（防踩坑）
 
@@ -52,6 +73,7 @@ dup = {n: d for n, d in defs.items() if len({f for f, _ in d}) > 1}
 
 ## 四、最终验证
 
+0. **断链扫描为空**（`scripts/scan-page-symbols.py <项目目录>`）：HTML 事件属性与 script 拼串调用的名字减去已定义函数，差集必须为空。有残留就在交付前修掉，不要留给用户点的时候才发现。
 1. 全页 node --check（12+ 文件逐个提取 script 检查）。
 2. build.py 重建 → 注入页数应减 1（删整页时）；dist script node --check。
 3. **残留检查**：grep dist 每个被删函数名，出现次数应为 0（排除应保留的同名函数，如 02 页 openDeleteConfirm 资源删除版）。

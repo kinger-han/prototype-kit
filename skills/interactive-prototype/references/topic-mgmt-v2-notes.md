@@ -1,17 +1,26 @@
 # 主题管理 V2 原型 — 结构速查（2026-08-24 实测）
 
 > 会话级细节存档。页面结构以 README.md 为准，本文件记录 grep 耗时的关键落点和本次 V4.20 系列改动的实现方式，供后续同类改动直接定位。
+> ⚠️ 下方的「V4.20 系列样式约定」是当时的快照；后续版本已多处变更（工具栏「上传资源」已去掉、审核页新增「退回」页签、选择类页限「已发布」资源等）。**动手前以 README.md + PRD 的现状段为准**，本文件只用来省 grep。
+>
+> ⚠️ **页面结构已变（2026-09-28）**：`02-resource-mgmt-a.html` / `03-resource-mgmt-b.html` 已退役为共享组件 —— `pages/_res-core.html`（数据 + 通用函数 + `renderAppSidebar` + 分类选择器）、`pages/_res-upload.html`（上传/导入/批量审核/轮播时长弹窗函数）。`resource-mgmt-a` / `resource-mgmt-b` 两个页面 id 与 shell 静态占位菜单已全部移除。**旧资料里写「02 页 / 03 页」的地方，现在指这两个 `_` 文件**；此外录页默认为公共资源（返回与侧边栏高亮也回落它）。
 
 ## 关键落点（省 grep 时间）
 
 | 要改什么 | 在哪 |
 |---|---|
-| 侧边栏菜单分组 | `pages/02-resource-mgmt-a.html` → `renderAppSidebar()` 的 groups 数组（约 L481） |
-| 统计卡样式（6 张卡共享） | `pages/03-resource-mgmt-b.html` 头部 `<style>` 的 `.resb-stats/.resb-stat-*`（全局作用域，07/11 直接复用） |
+| 侧边栏菜单分组 | `pages/_res-core.html` → `renderAppSidebar()` 的 groups 数组 |
+| 统计卡样式（6 张卡共享） | `pages/_res-upload.html` 头部 `<style>` 的 `.resb-stats/.resb-stat-*`（全局作用域，07/11 直接复用） |
 | 公共资源卡片渲染 | `pages/07-resource-mgmt.html` → `resMgmtCardHtml()`（约 L650-700） |
 | 私有资源卡片渲染 | `pages/11-private-resource.html` → `pvtMgmtCardHtml()`（同构函数，前缀 pvtMgmt） |
 | 默认落地页 | 字母序第一页 `01-topic-mgmt.html` 尾部的自调用 `protoShowPage('xxx')`（V4.20b 已指向 resource-mgmt） |
 | 平台名数据 | MOCK 数据里 `platforms:[{name,status,auditor,time}]`；全站曾统一替换 `福建-广网融科→广网融科` 等 |
+| 共享素材（预览图/视频底图） | `_res-core.html` `RES_MEDIA` + `resPreviewImg(r)` / `resVideoAssets(r)`；各页的 `*ResImg()` 只是一行转发 |
+| 共享需求数据 | `_res-core.html` `DEMAND_LIST`（`themes` 指向真实主题名）+ `resDemandOf(r)` / `demandResList(demand)`；需求列表、关联需求、需求详情三处共用 |
+| 角色/权限演示 | `_res-core.html` `ROLE_DEFS` / `window.CURRENT_ROLE` / `roleCanSeeMenu` / `setRole`；顶栏切换器 DOM+CSS 在 `shell-pc.html` |
+| 分类选择器（编辑页分类可改） | `_res-core.html` `catPick*` + `_shared.html` 的 `catPickModal`；公共资源用 `CATEGORY_TREE`（三级）、私有用 `PRIVATE_CATEGORY_TREE`（客户两级），选中值即 `themePath` 路径；只能选叶子 |
+| 通用确认弹窗 | `_shared.html` `resConfirmModal` + `_res-core.html` `openResConfirm(title, desc, note, okText, cb)` |
+| 新标签页直达路由 | `shell-pc.html` `</body>` 前的 hash 脚本（build.py 本身不读 hash） |
 
 ## V4.20 系列已落地的样式约定
 
